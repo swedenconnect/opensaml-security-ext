@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLTooling xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" xmlns="http://www.opensaml.org/xmltooling-config">
+    
+    <ObjectProviders>
+        <!-- KeyDerivationMethod -->
+        <ObjectProvider qualifiedName="xenc11:KeyDerivationMethod">
+            <BuilderClass className="se.swedenconnect.opensaml.ecdh.xmlsec.encryption.impl.KeyDerivationMethodBuilder"/>
+            <MarshallingClass className="se.swedenconnect.opensaml.ecdh.xmlsec.encryption.impl.KeyDerivationMethodMarshaller"/>
+            <UnmarshallingClass className="se.swedenconnect.opensaml.ecdh.xmlsec.encryption.impl.KeyDerivationMethodUnmarshaller"/>
+        </ObjectProvider>
+
+        <!-- ConcatKDFParams -->
+        <ObjectProvider qualifiedName="xenc11:ConcatKDFParams">
+            <BuilderClass className="se.swedenconnect.opensaml.ecdh.xmlsec.encryption.impl.ConcatKDFParamsBuilder"/>
+            <MarshallingClass className="se.swedenconnect.opensaml.ecdh.xmlsec.encryption.impl.ConcatKDFParamsMarshaller"/>
+            <UnmarshallingClass className="se.swedenconnect.opensaml.ecdh.xmlsec.encryption.impl.ConcatKDFParamsUnmarshaller"/>
+        </ObjectProvider>
+    </ObjectProviders>
+
+</XMLTooling>
