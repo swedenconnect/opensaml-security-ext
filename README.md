@@ -1,12 +1,18 @@
 ![Logo](img/sc-logo.png)
 
-# Eliptic Curve Diffie-Hellman extension to OpenSAML
+# opensaml-security-ext
 
-OpenSAML is extended by this project by adding the capability to encrypt and decrypt xml data using ephemeral-static ECDH key agreement. The decrypter also offers a workaround for using RSA-OAEP with HSM protected keys where the PKCS#11 API does not support RSA-OAEP.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Crypto and security extensions to OpenSAML
+
+---
+
+OpenSAML is extended by this project by adding the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. The decrypter also offers a workaround for using RSA-OAEP with HSM protected keys where the PKCS#11 API does not support RSA-OAEP.
 
 Algorithm choice between RSA-OAEP or ECDH is automatically made based on the type of provided public key. If the key is an RSA key, RSA-OAEP is selected and if the key is an EC key, then ECDH is selected.
 
-The following extensions/amendments are done to OpenSAML
+The following extensions/amendments are done to OpenSAML:
 
 - Two new XML elements with Builder, Impl, Marshaller and Unmarshaller:
   - ConcatKDF
@@ -103,3 +109,7 @@ This feature is activated by the applying the following function to the SAMLObje
 
     SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(credential);
     decrypter.setPkcs11Workaround(true);
+    
+---
+
+Copyright &copy; 2016-2019, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
