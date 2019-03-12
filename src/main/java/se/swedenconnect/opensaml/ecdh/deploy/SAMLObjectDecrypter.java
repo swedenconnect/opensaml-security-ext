@@ -15,13 +15,23 @@
  */
 package se.swedenconnect.opensaml.ecdh.deploy;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.EncryptedElementType;
 import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.DecryptionConfiguration;
 import org.opensaml.xmlsec.DecryptionParameters;
-import org.opensaml.xmlsec.encryption.support.*;
+import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.Decrypter;
+import org.opensaml.xmlsec.encryption.support.DecryptionException;
+import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.opensaml.xmlsec.keyinfo.impl.ChainingKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.CollectionKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.LocalKeyInfoCredentialResolver;
@@ -30,12 +40,8 @@ import org.opensaml.xmlsec.keyinfo.impl.provider.DEREncodedKeyValueProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.DSAKeyValueProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.InlineX509DataProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.RSAKeyValueProvider;
-import se.swedenconnect.opensaml.ecdh.xmlsec.pkcs11workaround.Pkcs11ExtendedDecrypter;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.Pkcs11Decrypter;
 
 /**
  * A support bean for easy decryption.
@@ -177,9 +183,8 @@ public class SAMLObjectDecrypter {
   private synchronized Decrypter getDecrypter() {
     if (this.decrypter == null) {
       if (this.pkcs11Workaround) {
-        Pkcs11ExtendedDecrypter ed = new Pkcs11ExtendedDecrypter(this.parameters);
+        Pkcs11Decrypter ed = new Pkcs11Decrypter(this.parameters);
         ed.setTestMode(this.pkcs11testMode);
-        ed.init();
         this.decrypter = ed;
       }
       else {

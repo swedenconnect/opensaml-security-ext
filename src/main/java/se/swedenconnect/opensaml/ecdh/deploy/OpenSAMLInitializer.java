@@ -18,12 +18,13 @@ package se.swedenconnect.opensaml.ecdh.deploy;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
+import se.swedenconnect.opensaml.xmlsec.keyinfo.ECDHKeyInfoGeneratorFactory;
+
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistry;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.xmlsec.EncryptionConfiguration;
-import org.opensaml.xmlsec.keyinfo.impl.ECDHKeyInfoGeneratorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

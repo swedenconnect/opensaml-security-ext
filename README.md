@@ -110,6 +110,20 @@ This feature is activated by the applying the following function to the SAMLObje
     SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(credential);
     decrypter.setPkcs11Workaround(true);
     
+## OpenSAML wish list
+
+When we wrote the opensaml-security-ext library we tried really hard to add the ECDH support in an OpenSAML-fashion, and as it shows we still had to extend a number of core OpenSAML classes and interfaces. This means that if we are to use this extension together with the Shibboleth IdP, or any other OpenSAML-based application, we need to modify that application's setup in a way that it probably wasn't meant to. Therefore, we try to list everything that would be needed to get a more seamless integration of key agreement techniques into OpenSAML.
+
+* Parameters for encryption - The OpenSAML `org.opensaml.xmlsec.EncryptionParameters` class is used as the input class for encryption classes and is returned by encryption parameter resolvers such as `org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver` and `org.opensaml.saml.security.impl.SAMLMetadataEncryptionParametersResolver`. But this class is hardwired to assume key transport algorithms (RSA-OAEP, ...) and there is no way to represent key agreement parameters. For this purpose we have introduced the XXX class.
+
+* Resolving of encryption
+
+* Register the ECDHKeyInfoGeneratorFactory - Impossible to do in the way we would like to ...
+
+* Encrypter and decrypter extensions
+
+* TODO
+    
 ---
 
 Copyright &copy; 2016-2019, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

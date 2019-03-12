@@ -1,7 +1,8 @@
 package se.swedenconnect.opensaml.ecdh.deploy;
 
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
-import se.swedenconnect.opensaml.ecdh.xmlsec.encryption.support.SupportedConcatKDFHash;
+
+import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.SupportedConcatKDFHash;
 
 /**
  * Data model for setting up encryption parameters
