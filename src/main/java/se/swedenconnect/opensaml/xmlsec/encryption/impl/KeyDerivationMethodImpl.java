@@ -61,7 +61,7 @@ public class KeyDerivationMethodImpl extends AbstractXMLObject implements KeyDer
   }
 
   /** {@inheritDoc} */
-  public void setAlgorithm(String newAlgorithm) {
+  public void setAlgorithm(String algorithm) {
     this.algorithm = prepareForAssignment(this.algorithm, algorithm);
   }  
 

@@ -86,7 +86,7 @@ public class ExtendedDecrypter extends Decrypter {
       @Nullable Collection<String> blacklistAlgos) {
     super(newResolver, newKEKResolver, newEncKeyResolver, whitelistAlgos, blacklistAlgos);
   }
-
+  
   /**
    * Extends {@link Decrypter#decryptKey(EncryptedKey, String, Key)} with support for ECDH key agreement.
    */

@@ -117,9 +117,7 @@ public class ExtendedEncrypter extends org.opensaml.saml.saml2.encryption.Encryp
 
     if (kekParams.getKeyInfoGenerator() != null) {
       final KeyInfoGenerator generator = kekParams.getKeyInfoGenerator();
-      log.debug("Dynamically generating KeyInfo from Credential for EncryptedKey using generator: {}", generator
-        .getClass()
-        .getName());
+      log.debug("Dynamically generating KeyInfo from Credential for EncryptedKey using generator: {}", generator.getClass().getName());
       try {
         encryptedKey.setKeyInfo(generator.generate(kekParams.getEncryptionCredential()));
       }
