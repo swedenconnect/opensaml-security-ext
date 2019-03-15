@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.crypto.SecretKey;
 import javax.security.auth.x500.X500Principal;
 
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.security.SecurityException;
+import org.opensaml.security.credential.BasicCredential;
 import org.opensaml.security.credential.Credential;
+import org.opensaml.security.credential.CredentialContext;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509DigestCredentialCriterion;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509SubjectKeyIdentifierCredentialCriterion;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509SubjectNameCredentialCriterion;
@@ -35,12 +38,14 @@ import org.opensaml.security.x509.X509IssuerSerialCriterion;
 import org.opensaml.security.x509.X509SubjectKeyIdentifierCriterion;
 import org.opensaml.security.x509.X509SubjectNameCriterion;
 import org.opensaml.xmlsec.encryption.AgreementMethod;
-import org.opensaml.xmlsec.encryption.RecipientKeyInfo;
+import org.opensaml.xmlsec.encryption.EncryptedKey;
+import org.opensaml.xmlsec.encryption.EncryptionMethod;
 import org.opensaml.xmlsec.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.CollectionKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.KeyInfoProvider;
 import org.opensaml.xmlsec.keyinfo.impl.KeyInfoResolutionContext;
 import org.opensaml.xmlsec.keyinfo.impl.provider.AbstractKeyInfoProvider;
+import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.X509Data;
 import org.opensaml.xmlsec.signature.X509Digest;
 import org.opensaml.xmlsec.signature.X509IssuerSerial;
@@ -50,10 +55,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.shibboleth.utilities.java.support.annotation.ParameterName;
+import net.shibboleth.utilities.java.support.collection.LazySet;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import net.shibboleth.utilities.java.support.resolver.ResolverException;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
+import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 
 /**
@@ -78,8 +85,10 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
     Constraint.isNotNull(credentials, "Input credentials list cannot be null");
 
     // Only save those credentials that can be used ...
-    List<Credential> filteredCredentials = credentials.stream().filter(c -> ECPrivateKey.class.isInstance(c.getPrivateKey())).collect(
-      Collectors.toList());
+    List<Credential> filteredCredentials = credentials.stream()
+      .filter(c -> ECPrivateKey.class.isInstance(c.getPrivateKey()))
+      .collect(
+        Collectors.toList());
 
     this.ecCredentialsResolver = new CollectionKeyInfoCredentialResolver(filteredCredentials);
     this.ecCredentialsResolver.setSatisfyAllPredicates(false);
@@ -133,9 +142,18 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
       return null;
     }
 
-    try {
-      final AgreementMethod agreementMethod = (AgreementMethod) keyInfoChild;
+    final AgreementMethod agreementMethod = (AgreementMethod) keyInfoChild;
 
+    // OpenSAML doesn't give us the encryption method, so we implement a work-around
+    // that gives us this info.
+    //
+    EncryptionMethodCriterion encryptionMethod = this.getEncryptionMethod(agreementMethod);
+    if (encryptionMethod == null) {
+      log.error("Could not locate EncryptionMethod - ECDHAgreementMethodKeyInfoProvider cannot derive key agreement key");
+      throw new SecurityException("Could not locate EncryptionMethod");
+    }
+
+    try {
       // Build criterias that helps us to find a EC credential.
       //
       CriteriaSet ecCriteriaSet = this.buildCriteriaSet(agreementMethod);
@@ -143,9 +161,29 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
       // Loop over all available EC credentials and try to resolve the ECDH key agreement key.
       //
       for (Credential ecCred : this.ecCredentialsResolver.resolve(ecCriteriaSet)) {
-        
+        try {
+          SecretKey keyAgreementKey = ECDHSupport.getKeyAgreementKey(ecCred.getPrivateKey(),
+            encryptionMethod.getEncryptionMethod().getAlgorithm(), agreementMethod);
+
+          log.debug("Successfully derived key agreement key using key wrapping method '{}'",
+            encryptionMethod.getEncryptionMethod().getAlgorithm());
+
+          BasicCredential kakCred = new BasicCredential(keyAgreementKey);
+          CredentialContext credContext = this.buildCredentialContext(kiContext);
+          if (credContext != null) {
+            kakCred.getCredentialContextSet().add(credContext);
+          }
+
+          LazySet<Credential> credentialSet = new LazySet<>();
+          credentialSet.add(kakCred);
+          return credentialSet;
+        }
+        catch (SecurityException e) {
+          log.error("Failed to get key agreement key - " + e.getMessage(), e);
+        }
       }
 
+      log.info("Could not derive a key agreement key - no matching credentials found");
       return null;
     }
     catch (ResolverException e) {
@@ -206,8 +244,9 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
       // Digest
       if (!x509data.getX509Digests().isEmpty()) {
         final X509Digest digest = x509data.getX509Digests().get(0);
-        criterias.add(new EvaluableX509DigestCredentialCriterion(new X509DigestCriterion(digest.getAlgorithm(), Base64.getDecoder().decode(
-          digest.getValue()))));
+        criterias.add(new EvaluableX509DigestCredentialCriterion(new X509DigestCriterion(digest.getAlgorithm(), Base64.getDecoder()
+          .decode(
+            digest.getValue()))));
       }
     }
     catch (Exception e) {
@@ -217,25 +256,33 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
     return criterias;
   }
 
-  private Collection<Credential> filterCredentials(AgreementMethod agreementMethod) {
-
-    // If we only have one credential we assume that it is the one to use.
-    if (this.ecCredentials.size() == 1) {
-      return this.ecCredentials;
+  /**
+   * Given the {@link AgreementMethod} the method follows the parent-pointers and locates the encryption method that we
+   * need.
+   * 
+   * @param agreementMethod
+   *          the key info child (agreement method)
+   * @return the encryption method element, or {@code null}
+   */
+  private EncryptionMethodCriterion getEncryptionMethod(AgreementMethod agreementMethod) {
+    if (KeyInfo.class.isInstance(agreementMethod.getParent())) {
+      if (EncryptedKey.class.isInstance(agreementMethod.getParent().getParent())) {
+        EncryptionMethod method = ((EncryptedKey) agreementMethod.getParent().getParent()).getEncryptionMethod();
+        if (method != null) {
+          return new EncryptionMethodCriterion(method);
+        }
+      }
     }
-    // If the KeyInfo contains a RecipientKeyInfo we may use that ...
-    RecipientKeyInfo rki = agreementMethod.getRecipientKeyInfo();
-    if (rki == null) {
-      // We have no hint, lets try them all ...
-      return this.ecCredentials;
-    }
-
-    // rki.getKeyValues().get(0).getECKeyValue()
-    // rki.getX509Datas().isEmpty()
-
     return null;
   }
 
+  /**
+   * Returns the key derivation method.
+   * 
+   * @param agreementMethod
+   *          the agreement method element.
+   * @return the key derivation method
+   */
   private static KeyDerivationMethod getKeyDerivationMethod(AgreementMethod agreementMethod) {
     List<XMLObject> methods = agreementMethod.getUnknownXMLObjects(KeyDerivationMethod.DEFAULT_ELEMENT_NAME);
     if (methods.isEmpty()) {

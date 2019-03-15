@@ -24,6 +24,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.encryption.Decrypter;
 import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
 import org.opensaml.saml.saml2.encryption.Encrypter.KeyPlacement;
 import org.opensaml.security.x509.X509Credential;
@@ -138,8 +139,8 @@ public class ExtendedEncrypterDecrypterTest extends OpenSAMLTestBase {
       new SimpleRetrievalMethodEncryptedKeyResolver(), new SimpleKeyInfoReferenceEncryptedKeyResolver()));
 
     dparameters.setEncryptedKeyResolver(encryptedKeyResolver);
-    
-    ExtendedDecrypter decrypter = new ExtendedDecrypter(dparameters);
+        
+    Decrypter decrypter = new Decrypter(dparameters);
     decrypter.setRootInNewDocument(true);
     
     XMLObject decryptedObject = decrypter.decryptData(encryptedData);
