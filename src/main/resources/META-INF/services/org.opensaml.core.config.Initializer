@@ -1,1 +1,2 @@
-se.swedenconnect.opensaml.xmlsec.config.impl.EcXMLObjectProviderInitializer
+se.swedenconnect.opensaml.xmlsec.config.EcXMLObjectProviderInitializer
+se.swedenconnect.opensaml.xmlsec.config.NamedCurveRegistryInitializer

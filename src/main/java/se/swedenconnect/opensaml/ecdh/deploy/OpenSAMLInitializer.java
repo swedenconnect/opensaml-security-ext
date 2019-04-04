@@ -18,7 +18,7 @@ package se.swedenconnect.opensaml.ecdh.deploy;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
-import se.swedenconnect.opensaml.xmlsec.keyinfo.ECDHKeyInfoGeneratorFactory;
+import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory;
 
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.config.InitializationService;
@@ -107,7 +107,7 @@ public class OpenSAMLInitializer {
     }
 
     //Setup ECDH KeyInfo generator
-    ECDHKeyInfoGeneratorFactory ecdhFactory = new ECDHKeyInfoGeneratorFactory();
+    KeyAgreementKeyInfoGeneratorFactory ecdhFactory = new KeyAgreementKeyInfoGeneratorFactory();
     ecdhFactory.setEmitX509IssuerSerial(true);
     ecdhFactory.setEmitPublicKeyValue(true);
     ConfigurationService.get(EncryptionConfiguration.class)

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.opensaml.ecdh.security.x509;
+package se.swedenconnect.opensaml.security.credential;
 
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -35,6 +35,7 @@ import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHParameters;
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
+@Deprecated
 public class ECDHPeerCredential extends BasicX509Credential {
 
   /** The parameters for the ConcatKDF key derivation algorithm. */

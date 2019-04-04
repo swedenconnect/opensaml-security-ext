@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.opensaml.xmlsec.config.impl;
+package se.swedenconnect.opensaml.xmlsec.algorithm.descriptors;
 
-import org.opensaml.core.xml.config.AbstractXMLObjectProviderInitializer;
+import org.junit.Assert;
+import org.junit.Test;
+import org.opensaml.core.config.ConfigurationService;
+
+import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**
- * Adds XML configuration for the EC extensions.
- * 
+ * Test cases for the {@link NamedCurveRegistry}.
+ *  
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class EcXMLObjectProviderInitializer extends AbstractXMLObjectProviderInitializer {
+public class NamedCurveRegistryTest extends OpenSAMLTestBase {
 
-  /** Config resources. */
-  private static String[] configs = {
-      "/ec-encryption-config.xml"
-  };
-
-  /** {@inheritDoc} */
-  protected String[] getConfigResources() {
-    return configs;
+  @Test
+  public void testRegistryAvailable() throws Exception {
+    Assert.assertNotNull("Expected to find NamedCurveRegistry", ConfigurationService.get(NamedCurveRegistry.class));
   }
 
 }

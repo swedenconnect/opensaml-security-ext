@@ -1,12 +1,31 @@
+/*
+ * Copyright 2019 Sweden Connect
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package se.swedenconnect.opensaml.xmlsec.encryption.ecdh;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Enumeration of supported named curves
+ * Enumeration of supported named curves.
+ * 
+ * @author Martin Lindström (martin@idsec.se)
+ * @author Stefan Santesson (stefan@idsec.se)
  */
 public enum NamedEcCurve {
+  
   secp192r1("1.2.840.10045.3.1.1", 192),
   secp224r1("1.3.132.0.33", 224),
   secp256r1("1.2.840.10045.3.1.7", 256),
@@ -20,12 +39,21 @@ public enum NamedEcCurve {
   brainpoolP384r1("1.3.36.3.3.2.8.1.1.11", 384),
   brainpoolP512r1("1.3.36.3.3.2.8.1.1.13", 512);
 
-  String oid;
-  int keyLen;
+  /** The object identifier. */
+  private String oid;
+  
+  /** The key length. */
+  int keyLength;
 
-  NamedEcCurve(String oid, int keyLen) {
+  /**
+   * Constructor.
+   * 
+   * @param oid the Object Identifier for 
+   * @param keyLength
+   */
+  private NamedEcCurve(String oid, int keyLength) {
     this.oid = oid;
-    this.keyLen = keyLen;
+    this.keyLength = keyLength;
   }
 
   public String getOid() {
@@ -33,7 +61,7 @@ public enum NamedEcCurve {
   }
 
   public int getKeyLen() {
-    return keyLen;
+    return keyLength;
   }
 
   /**

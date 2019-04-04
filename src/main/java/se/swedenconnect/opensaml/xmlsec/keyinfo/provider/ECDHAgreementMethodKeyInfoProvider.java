@@ -33,10 +33,13 @@ import org.opensaml.security.credential.CredentialContext;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509DigestCredentialCriterion;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509SubjectKeyIdentifierCredentialCriterion;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509SubjectNameCredentialCriterion;
+import org.opensaml.security.criteria.KeyAlgorithmCriterion;
+import org.opensaml.security.criteria.KeyLengthCriterion;
 import org.opensaml.security.x509.X509DigestCriterion;
 import org.opensaml.security.x509.X509IssuerSerialCriterion;
 import org.opensaml.security.x509.X509SubjectKeyIdentifierCriterion;
 import org.opensaml.security.x509.X509SubjectNameCriterion;
+import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
 import org.opensaml.xmlsec.encryption.AgreementMethod;
 import org.opensaml.xmlsec.encryption.EncryptedKey;
 import org.opensaml.xmlsec.encryption.EncryptionMethod;
@@ -64,9 +67,13 @@ import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 
 /**
- * A {@link KeyInfoProvider} that returns the key agreement key that is found in a {@code xenc:AgreementMethod} element
- * under a {@code ds:KeyInfo} element when the agreement method is
- * {@value EcEncryptionConstants#ALGO_ID_KEYAGREEMENT_ECDH_ES}.
+ * A {@link KeyInfoProvider} that returns the key agreement key that is derived using the information found in an
+ * {@link AgreementMethod} using the decrypter's private EC key(s).
+ * 
+ * <p>
+ * Currently, the agreement method {@value EcEncryptionConstants#ALGO_ID_KEYAGREEMENT_ECDH_ES} is supported along with
+ * the key derivation method {@value EcEncryptionConstants#ALGO_ID_KEYDERIVATION_CONCAT}.
+ * </p>
  *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -76,32 +83,32 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
   /** Class logger. */
   private static final Logger log = LoggerFactory.getLogger(ECDHAgreementMethodKeyInfoProvider.class);
 
-  /** List of credentials held by this resolver. */
-  private List<Credential> ecCredentials;
-
+  /** Resolver that finds EC keys to use during key agreement derivation. */
   private CollectionKeyInfoCredentialResolver ecCredentialsResolver;
 
+  /**
+   * Constructor.
+   * 
+   * @param credentials
+   *          the decrypter's private key credentials (only EC keys are valid)
+   */
   public ECDHAgreementMethodKeyInfoProvider(@Nonnull @ParameterName(name = "credentials") final List<Credential> credentials) {
     Constraint.isNotNull(credentials, "Input credentials list cannot be null");
 
     // Only save those credentials that can be used ...
     List<Credential> filteredCredentials = credentials.stream()
       .filter(c -> ECPrivateKey.class.isInstance(c.getPrivateKey()))
-      .collect(
-        Collectors.toList());
+      .collect(Collectors.toList());
 
     this.ecCredentialsResolver = new CollectionKeyInfoCredentialResolver(filteredCredentials);
     this.ecCredentialsResolver.setSatisfyAllPredicates(false);
-
-    // Only save those credentials that can be used ...
-    //
-    this.ecCredentials = credentials.stream().filter(c -> ECPrivateKey.class.isInstance(c.getPrivateKey())).collect(Collectors.toList());
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean handles(XMLObject keyInfoChild) {
-    if (this.ecCredentials.isEmpty()) {
+
+    if (this.ecCredentialsResolver.getCollection().isEmpty()) {
       log.debug("No EC private key credentials available for ECDH key agreement");
       return false;
     }
@@ -144,13 +151,28 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
 
     final AgreementMethod agreementMethod = (AgreementMethod) keyInfoChild;
 
-    // OpenSAML doesn't give us the encryption method, so we implement a work-around
-    // that gives us this info.
+    // Assert that the criteria set contains all the information that we need
+    // to perform a key derivation.
     //
-    EncryptionMethodCriterion encryptionMethod = this.getEncryptionMethod(agreementMethod);
-    if (encryptionMethod == null) {
-      log.error("Could not locate EncryptionMethod - ECDHAgreementMethodKeyInfoProvider cannot derive key agreement key");
-      throw new SecurityException("Could not locate EncryptionMethod");
+    final KeyAlgorithmCriterion keyAlgorithmCriterion = criteriaSet.get(KeyAlgorithmCriterion.class);
+    if (keyAlgorithmCriterion == null || keyAlgorithmCriterion.getKeyAlgorithm() == null) {
+      log.error("Bad call to ECDHAgreementMethodKeyInfoProvider - KeyAlgorithmCriterion is missing");
+      throw new SecurityException("KeyAlgorithmCriterion is missing");
+    }
+
+    KeyLengthCriterion keyLengthCriterion = criteriaSet.get(KeyLengthCriterion.class);
+    if (keyLengthCriterion == null) {
+      // There is a bug in OpenSAML's Decrypter class that does not give us the KeyLengthCriterion.
+      // See https://issues.shibboleth.net/jira/projects/OSJ/issues/OSJ-270. Therefore we
+      // try to find it ourselves (as a work-around).
+      //
+      log.debug("OpenSAML did not give us KeyLengthCriterion, trying to find EncryptionMethod->Algorithm ...");
+
+      keyLengthCriterion = this.createKeyLengthCriterion(agreementMethod);
+      if (keyLengthCriterion == null) {
+        log.error("Bad call to ECDHAgreementMethodKeyInfoProvider - KeyLengthCriterion is missing");
+        throw new SecurityException("KeyLengthCriterion is missing");
+      }
     }
 
     try {
@@ -162,11 +184,8 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
       //
       for (Credential ecCred : this.ecCredentialsResolver.resolve(ecCriteriaSet)) {
         try {
-          SecretKey keyAgreementKey = ECDHSupport.getKeyAgreementKey(ecCred.getPrivateKey(),
-            encryptionMethod.getEncryptionMethod().getAlgorithm(), agreementMethod);
-
-          log.debug("Successfully derived key agreement key using key wrapping method '{}'",
-            encryptionMethod.getEncryptionMethod().getAlgorithm());
+          SecretKey keyAgreementKey = ECDHSupport.getKeyAgreementKey(ecCred.getPrivateKey(), agreementMethod,
+            keyAlgorithmCriterion.getKeyAlgorithm(), keyLengthCriterion.getKeyLength());
 
           BasicCredential kakCred = new BasicCredential(keyAgreementKey);
           CredentialContext credContext = this.buildCredentialContext(kiContext);
@@ -257,22 +276,35 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
   }
 
   /**
-   * Given the {@link AgreementMethod} the method follows the parent-pointers and locates the encryption method that we
-   * need.
+   * Creates a KeyLengthCriterion from information found in the supplied AgreementMethod.
+   * <p>
+   * To cover up for bug in OpenSAML (see https://issues.shibboleth.net/jira/projects/OSJ/issues/OSJ-270).
+   * </p>
    * 
    * @param agreementMethod
-   *          the key info child (agreement method)
-   * @return the encryption method element, or {@code null}
+   *          the agreement method
+   * @return a KeyLengthCriterion or {@code null}
    */
-  private EncryptionMethodCriterion getEncryptionMethod(AgreementMethod agreementMethod) {
+  private KeyLengthCriterion createKeyLengthCriterion(AgreementMethod agreementMethod) {
+    EncryptionMethod encryptionMethod = null;
     if (KeyInfo.class.isInstance(agreementMethod.getParent())) {
       if (EncryptedKey.class.isInstance(agreementMethod.getParent().getParent())) {
-        EncryptionMethod method = ((EncryptedKey) agreementMethod.getParent().getParent()).getEncryptionMethod();
-        if (method != null) {
-          return new EncryptionMethodCriterion(method);
-        }
+        encryptionMethod = ((EncryptedKey) agreementMethod.getParent().getParent()).getEncryptionMethod();
       }
     }
+    if (encryptionMethod == null) {
+      return null;
+    }
+    if (encryptionMethod.getKeySize() != null && encryptionMethod.getKeySize().getValue() != null) {
+      return new KeyLengthCriterion(encryptionMethod.getKeySize().getValue());
+    }
+    if (encryptionMethod.getAlgorithm() != null) {
+      Integer len = AlgorithmSupport.getKeyLength(encryptionMethod.getAlgorithm());
+      if (len != null) {
+        return new KeyLengthCriterion(len);
+      }
+    }
+
     return null;
   }
 

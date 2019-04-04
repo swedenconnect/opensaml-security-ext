@@ -21,7 +21,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -33,6 +32,7 @@ import org.opensaml.security.x509.X509Credential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /**
@@ -74,11 +74,12 @@ public class EvaluableX509CertificatesCredentialCriterion implements EvaluableCr
     for (org.opensaml.xmlsec.signature.X509Certificate c : certificates) {
       try {
         X509CertSelector selector = new X509CertSelector();
-        selector.setCertificate((X509Certificate) factory.generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(c
-          .getValue()))));
+        selector.setCertificate(
+          (X509Certificate) factory.generateCertificate(
+            new ByteArrayInputStream(Base64Support.decode(c.getValue()))));
         this.selectors.add(selector);
       }
-      catch (CertificateException e) {
+      catch (Exception e) {
         log.error("Failed to decode certificate", e);
         continue;
       }

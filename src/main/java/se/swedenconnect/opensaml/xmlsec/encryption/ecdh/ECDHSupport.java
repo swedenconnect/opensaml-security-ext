@@ -17,15 +17,18 @@ package se.swedenconnect.opensaml.xmlsec.encryption.ecdh;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import java.util.List;
 
 import javax.crypto.KeyAgreement;
@@ -34,6 +37,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1StreamParser;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -45,18 +49,28 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
+import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
+import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.xml.XMLObject;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.SecurityException;
+import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
 import org.opensaml.xmlsec.encryption.AgreementMethod;
 import org.opensaml.xmlsec.encryption.OriginatorKeyInfo;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.signature.ECKeyValue;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.primitives.Bytes;
 
+import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.logic.Constraint;
+import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
+import se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.NamedCurve;
+import se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.NamedCurveRegistry;
 import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
 
@@ -68,8 +82,111 @@ import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
  */
 public class ECDHSupport {
 
+  /** Class logger. */
+  private static final Logger log = LoggerFactory.getLogger(ECDHSupport.class);
+
   /** The Object Identifier for an EC public key. */
   public static final String EC_PUBLIC_KEY_OID = "1.2.840.10045.2.1";
+
+  /**
+   * Creates a {@link KeyAgreementCredential} by using the supplied peer credential to generate a EC key pair and a
+   * secret key that is the key agreement key.
+   * 
+   * <p>
+   * This method works only for the {@value EcEncryptionConstants#ALGO_ID_KEYDERIVATION_CONCAT} key derivation
+   * algorithm.
+   * </p>
+   * 
+   * @param peerCredential
+   *          the peer credential (containing an EC public key)
+   * @param keyWrappingAlgorithm
+   *          the key wrapping algorithm
+   * @param concatKDFParams
+   *          parameters for the key derivation algorithm
+   * @return a KeyAgreementCredential
+   * @throws SecurityException
+   *           for errors during the key generation process
+   */
+  public static KeyAgreementCredential createKeyAgreementCredential(Credential peerCredential, String keyWrappingAlgorithm,
+      ConcatKDFParams concatKDFParams) throws SecurityException {
+
+    // Input checking ...
+    //
+    Constraint.isNotNull(peerCredential, "peerCredential must not be null");
+    Constraint.isNotNull(peerCredential.getPublicKey(), "peerCredential must contain a public key");
+    Constraint.isTrue(ECPublicKey.class.isInstance(peerCredential.getPublicKey()),
+      "Public key of peerCredential must be an ECPublicKey");
+    Constraint.isNotNull(keyWrappingAlgorithm, "keyWrappingAlgorithm must not be null");
+    Constraint.isNotNull(concatKDFParams, "concatKDFParams must not be null");
+
+    // Given the curve of the peer EC public key generate a EC key pair.
+    //
+    NamedCurve namedCurve = getNamedCurve((ECPublicKey) peerCredential.getPublicKey());
+    if (namedCurve == null) {
+      throw new SecurityException("Unsupported named curve in EC public key");
+    }
+    // TODO: We may want to check the key length so that it isn't too short...
+
+    KeyPair generatedKeyPair = null;
+    try {
+      log.debug("Generating EC key pair for named curve {} ...", namedCurve.getName());
+      ECNamedCurveGenParameterSpec parameterSpec = new ECNamedCurveGenParameterSpec(namedCurve.getName());
+      KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", "BC");
+      kpg.initialize(parameterSpec);
+      generatedKeyPair = kpg.generateKeyPair();
+    }
+    catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+      String msg = String.format("Failed to generate an EC key pair for curve %s - %s", namedCurve.getName(), e.getMessage());
+      log.error("{}", msg, e);
+      throw new SecurityException(msg, e);
+    }
+
+    // Generate the key agreement key ...
+    //
+    SecretKey keyAgreementKey = null;
+    try {
+      log.debug("Generating shared secret for ECDH key agreement ...");
+      KeyAgreement ka = KeyAgreement.getInstance("ECDH", "BC");
+      ka.init(generatedKeyPair.getPrivate());
+      ka.doPhase(peerCredential.getPublicKey(), true);
+      byte[] sharedSecret = ka.generateSecret();
+
+      // Get JCA algorithm ID and key length given the key wrapping algorithm ...
+      //
+      String keyWrappingJcaAlgorithmId = AlgorithmSupport.getAlgorithmID(keyWrappingAlgorithm);
+      if (keyWrappingAlgorithm == null) {
+        String msg = String.format("Algorithm %s is not supported", keyWrappingAlgorithm);
+        log.error(msg);
+        throw new SecurityException(msg);
+      }
+      Integer keyWrappingKeySize = AlgorithmSupport.getKeyLength(keyWrappingAlgorithm);
+      if (keyWrappingKeySize == null) {
+        String msg = String.format("Unknown key size for algorithm %s - cannot proceed", keyWrappingAlgorithm);
+        log.error(msg);
+        throw new SecurityException(msg);
+      }
+
+      log.debug("Generating key agreement key ...");
+      keyAgreementKey = generateKeyAgreementKey(sharedSecret, concatKDFParams, keyWrappingJcaAlgorithmId, keyWrappingKeySize);
+    }
+    catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+      String msg = "Failed to generate shared secret for ECDH key agreement";
+      log.error("{}", msg, e);
+      throw new SecurityException(msg, e);
+    }
+
+    // The credential also needs the key derivation method ...
+    // For now it is hard-wired to ConcatKDF ...
+    //
+    KeyDerivationMethod kdm = (KeyDerivationMethod) XMLObjectSupport.buildXMLObject(KeyDerivationMethod.DEFAULT_ELEMENT_NAME);
+    kdm.setAlgorithm(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT);
+    kdm.getUnknownXMLObjects().add(concatKDFParams);
+
+    // OK, we have everything for a KeyAgreementCredential ...
+    //
+    return new KeyAgreementCredential(keyAgreementKey, generatedKeyPair.getPublic(), peerCredential,
+      EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES, kdm);
+  }
 
   /**
    * Derives the ephemeral-static DH agreed key encryption key for a decryption process.
@@ -83,16 +200,18 @@ public class ECDHSupport {
    * 
    * @param decrypterKey
    *          The private EC key of the decrypter
-   * @param keyWrappingAlgorithm
-   *          the key wrapping method to use
    * @param agreementMethod
    *          the {@code AgreementMethod} element
+   * @param keyWrappingJcaAlgorithmId
+   *          the JCA algorithm ID for the key wrapping method
+   * @param keyWrappingKeySize
+   *          the key size for the key wrapping algorithm
    * @return the key agreement key
    * @throws SecurityException
    *           for error during the process
    */
-  public static SecretKey getKeyAgreementKey(
-      PrivateKey decrypterKey, String keyWrappingAlgorithm, AgreementMethod agreementMethod) throws SecurityException {
+  public static SecretKey getKeyAgreementKey(PrivateKey decrypterKey, AgreementMethod agreementMethod,
+      String keyWrappingJcaAlgorithmId, int keyWrappingKeySize) throws SecurityException {
 
     // Input checking ...
     Constraint.isNotNull(decrypterKey, "decrypterKey must not be null");
@@ -132,7 +251,7 @@ public class ECDHSupport {
       }
       final ECKeyValue ecKeyValue = originatorKeyInfo.getKeyValues().get(0).getECKeyValue();
 
-      byte[] publicKeyBytes = Base64.getDecoder().decode(ecKeyValue.getPublicKey().getValue());
+      byte[] publicKeyBytes = Base64Support.decode(ecKeyValue.getPublicKey().getValue());
       byte[] ans1PubKeyBytes = getPublicKeyBytes(publicKeyBytes, ecKeyValue.getNamedCurve().getURI());
 
       KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
@@ -148,7 +267,7 @@ public class ECDHSupport {
 
       // And finally, generate the key agreement key.
       //
-      return generateKeyAgreementKey(sharedSecret, keyWrappingAlgorithm, concatKDFParams);
+      return generateKeyAgreementKey(sharedSecret, concatKDFParams, keyWrappingJcaAlgorithmId, keyWrappingKeySize);
     }
     catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new SecurityException("Failed to generate key - " + e.getMessage(), e);
@@ -163,16 +282,18 @@ public class ECDHSupport {
    * 
    * @param sharedSecret
    *          the shared secret
-   * @param keyWrappingAlgorithm
-   *          the key wrapping method
    * @param concatKDFParams
    *          the parameters for the ConcatKDF operation
+   * @param keyWrappingJcaAlgorithmId
+   *          the JCA algorithm ID for the key wrapping method
+   * @param keyWrappingKeySize
+   *          the key size for the key wrapping algorithm
    * @return the secret key
    * @throws SecurityException
    *           for parameter and algorithm errors
    */
-  private static SecretKey generateKeyAgreementKey(byte[] sharedSecret, String keyWrappingAlgorithm, ConcatKDFParams concatKDFParams)
-      throws SecurityException {
+  private static SecretKey generateKeyAgreementKey(byte[] sharedSecret, ConcatKDFParams concatKDFParams,
+      String keyWrappingJcaAlgorithmId, int keyWrappingKeySize) throws SecurityException {
 
     // Assert that ConcatKDFParams are correct ...
     //
@@ -183,33 +304,11 @@ public class ECDHSupport {
     if (concatKDFParams.getAlgorithmID() == null) {
       throw new SecurityException("Missing AlgorithmID attribute from ConcatKDFParams");
     }
-    else if (concatKDFParams.getAlgorithmID().length < 2) {
-      throw new SecurityException("Illegal value for AlgorithmID attribute in ConcatKDFParams");
-    }
-
     if (concatKDFParams.getPartyUInfo() == null) {
       throw new SecurityException("Missing PartyUInfo attribute from ConcatKDFParams");
     }
-    else if (concatKDFParams.getPartyUInfo().length < 2) {
-      throw new SecurityException("Illegal value for PartyUInfo attribute in ConcatKDFParams");
-    }
-
     if (concatKDFParams.getPartyVInfo() == null) {
       throw new SecurityException("Missing PartyVInfo attribute from ConcatKDFParams");
-    }
-    else if (concatKDFParams.getPartyVInfo().length < 2) {
-      throw new SecurityException("Illegal value for PartyVInfo attribute in ConcatKDFParams");
-    }
-
-    // Algorithm checks ...
-    //
-    String jcaAlgorithm = AlgorithmSupport.getKeyAlgorithm(keyWrappingAlgorithm);
-    if (jcaAlgorithm == null) {
-      throw new SecurityException("Algorithm " + keyWrappingAlgorithm + " is not supported - could not find JCA algorithm");
-    }
-    Integer keyWrappingAlgorithmLength = AlgorithmSupport.getKeyLength(keyWrappingAlgorithm);
-    if (keyWrappingAlgorithm == null) {
-      throw new SecurityException("Algorithm " + keyWrappingAlgorithm + " is not supported - no key length info available");
     }
 
     // ConcatKDF key derivation
@@ -250,11 +349,11 @@ public class ECDHSupport {
     KDFParameters kdfParams = new KDFParameters(sharedSecret, combinedConcatParams);
     concatKDF.init(kdfParams);
 
-    int keyLength = keyWrappingAlgorithmLength / 8;
+    int keyLength = keyWrappingKeySize / 8;
     byte[] rawKey = new byte[keyLength];
     concatKDF.generateBytes(rawKey, 0, keyLength);
 
-    return new SecretKeySpec(rawKey, jcaAlgorithm);
+    return new SecretKeySpec(rawKey, keyWrappingJcaAlgorithmId);
   }
 
   /**
@@ -297,6 +396,45 @@ public class ECDHSupport {
       }
       catch (IOException e) {
       }
+    }
+  }
+
+  /**
+   * Given a EC public key its named curve is returned.
+   * 
+   * @param publicKey
+   *          the public key
+   * @return the named curve, or {@code null} if the curve is not supported
+   */
+  public static NamedCurve getNamedCurve(ECPublicKey publicKey) {
+    try {
+      ASN1StreamParser parser = new ASN1StreamParser(publicKey.getEncoded());
+      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
+      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+      ASN1ObjectIdentifier ecPubKeyoid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(0).toASN1Primitive();
+      if (!ecPubKeyoid.getId().equals(EC_PUBLIC_KEY_OID)) {
+        log.error("The provided public key with key type OID {} is not a valid EC public key", ecPubKeyoid.getId());
+        return null;
+      }
+      ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
+      log.debug("Asking NamedCurveRegistry for curve having OID {} ...", oid);
+      NamedCurveRegistry registry = ConfigurationService.get(NamedCurveRegistry.class);
+      if (registry == null) {
+        throw new RuntimeException("NamedCurveRegistry is not available");
+      }
+      NamedCurve curve = registry.get(oid.getId());
+      if (curve != null) {
+        log.debug("Looked up NamedCurve {} ({}) (keyLength:{})", curve.getObjectIdentifier(), curve.getName(), curve.getKeyLength());
+        return curve;
+      }
+      else {
+        log.debug("NamedCurve with OID {} was not found in the NamedCurveRegistry", oid.getId());
+        return null;
+      }
+    }
+    catch (NullPointerException | IOException e) {
+      log.error("Unable to parse the provided public key as an EC public key based on a named EC curve", e);
+      return null;
     }
   }
 

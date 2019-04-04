@@ -47,8 +47,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.primitives.Bytes;
 
+import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.logic.Constraint;
-import se.swedenconnect.opensaml.ecdh.security.x509.ECDHPeerCredential;
+import se.swedenconnect.opensaml.security.credential.ECDHPeerCredential;
 import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
 
@@ -307,7 +308,7 @@ public class ECDHKeyAgreementBase {
       DERBitString key = (DERBitString) seq.getObjectAt(1).toASN1Primitive();
 
       namedCurve.setURI(oid.getId());
-      publicKey.setValue(Base64.getEncoder().encodeToString(key.getBytes()));
+      publicKey.setValue(Base64Support.encode(key.getBytes(), Base64Support.CHUNKED));
     }
     catch (IOException e) {
       log.error("Illegal Public key paramters");

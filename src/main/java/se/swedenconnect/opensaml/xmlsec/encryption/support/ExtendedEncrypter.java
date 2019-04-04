@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
-import se.swedenconnect.opensaml.ecdh.security.x509.ECDHPeerCredential;
+import se.swedenconnect.opensaml.security.credential.ECDHPeerCredential;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHKeyAgreementBase;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHParameters;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;

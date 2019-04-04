@@ -13,7 +13,8 @@ import org.opensaml.xmlsec.encryption.support.*;
 import org.opensaml.xmlsec.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.KeyInfoGeneratorFactory;
 import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
-import se.swedenconnect.opensaml.ecdh.security.x509.ECDHPeerCredential;
+
+import se.swedenconnect.opensaml.security.credential.ECDHPeerCredential;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHKeyAgreementBase;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ExtendedDecrypter;
