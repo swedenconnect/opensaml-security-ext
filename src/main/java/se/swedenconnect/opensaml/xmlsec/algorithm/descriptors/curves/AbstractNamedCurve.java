@@ -15,30 +15,20 @@
  */
 package se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.curves;
 
+import se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.NamedCurve;
+
 /**
- * Definition of named curve brainpoolP384r1.
+ * Abstract class for {@code NamedCurve}.
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class NamedCurve_brainpoolP384r1 extends AbstractNamedCurve {
+public abstract class AbstractNamedCurve implements NamedCurve {
 
   /** {@inheritDoc} */
   @Override
-  public String getObjectIdentifier() {
-    return "1.3.36.3.3.2.8.1.1.11";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String getName() {
-    return "brainpoolP384r1";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Integer getKeyLength() {
-    return 384;
+  public String getURI() {
+    return "urn:oid:" + this.getObjectIdentifier();
   }
 
 }

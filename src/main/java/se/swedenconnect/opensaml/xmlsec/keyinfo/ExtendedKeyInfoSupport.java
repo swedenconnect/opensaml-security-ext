@@ -91,7 +91,7 @@ public class ExtendedKeyInfoSupport {
       ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
       
       final NamedCurve namedCurve = (NamedCurve) XMLObjectSupport.buildXMLObject(NamedCurve.DEFAULT_ELEMENT_NAME);      
-      namedCurve.setURI(oid.getId());
+      namedCurve.setURI("urn:oid:" + oid.getId());
       ecKeyValue.setNamedCurve(namedCurve);
 
       final org.opensaml.xmlsec.signature.PublicKey publicKey = (org.opensaml.xmlsec.signature.PublicKey) XMLObjectSupport.buildXMLObject(

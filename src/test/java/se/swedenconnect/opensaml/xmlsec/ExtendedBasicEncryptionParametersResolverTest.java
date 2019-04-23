@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.EncryptionParameters;
+import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.criterion.EncryptionConfigurationCriterion;
 import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 import org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver;
@@ -28,7 +29,9 @@ import org.springframework.core.io.ClassPathResource;
 
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
+import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
+import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory.KeyAgreementKeyInfoGenerator;
 
 /**
  * Test cases for {@link ExtendedBasicEncryptionParametersResolver}.
@@ -54,9 +57,38 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
       new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
     
+    BasicEncryptionConfiguration config = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential, rsaCredential));
+    
+    EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
+    CriteriaSet criteriaSet = new CriteriaSet(criterion);
+    
+    BasicEncryptionParametersResolver resolver = new BasicEncryptionParametersResolver();
+    EncryptionParameters params = resolver.resolveSingle(criteriaSet);
+    
+    Assert.assertNotNull(params);
+    Assert.assertEquals("RSA", params.getKeyTransportEncryptionCredential().getPublicKey().getAlgorithm());    
+  }
+  
+  /**
+   * Test using the OpenSAML ExtendedBasicEncryptionParametersResolver. It should setup parameters containing
+   * an {@link KeyAgreementCredential} object for key transport.
+   * 
+   * @throws Exception
+   *           for errors
+   */
+  @Test
+  public void testExtendedEncryptionParametersResolver() throws Exception {
+    
+    X509Credential ecCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("eckey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
     ExtendedBasicEncryptionConfiguration config = (ExtendedBasicEncryptionConfiguration) 
         ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
-    config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential));
+    config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential, rsaCredential));
     
     EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
     CriteriaSet criteriaSet = new CriteriaSet(criterion);
@@ -64,8 +96,46 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     
-//    EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     Assert.assertNotNull(params);
+    Assert.assertTrue("Expected KeyAgreementCredential for KeyTransportEncryptionCredential", 
+      KeyAgreementCredential.class.isInstance(params.getKeyTransportEncryptionCredential()));
+    Assert.assertTrue("Expected KeyAgreementKeyInfoGenerator for KeyTransportKeyInfoGenerator", 
+      KeyAgreementKeyInfoGenerator.class.isInstance(params.getKeyTransportKeyInfoGenerator()));
+  }
+  
+  /**
+   * Test using the OpenSAML ExtendedBasicEncryptionParametersResolver. We verify that if we assign
+   * a key agreement credential to the config, this has precedence over the key transport encryption
+   * credentials.
+   * 
+   * @throws Exception
+   *           for errors
+   */
+  @Test
+  public void testExtendedEncryptionParametersResolverPriority() throws Exception {
+    
+    X509Credential ecCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("eckey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    ExtendedBasicEncryptionConfiguration config = (ExtendedBasicEncryptionConfiguration) 
+        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    config.setKeyTransportEncryptionCredentials(Arrays.asList(rsaCredential));
+    config.setKeyAgreementCredentials(Arrays.asList(ecCredential));
+    
+    EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
+    CriteriaSet criteriaSet = new CriteriaSet(criterion);
+    
+    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    EncryptionParameters params = resolver.resolveSingle(criteriaSet);
+    
+    Assert.assertNotNull(params);
+    Assert.assertTrue("Expected KeyAgreementCredential for KeyTransportEncryptionCredential", 
+      KeyAgreementCredential.class.isInstance(params.getKeyTransportEncryptionCredential()));
+    Assert.assertTrue("Expected KeyAgreementKeyInfoGenerator for KeyTransportKeyInfoGenerator", 
+      KeyAgreementKeyInfoGenerator.class.isInstance(params.getKeyTransportKeyInfoGenerator()));
   }
 
 }

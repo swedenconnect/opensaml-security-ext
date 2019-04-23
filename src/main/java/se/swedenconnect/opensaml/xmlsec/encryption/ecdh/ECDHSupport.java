@@ -246,16 +246,34 @@ public class ECDHSupport {
       }
       final OriginatorKeyInfo originatorKeyInfo = agreementMethod.getOriginatorKeyInfo();
 
-      if (originatorKeyInfo.getKeyValues().isEmpty() || originatorKeyInfo.getKeyValues().get(0).getECKeyValue() == null) {
-        throw new SecurityException("Missing KeyValue under OriginatorKeyInfo - need generated EC public key");
-      }
-      final ECKeyValue ecKeyValue = originatorKeyInfo.getKeyValues().get(0).getECKeyValue();
+      byte[] encodedPublicKey = null;
 
-      byte[] publicKeyBytes = Base64Support.decode(ecKeyValue.getPublicKey().getValue());
-      byte[] ans1PubKeyBytes = getPublicKeyBytes(publicKeyBytes, ecKeyValue.getNamedCurve().getURI());
+      if (!originatorKeyInfo.getKeyValues().isEmpty()) {
+        ECKeyValue ecKeyValue = originatorKeyInfo.getKeyValues()
+          .stream()
+          .filter(v -> v.getECKeyValue() != null)
+          .map(v -> v.getECKeyValue())
+          .findFirst()
+          .orElse(null);
+        if (ecKeyValue != null) {
+          final byte[] ecKeyBytes = Base64Support.decode(ecKeyValue.getPublicKey().getValue());
+
+          // Fix
+
+          encodedPublicKey = getPublicKeyBytes(ecKeyBytes, ecKeyValue.getNamedCurve().getURI());
+        }
+      }
+      else if (!originatorKeyInfo.getDEREncodedKeyValues().isEmpty()) {
+        // Assume only one key
+        encodedPublicKey = Base64Support.decode(originatorKeyInfo.getDEREncodedKeyValues().get(0).getValue());
+      }
+
+      if (encodedPublicKey == null) {
+        throw new SecurityException("Could not find generated public key in OriginatorKeyInfo");
+      }
 
       KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
-      X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(ans1PubKeyBytes);
+      X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(encodedPublicKey);
       PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec);
 
       // Next, generate the shared secret ...
@@ -360,20 +378,28 @@ public class ECDHSupport {
    * The XML representation of a public EC key is the Object Identifier of the named curve and the byte representation
    * of the public EC point on the named curve. The function reconstructs the public key ASN.1 representation of the EC
    * public key based on the curve OID and public EC point data.
+   * <p>
+   * Note: the {@code curveOidUri} parameter should be the URI representation of the named curve Object Identifier, i.e.
+   * {@code urn:oid:1.2.840.10045.3.1.7}. However, to cover for bugs in other implementations, the method also handles
+   * the cases where the plain OID is passed, i.e. {@code 1.2.840.10045.3.1.7}.
+   * </p>
    *
    * @param publicKeyBytes
    *          the byte representation of the public EC point
-   * @param curveOidStr
-   *          the string representation of the named curve OID
+   * @param curveOidUri
+   *          the URI for the named curve OID
    * @return bytes of the ASN.1 representation of the public key
    * @throws SecurityException
    *           ASN.1 errors
    */
-  private static byte[] getPublicKeyBytes(byte[] publicKeyBytes, String curveOidStr) throws SecurityException {
+  private static byte[] getPublicKeyBytes(byte[] publicKeyBytes, String curveOidUri) throws SecurityException {
 
     ASN1EncodableVector publicKeyParamSeq = new ASN1EncodableVector();
     publicKeyParamSeq.add(new ASN1ObjectIdentifier(EC_PUBLIC_KEY_OID));
-    publicKeyParamSeq.add(new ASN1ObjectIdentifier(curveOidStr));
+    
+    String oid = curveOidUri.startsWith("urn:oid:") ? curveOidUri.substring(8) : curveOidUri;
+    
+    publicKeyParamSeq.add(new ASN1ObjectIdentifier(oid));
 
     ASN1EncodableVector publicKeySeq = new ASN1EncodableVector();
     publicKeySeq.add(new DERSequence(publicKeyParamSeq));

@@ -202,7 +202,7 @@ public class ECDHKeyAgreementParameters extends KeyEncryptionParameters {
    * 
    * <pre>
    * <code>
-   * ECDHKeyInfoGeneratorFactory ecdhFactory = new ECDHKeyInfoGeneratorFactory();
+   * KeyAgreementKeyInfoGeneratorFactory ecdhFactory = new KeyAgreementKeyInfoGeneratorFactory();
    * ecdhFactory.setEmitEntityCertificate(true);
    * ecdhFactory.setEmitOriginatorKeyInfoPublicKeyValue(true);
    * return ecdhFactory.newInstance();

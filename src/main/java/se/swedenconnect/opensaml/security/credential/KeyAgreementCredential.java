@@ -60,8 +60,8 @@ public class KeyAgreementCredential extends BasicCredential {
    *          the peer public certificate
    * @param agreementMethodAlgorith
    *          the agreement method used for this key agreement credential
-   * @param agreementMethod
-   *          the agreement method used
+   * @param keyDerivationMethod
+   *          the key derivation method used
    */
   public KeyAgreementCredential(SecretKey secretKey, PublicKey senderGeneratedPublicKey,
       Credential peerCredential, String agreementMethodAlgorith, KeyDerivationMethod keyDerivationMethod) {

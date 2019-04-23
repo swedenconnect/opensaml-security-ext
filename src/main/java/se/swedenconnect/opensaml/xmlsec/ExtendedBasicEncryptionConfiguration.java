@@ -51,7 +51,7 @@ public class ExtendedBasicEncryptionConfiguration extends BasicEncryptionConfigu
   @Nonnull
   @NonnullElements
   private List<Credential> keyAgreementCredentials;
-  
+
   /** Key agreement credentials found among assigned key transport credentials. */
   @Nonnull
   @NonnullElements
@@ -120,7 +120,7 @@ public class ExtendedBasicEncryptionConfiguration extends BasicEncryptionConfigu
   @Override
   public void setKeyTransportEncryptionCredentials(List<Credential> credentials) {
     super.setKeyTransportEncryptionCredentials(credentials);
-    
+
     if (credentials != null) {
       credentials.stream()
         .filter(ExtendedAlgorithmSupport::peerCredentialSupportsKeyAgreement)

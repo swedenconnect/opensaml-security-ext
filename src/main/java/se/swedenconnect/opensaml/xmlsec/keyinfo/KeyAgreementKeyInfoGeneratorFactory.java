@@ -47,18 +47,17 @@ import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
  * Key info generator to be used when encrypting using key agreement methods.
  * 
  * <p>
- * This key info generator factory must be added to the encryption configuration of OpenSAML, or added explicitly to the
- * {@code KeyEncryptionParameters}.
- * </p>
- * <p>
  * Note that either {@code emitOriginatorKeyInfoPublicKeyValue} or {@code emitOriginatorKeyInfoPublicDEREncodedKeyValue}
- * must be set.
+ * must be set. Otherwise, and empty {@code OriginatorKeyInfo} element will be created.
  * </p>
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public class KeyAgreementKeyInfoGeneratorFactory extends X509KeyInfoGeneratorFactory {
+  
+  /** Class logger. */
+  private final Logger log = LoggerFactory.getLogger(KeyAgreementKeyInfoGeneratorFactory.class);
 
   /** {@inheritDoc} */
   public boolean handles(@Nonnull final Credential credential) {
@@ -74,6 +73,10 @@ public class KeyAgreementKeyInfoGeneratorFactory extends X509KeyInfoGeneratorFac
   @Nonnull
   public KeyInfoGenerator newInstance() {
     final ExtendedX509Options _options = (ExtendedX509Options) this.getOptions();
+    if (!_options.emitOriginatorKeyInfoPublicDEREncodedKeyValue && !_options.emitOriginatorKeyInfoPublicKeyValue) {
+      log.error("Bad configuration - emitOriginatorKeyInfoPublicDEREncodedKeyValue or "
+        + "emitOriginatorKeyInfoPublicKeyValue must be set");
+    }
     return new KeyAgreementKeyInfoGenerator(_options.clone());
   }
 
@@ -203,7 +206,6 @@ public class KeyAgreementKeyInfoGeneratorFactory extends X509KeyInfoGeneratorFac
 
       OriginatorKeyInfo oki = (OriginatorKeyInfo) XMLObjectSupport.buildXMLObject(OriginatorKeyInfo.DEFAULT_ELEMENT_NAME);
       this.processSenderPublicKey(oki, kaCredential);
-      // this.processEcPublicKey(oki, kaCredential.getSenderGeneratedPublicKey());
       am.setOriginatorKeyInfo(oki);
 
       // The contents of RecipientKeyInfo will be the same as ds:KeyInfo for a non key-agreement case,
@@ -288,7 +290,7 @@ public class KeyAgreementKeyInfoGeneratorFactory extends X509KeyInfoGeneratorFac
         }
         if (emitOriginatorKeyInfoPublicDEREncodedKeyValue()) {
           try {
-            KeyInfoSupport.addDEREncodedPublicKey(keyInfo, credential.getPublicKey());
+            KeyInfoSupport.addDEREncodedPublicKey(keyInfo, credential.getSenderGeneratedPublicKey());
           }
           catch (final NoSuchAlgorithmException e) {
             throw new SecurityException("Cannot DER-encode key, unsupported key algorithm", e);
@@ -299,29 +301,7 @@ public class KeyAgreementKeyInfoGeneratorFactory extends X509KeyInfoGeneratorFac
         }
       }
     }
-
-    /**
-     * Builds the XML representation of the sender public key.
-     *
-     * @param keyInfo
-     *          keyInfo object where the public key data is to be added
-     * @param senderPublicKey
-     *          credential holding the sender public key
-     * @throws SecurityException
-     *           if the supplied public key is not an EC key
-     */
-    // protected void processEcPublicKey(@Nonnull KeyInfo keyInfo, @Nonnull PublicKey senderPublicKey) throws
-    // SecurityException {
-    // if (ECPublicKey.class.isInstance(senderPublicKey)) {
-    // KeyValue keyValue = (KeyValue) XMLObjectSupport.buildXMLObject(KeyValue.DEFAULT_ELEMENT_NAME);
-    // keyValue.setECKeyValue(ECDHKeyAgreementBase.buildECKeyValue((ECPublicKey) senderPublicKey));
-    // keyInfo.getKeyValues().add(keyValue);
-    // }
-    // else {
-    // throw new SecurityException("Not an EC public key");
-    // }
-    // }
-
+    
   }
 
 }

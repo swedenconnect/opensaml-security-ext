@@ -78,12 +78,12 @@ import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
+public class KeyAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
 
   /** Class logger. */
-  private static final Logger log = LoggerFactory.getLogger(ECDHAgreementMethodKeyInfoProvider.class);
+  private static final Logger log = LoggerFactory.getLogger(KeyAgreementMethodKeyInfoProvider.class);
 
-  /** Resolver that finds EC keys to use during key agreement derivation. */
+  /** Resolver that finds keys to use during key agreement derivation. */
   private CollectionKeyInfoCredentialResolver ecCredentialsResolver;
 
   /**
@@ -92,7 +92,7 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
    * @param credentials
    *          the decrypter's private key credentials (only EC keys are valid)
    */
-  public ECDHAgreementMethodKeyInfoProvider(@Nonnull @ParameterName(name = "credentials") final List<Credential> credentials) {
+  public KeyAgreementMethodKeyInfoProvider(@Nonnull @ParameterName(name = "credentials") final List<Credential> credentials) {
     Constraint.isNotNull(credentials, "Input credentials list cannot be null");
 
     // Only save those credentials that can be used ...
@@ -156,7 +156,7 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
     //
     final KeyAlgorithmCriterion keyAlgorithmCriterion = criteriaSet.get(KeyAlgorithmCriterion.class);
     if (keyAlgorithmCriterion == null || keyAlgorithmCriterion.getKeyAlgorithm() == null) {
-      log.error("Bad call to ECDHAgreementMethodKeyInfoProvider - KeyAlgorithmCriterion is missing");
+      log.error("Bad call to KeyAgreementMethodKeyInfoProvider - KeyAlgorithmCriterion is missing");
       throw new SecurityException("KeyAlgorithmCriterion is missing");
     }
 
@@ -170,7 +170,7 @@ public class ECDHAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider 
 
       keyLengthCriterion = this.createKeyLengthCriterion(agreementMethod);
       if (keyLengthCriterion == null) {
-        log.error("Bad call to ECDHAgreementMethodKeyInfoProvider - KeyLengthCriterion is missing");
+        log.error("Bad call to KeyAgreementMethodKeyInfoProvider - KeyLengthCriterion is missing");
         throw new SecurityException("KeyLengthCriterion is missing");
       }
     }

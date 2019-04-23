@@ -46,6 +46,15 @@ public interface NamedCurve {
   String getName();
 
   /**
+   * Gets the URI for the curve.
+   * 
+   * @return the URI for the curve
+   */
+  @Nonnull
+  @NotEmpty
+  String getURI();
+
+  /**
    * Gets the key length for the curve.
    * 
    * @return the key length

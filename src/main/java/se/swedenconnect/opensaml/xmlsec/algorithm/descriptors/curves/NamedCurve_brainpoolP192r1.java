@@ -15,15 +15,13 @@
  */
 package se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.curves;
 
-import se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.NamedCurve;
-
 /**
  * Definition of named curve brainpoolP192r1.
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class NamedCurve_brainpoolP192r1 implements NamedCurve {
+public class NamedCurve_brainpoolP192r1 extends AbstractNamedCurve {
 
   /** {@inheritDoc} */
   @Override

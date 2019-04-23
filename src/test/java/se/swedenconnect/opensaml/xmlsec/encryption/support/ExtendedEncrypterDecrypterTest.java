@@ -15,8 +15,6 @@
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
@@ -49,7 +47,8 @@ import org.opensaml.xmlsec.keyinfo.impl.provider.RSAKeyValueProvider;
 import org.springframework.core.io.ClassPathResource;
 
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
-import se.swedenconnect.opensaml.xmlsec.keyinfo.provider.ECDHAgreementMethodKeyInfoProvider;
+import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory;
+import se.swedenconnect.opensaml.xmlsec.keyinfo.provider.KeyAgreementMethodKeyInfoProvider;
 
 /**
  * Test cases for {@link ExtendedEncrypter} and {@link ExtendedDecrypter}.
@@ -81,6 +80,13 @@ public class ExtendedEncrypterDecrypterTest extends OpenSAMLTestBase {
 
     ECDHKeyAgreementParameters kekParams = new ECDHKeyAgreementParameters();
     kekParams.setEncryptionCredential(peerCredential);
+    
+    // TMP
+    KeyAgreementKeyInfoGeneratorFactory ecdhFactory = new KeyAgreementKeyInfoGeneratorFactory();
+    ecdhFactory.setEmitEntityCertificate(true);
+    ecdhFactory.setEmitOriginatorKeyInfoPublicKeyValue(true);
+    // ecdhFactory.setEmitOriginatorKeyInfoPublicDEREncodedKeyValue(true);
+    kekParams.setKeyInfoGenerator(ecdhFactory.newInstance());
 
     // Encrypt
     //
@@ -99,7 +105,7 @@ public class ExtendedEncrypterDecrypterTest extends OpenSAMLTestBase {
     // Setup the resolvers the way we normally would ...
     ChainingKeyInfoCredentialResolver kekKeyInfoCredentialResolver = new ChainingKeyInfoCredentialResolver(Arrays.asList(
       new LocalKeyInfoCredentialResolver(Arrays.asList(
-        new ECDHAgreementMethodKeyInfoProvider(Arrays.asList(ecCredential)),
+        new KeyAgreementMethodKeyInfoProvider(Arrays.asList(ecCredential)),
         new RSAKeyValueProvider(), new DSAKeyValueProvider(), new DEREncodedKeyValueProvider(), new InlineX509DataProvider()),
         new CollectionKeyInfoCredentialResolver(Arrays.asList(ecCredential))),
       new StaticKeyInfoCredentialResolver(Arrays.asList(ecCredential))));
