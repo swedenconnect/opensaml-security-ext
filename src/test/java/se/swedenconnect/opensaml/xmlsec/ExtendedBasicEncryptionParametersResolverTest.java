@@ -86,14 +86,13 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
       new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
     
-    ExtendedBasicEncryptionConfiguration config = (ExtendedBasicEncryptionConfiguration) 
-        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    ExtendedBasicEncryptionConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential, rsaCredential));
     
     EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
     CriteriaSet criteriaSet = new CriteriaSet(criterion);
     
-    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();    
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     
     Assert.assertNotNull(params);
@@ -120,7 +119,7 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
       new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
     
-    ExtendedBasicEncryptionConfiguration config = (ExtendedBasicEncryptionConfiguration) 
+    ExtendedBasicEncryptionConfiguration config = 
         ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     config.setKeyTransportEncryptionCredentials(Arrays.asList(rsaCredential));
     config.setKeyAgreementCredentials(Arrays.asList(ecCredential));
@@ -136,6 +135,55 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
       KeyAgreementCredential.class.isInstance(params.getKeyTransportEncryptionCredential()));
     Assert.assertTrue("Expected KeyAgreementKeyInfoGenerator for KeyTransportKeyInfoGenerator", 
       KeyAgreementKeyInfoGenerator.class.isInstance(params.getKeyTransportKeyInfoGenerator()));
+  }
+  
+  @Test
+  public void testExtendedEncryptionParametersLegacyInput() throws Exception {
+    
+    X509Credential ecCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("eckey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    BasicEncryptionConfiguration config = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential, rsaCredential));
+    
+    EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
+    CriteriaSet criteriaSet = new CriteriaSet(criterion);
+    
+    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    resolver.setUseKeyAgreementDefaults(true);
+    EncryptionParameters params = resolver.resolveSingle(criteriaSet);
+    
+    Assert.assertNotNull(params);
+    Assert.assertTrue("Expected KeyAgreementCredential for KeyTransportEncryptionCredential", 
+      KeyAgreementCredential.class.isInstance(params.getKeyTransportEncryptionCredential()));
+    Assert.assertTrue("Expected KeyAgreementKeyInfoGenerator for KeyTransportKeyInfoGenerator", 
+      KeyAgreementKeyInfoGenerator.class.isInstance(params.getKeyTransportKeyInfoGenerator()));
+  }
+  
+  @Test
+  public void testExtendedEncryptionParametersLegacyNoDefaultHandling() throws Exception {
+    
+    X509Credential ecCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("eckey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    
+    BasicEncryptionConfiguration config = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential, rsaCredential));
+    
+    EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
+    CriteriaSet criteriaSet = new CriteriaSet(criterion);
+    
+    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    resolver.setUseKeyAgreementDefaults(false);
+    EncryptionParameters params = resolver.resolveSingle(criteriaSet);
+    
+    Assert.assertNotNull(params);
+    Assert.assertEquals("RSA", params.getKeyTransportEncryptionCredential().getPublicKey().getAlgorithm());
   }
 
 }

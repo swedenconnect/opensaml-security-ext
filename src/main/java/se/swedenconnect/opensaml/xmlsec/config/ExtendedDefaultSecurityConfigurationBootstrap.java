@@ -46,13 +46,12 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
   }
 
   /**
-   * Build and return a default encryption configuration. The object return is of the type
-   * {@link ExtendedBasicEncryptionConfiguration}.
+   * Build and return a default encryption configuration.
    * 
    * @return a new basic configuration with reasonable default values
    */
   @Nonnull
-  public static BasicEncryptionConfiguration buildDefaultEncryptionConfiguration() {
+  public static ExtendedBasicEncryptionConfiguration buildDefaultEncryptionConfiguration() {
     ExtendedBasicEncryptionConfiguration conf = new ExtendedBasicEncryptionConfiguration();
 
     conf.setAgreementMethodAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES));

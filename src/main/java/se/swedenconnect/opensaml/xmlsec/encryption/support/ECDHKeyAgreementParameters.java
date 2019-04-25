@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.EncryptionParameters;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.ExtendedEncryptionParameters;
+import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory;
@@ -123,8 +125,12 @@ public class ECDHKeyAgreementParameters extends KeyEncryptionParameters {
         return null;
       }
       try {
-        this.keyAgreementCredential = ECDHSupport.createKeyAgreementCredential(this.getPeerCredential(), this.getAlgorithm(),
-          this.concatKDFParameters.toXMLObject());
+        KeyDerivationMethod keyDerivationMethod = (KeyDerivationMethod) XMLObjectSupport.buildXMLObject(KeyDerivationMethod.DEFAULT_ELEMENT_NAME);
+        keyDerivationMethod.setAlgorithm(this.getKeyDerivationAlgorithm());
+        keyDerivationMethod.getUnknownXMLObjects().add(this.getConcatKDFParameters().toXMLObject());
+        
+        this.keyAgreementCredential = ECDHSupport.createKeyAgreementCredential(this.getPeerCredential(), 
+          this.getAlgorithm(), keyDerivationMethod);
 
         log.debug("Key agreement credential successfully generated");
         this.keyAgreementCredentialAssigned = false;

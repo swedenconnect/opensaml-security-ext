@@ -29,7 +29,7 @@ import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public final class ExtendedAlgorithmSupport {
-  
+
   /**
    * Checks whether the supplied descriptor represents an algorithm that my be used for key wrapping.
    * 
@@ -42,6 +42,20 @@ public final class ExtendedAlgorithmSupport {
       return false;
     }
     return AlgorithmDescriptor.AlgorithmType.SymmetricKeyWrap.equals(algorithm.getType());
+  }
+
+  /**
+   * Checks whether the supplied descriptor represents an algorithm that may be used for key agreement.
+   * 
+   * @param algorithm
+   *          the algorithm descriptor to evaluate
+   * @return {@code true} if the algorithm may be used for key agreement, {@code false} otherwise
+   */
+  public static boolean isKeyAgreementAlgorithm(@Nullable final AlgorithmDescriptor algorithm) {
+    if (algorithm == null) {
+      return false;
+    }
+    return AlgorithmDescriptor.AlgorithmType.KeyAgreement.equals(algorithm.getType());
   }
 
   /**

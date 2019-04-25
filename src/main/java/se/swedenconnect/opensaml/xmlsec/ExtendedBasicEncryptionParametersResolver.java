@@ -15,13 +15,16 @@
  */
 package se.swedenconnect.opensaml.xmlsec;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.CredentialSupport;
@@ -29,7 +32,9 @@ import org.opensaml.xmlsec.EncryptionParameters;
 import org.opensaml.xmlsec.KeyTransportAlgorithmPredicate;
 import org.opensaml.xmlsec.algorithm.AlgorithmDescriptor;
 import org.opensaml.xmlsec.criterion.EncryptionConfigurationCriterion;
+import org.opensaml.xmlsec.criterion.KeyInfoGenerationProfileCriterion;
 import org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver;
+import org.opensaml.xmlsec.keyinfo.KeyInfoGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +43,10 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
+import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.algorithm.ExtendedAlgorithmSupport;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
+import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
 import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
@@ -61,7 +68,7 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
    * {@link ExtendedEncryptionConfiguration} we can set this property to {@code true}. In that case, our resolving will
    * assume that default key agreement methods are available.
    */
-  private boolean useDefaultKeyAgreementMethods = true;
+  private boolean useKeyAgreementDefaults = false;
 
   /**
    * Constructor.
@@ -90,6 +97,7 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
       .filter(ExtendedAlgorithmSupport::isKeyWrappingAlgorithm)
       .map(AlgorithmDescriptor::getURI)
       .collect(Collectors.toList());
+    log.trace("Resolved effective key wrapping algorithms: {}", keyWrappingAlgorithms);
 
     final List<Credential> dataEncryptionCredentials = getEffectiveDataEncryptionCredentials(criteria);
     final List<String> dataEncryptionAlgorithms = getEffectiveDataEncryptionAlgorithms(criteria,
@@ -130,15 +138,7 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
         ? this.getConcatKDFParameters(criteria, whitelistBlacklistPredicate)
         : null;
 
-    // Check if we have any peer credentials that can be used for key agreement ...
-    //
-    final List<Credential> peerKeyAgreementCredentials = this.getEffectivePeerKeyAgreementCredentials(criteria);
-    if (peerKeyAgreementCredentials.isEmpty()) {
-      log.debug("No credentials found that can be used in a key agreement protocol ...");
-      return;
-    }
-
-    final KeyTransportAlgorithmPredicate keyTransportPredicate = resolveKeyTransportAlgorithmPredicate(criteria);
+    final KeyTransportAlgorithmPredicate keyTransportPredicate = this.resolveKeyTransportAlgorithmPredicate(criteria);
 
     // Select key encryption cred and algorithm
     for (final Credential keyTransportCredential : keyTransportCredentials) {
@@ -153,7 +153,8 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
         break;
       }
       // See if the credential can be used for key agreement ...
-      else if (ExtendedAlgorithmSupport.peerCredentialSupportsKeyAgreement(keyTransportCredential)) {
+      else if (ExtendedAlgorithmSupport.peerCredentialSupportsKeyAgreement(keyTransportCredential)
+          && !keyAgreementMethods.isEmpty() && !keyDerivationAlgorithms.isEmpty()) {
         for (final String keyWrappingAlgo : keyWrappingAlgorithms) {
           try {
             Credential keyAgreementCredential = this.generateKeyAgreementCredential(
@@ -181,7 +182,6 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
     // Auto-generate data encryption cred if configured and possible
     this.processDataEncryptionCredentialAutoGeneration(params);
   }
-
 
   /**
    * Generates a key agreement credential based on the resolved algorithms.
@@ -223,11 +223,14 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
     }
     if (concatKDFParameters == null) {
       log.debug("No ConcatKDFPars found in configuration, using default parameters ...");
-      concatKDFParameters = ((ExtendedEncryptionConfiguration) ExtendedDefaultSecurityConfigurationBootstrap
-        .buildDefaultDecryptionConfiguration()).getConcatKDFParameters();
+      concatKDFParameters = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration().getConcatKDFParameters();
     }
+    KeyDerivationMethod keyDerivationMethod = (KeyDerivationMethod) XMLObjectSupport.buildXMLObject(
+      KeyDerivationMethod.DEFAULT_ELEMENT_NAME);
+    keyDerivationMethod.setAlgorithm(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT);
+    keyDerivationMethod.getUnknownXMLObjects().add(concatKDFParameters.toXMLObject());
 
-    return ECDHSupport.createKeyAgreementCredential(credential, keyWrappingAlgorithm, concatKDFParameters.toXMLObject());
+    return ECDHSupport.createKeyAgreementCredential(credential, keyWrappingAlgorithm, keyDerivationMethod);
   }
 
   /**
@@ -249,13 +252,14 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
     List<ExtendedEncryptionConfiguration> cfgList = this.getExtendedConfiguration(criteria);
 
     if (cfgList.isEmpty()) {
-      if (this.useDefaultKeyAgreementMethods) {
-        methods.addAll(((ExtendedEncryptionConfiguration) ExtendedDefaultSecurityConfigurationBootstrap
-          .buildDefaultDecryptionConfiguration()).getAgreementMethodAlgorithms());
+      if (this.useKeyAgreementDefaults) {
+        methods.addAll(ExtendedDefaultSecurityConfigurationBootstrap
+          .buildDefaultEncryptionConfiguration()
+          .getAgreementMethodAlgorithms());
         log.debug("Assuming default key agreement methods: {}", methods);
       }
       else {
-        log.info("useDefaultKeyAgreementMethods is not set and criteria contains no ExtendedEncryptionConfiguration - "
+        log.debug("useDefaultKeyAgreementMethods is not set and criteria contains no ExtendedEncryptionConfiguration - "
             + "No key agreement methods can be found");
       }
       return methods;
@@ -288,13 +292,14 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
     List<ExtendedEncryptionConfiguration> cfgList = this.getExtendedConfiguration(criteria);
 
     if (cfgList.isEmpty()) {
-      if (this.useDefaultKeyAgreementMethods) {
-        algos.addAll(((ExtendedEncryptionConfiguration) ExtendedDefaultSecurityConfigurationBootstrap
-          .buildDefaultDecryptionConfiguration()).getKeyDerivationAlgorithms());
+      if (this.useKeyAgreementDefaults) {
+        algos.addAll(ExtendedDefaultSecurityConfigurationBootstrap
+          .buildDefaultEncryptionConfiguration()
+          .getKeyDerivationAlgorithms());
         log.debug("Assuming default key derivation algorithms: {}", algos);
       }
       else {
-        log.info("useDefaultKeyAgreementMethods is not set and criteria contains no ExtendedEncryptionConfiguration - "
+        log.debug("useDefaultKeyAgreementMethods is not set and criteria contains no ExtendedEncryptionConfiguration - "
             + "No key derivation methods can be found");
       }
       return algos;
@@ -321,15 +326,20 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
       @Nonnull final Predicate<String> whitelistBlacklistPredicate) {
 
     List<ExtendedEncryptionConfiguration> cfgList = this.getExtendedConfiguration(criteria);
-    for (final ExtendedEncryptionConfiguration config : cfgList) {
-      ConcatKDFParameters pars = config.getConcatKDFParameters();
-      // Ensure that the digest method is not black listed ...
-      if (!whitelistBlacklistPredicate.apply(pars.getDigestMethod())) {
-        log.info("ConcatKDFParams found in criteria states digest method '{}' - this is not valid according to white/black list",
-          pars.getDigestMethod());
-        continue;
+    if (!cfgList.isEmpty()) {
+      for (final ExtendedEncryptionConfiguration config : cfgList) {
+        ConcatKDFParameters pars = config.getConcatKDFParameters();
+        // Ensure that the digest method is not black listed ...
+        if (!whitelistBlacklistPredicate.apply(pars.getDigestMethod())) {
+          log.debug("ConcatKDFParams found in criteria states digest method '{}' - this is not valid according to white/black list",
+            pars.getDigestMethod());
+          continue;
+        }
+        return pars;
       }
-      return pars;
+    }
+    else if (this.useKeyAgreementDefaults) {
+      return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration().getConcatKDFParameters();
     }
     return null;
   }
@@ -362,7 +372,7 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
   private List<ExtendedEncryptionConfiguration> getExtendedConfiguration(@Nonnull final CriteriaSet criteria) {
     final EncryptionConfigurationCriterion encryptionConfigurationCriterion = criteria.get(EncryptionConfigurationCriterion.class);
     if (encryptionConfigurationCriterion == null) {
-      log.info("No EncryptionConfigurationCriterion available");
+      log.debug("No EncryptionConfigurationCriterion available");
       return Collections.emptyList();
     }
     return encryptionConfigurationCriterion.getConfigurations()
@@ -372,6 +382,26 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
       .collect(Collectors.toList());
   }
 
+  /** {@inheritDoc} */
+  @Override
+  @Nullable
+  protected KeyInfoGenerator resolveKeyTransportKeyInfoGenerator(@Nonnull final CriteriaSet criteria,
+      @Nullable final Credential keyTransportEncryptionCredential) {
+
+    KeyInfoGenerator keyInfoGenerator = super.resolveKeyTransportKeyInfoGenerator(criteria, keyTransportEncryptionCredential);
+    if (keyInfoGenerator == null
+        && KeyAgreementCredential.class.isInstance(keyTransportEncryptionCredential)) {
+
+      String name = criteria.get(KeyInfoGenerationProfileCriterion.class) != null
+          ? criteria.get(KeyInfoGenerationProfileCriterion.class).getName()
+          : null;
+
+      keyInfoGenerator = lookupKeyInfoGenerator(keyTransportEncryptionCredential,
+        ExtendedDefaultSecurityConfigurationBootstrap.buildBasicKeyInfoGeneratorManager(), name);
+    }
+    return keyInfoGenerator;
+  }
+
   /**
    * Tells whether we should rely on that we received an {@link ExtendedEncryptionConfiguration} object among the
    * criteria. If we want to function in an environment where the caller doesn't know anything about
@@ -379,12 +409,50 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
    * assume that default key agreement methods are available if no {@code ExtendedEncryptionConfiguration} is passed
    * among the criteria.
    * 
-   * @param useDefaultKeyAgreementMethods
+   * @param flag
    *          whether we should assume a set of key agreement methods (if no {@code ExtendedEncryptionConfiguration} is
    *          passed)
    */
-  public void setUseDefaultKeyAgreementMethods(boolean useDefaultKeyAgreementMethods) {
-    this.useDefaultKeyAgreementMethods = useDefaultKeyAgreementMethods;
+  public void setUseKeyAgreementDefaults(boolean flag) {
+    this.useKeyAgreementDefaults = flag;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void logResult(EncryptionParameters params) {
+    if (log.isDebugEnabled()) {
+      if (KeyAgreementCredential.class.isInstance(params.getKeyTransportEncryptionCredential())) {
+        log.debug("Resolved EncryptionParameters:");
+
+        final KeyAgreementCredential kaCred = KeyAgreementCredential.class.cast(params.getKeyTransportEncryptionCredential());
+
+        log.debug("\tKey agreement algorithm: {}", kaCred.getAgreementMethodAlgorithm());
+        log.debug("\tKey derivation method: {}",
+          kaCred.getKeyDerivationMethod() != null ? kaCred.getKeyDerivationMethod().getAlgorithm() : "null");
+        log.debug("\tPeer credential with key algorithm: {}",
+          CredentialSupport.extractEncryptionKey(kaCred.getPeerCredential()).getAlgorithm());
+
+        log.debug("\tKey wrapping algorithm: {}", params.getKeyTransportEncryptionAlgorithm());
+
+        log.debug("\tKey transport KeyInfoGenerator: {}",
+          params.getKeyTransportKeyInfoGenerator() != null ? "present" : "null");
+
+        final Key dataKey = CredentialSupport.extractEncryptionKey(params.getDataEncryptionCredential());
+        if (dataKey != null) {
+          log.debug("\tData encryption credential with key algorithm: {}", dataKey.getAlgorithm());
+        }
+        else {
+          log.debug("\tData encryption credential: null");
+        }
+
+        log.debug("\tData encryption algorithm URI: {}", params.getDataEncryptionAlgorithm());
+
+        log.debug("\tData encryption KeyInfoGenerator: {}", params.getDataKeyInfoGenerator() != null ? "present" : "null");
+      }
+      else {
+        super.logResult(params);
+      }
+    }
   }
 
 }

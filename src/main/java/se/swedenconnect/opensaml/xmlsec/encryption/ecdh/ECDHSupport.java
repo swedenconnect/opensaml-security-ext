@@ -52,7 +52,6 @@ import org.bouncycastle.crypto.params.KDFParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.xml.XMLObject;
-import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
@@ -101,14 +100,14 @@ public class ECDHSupport {
    *          the peer credential (containing an EC public key)
    * @param keyWrappingAlgorithm
    *          the key wrapping algorithm
-   * @param concatKDFParams
-   *          parameters for the key derivation algorithm
+   * @param keyDerivationMethod
+   *          the key derivation method parameters for the key derivation algorithm
    * @return a KeyAgreementCredential
    * @throws SecurityException
    *           for errors during the key generation process
    */
-  public static KeyAgreementCredential createKeyAgreementCredential(Credential peerCredential, String keyWrappingAlgorithm,
-      ConcatKDFParams concatKDFParams) throws SecurityException {
+  public static KeyAgreementCredential createKeyAgreementCredential(Credential peerCredential,
+      String keyWrappingAlgorithm, KeyDerivationMethod keyDerivationMethod) throws SecurityException {
 
     // Input checking ...
     //
@@ -117,7 +116,18 @@ public class ECDHSupport {
     Constraint.isTrue(ECPublicKey.class.isInstance(peerCredential.getPublicKey()),
       "Public key of peerCredential must be an ECPublicKey");
     Constraint.isNotNull(keyWrappingAlgorithm, "keyWrappingAlgorithm must not be null");
-    Constraint.isNotNull(concatKDFParams, "concatKDFParams must not be null");
+    Constraint.isNotNull(keyDerivationMethod, "keyDerivationMethod must not be null");
+    Constraint.isTrue(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT.equals(keyDerivationMethod.getAlgorithm()),
+      String.format("{} key derivation method is not supported - {} is required", keyDerivationMethod.getAlgorithm(),
+        EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT));
+    
+    final ConcatKDFParams concatKDFParams = keyDerivationMethod.getUnknownXMLObjects(ConcatKDFParams.DEFAULT_ELEMENT_NAME).stream()
+        .map(ConcatKDFParams.class::cast)
+        .findFirst()
+        .orElse(null);
+    
+    Constraint.isNotNull(concatKDFParams, "ConcatKDF params is missing from KeyDerivationMethod");
+    
 
     // Given the curve of the peer EC public key generate a EC key pair.
     //
@@ -175,17 +185,10 @@ public class ECDHSupport {
       throw new SecurityException(msg, e);
     }
 
-    // The credential also needs the key derivation method ...
-    // For now it is hard-wired to ConcatKDF ...
-    //
-    KeyDerivationMethod kdm = (KeyDerivationMethod) XMLObjectSupport.buildXMLObject(KeyDerivationMethod.DEFAULT_ELEMENT_NAME);
-    kdm.setAlgorithm(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT);
-    kdm.getUnknownXMLObjects().add(concatKDFParams);
-
     // OK, we have everything for a KeyAgreementCredential ...
     //
     return new KeyAgreementCredential(keyAgreementKey, generatedKeyPair.getPublic(), peerCredential,
-      EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES, kdm);
+      EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES, keyDerivationMethod);
   }
 
   /**
@@ -396,9 +399,9 @@ public class ECDHSupport {
 
     ASN1EncodableVector publicKeyParamSeq = new ASN1EncodableVector();
     publicKeyParamSeq.add(new ASN1ObjectIdentifier(EC_PUBLIC_KEY_OID));
-    
+
     String oid = curveOidUri.startsWith("urn:oid:") ? curveOidUri.substring(8) : curveOidUri;
-    
+
     publicKeyParamSeq.add(new ASN1ObjectIdentifier(oid));
 
     ASN1EncodableVector publicKeySeq = new ASN1EncodableVector();
