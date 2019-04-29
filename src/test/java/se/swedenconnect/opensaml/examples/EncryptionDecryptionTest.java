@@ -284,6 +284,8 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
 
     EncryptedData encryptedData = encrypter.encryptElement(this.encryptedObject,
       new DataEncryptionParameters(params), new KeyEncryptionParameters(params, metadata.getEntityID()));
+    
+    System.out.println("Encrypted data:\n" + OpenSAMLTestBase.toString(encryptedData));
 
     // OK, let's decrypt ...
     //

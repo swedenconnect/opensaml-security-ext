@@ -68,7 +68,7 @@ import net.shibboleth.utilities.java.support.resolver.ResolverException;
  * SunPKCS11 crypto provider OAEPPadding does not work. 
  * <p>
  * See this post on <a href=
- * "https://stackoverflow.com/questions/23844694/bad-padding-exception-rsa-ecb-oaepwithsha-256andmgf1padding-in-pkcs11?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa">
+ * "https://stackoverflow.com/questions/23844694/bad-padding-exception-rsa-ecb-oaepwithsha-256andmgf1padding-in-pkcs11">
  * Stack overflow</a>.
  * </p>
  * 

@@ -292,23 +292,7 @@
       <version>2.27.0</version>
       <scope>test</scope>
     </dependency>    
-    
-    <dependency>
-      <groupId>se.litsec.opensaml</groupId>
-      <artifactId>opensaml3-ext</artifactId>
-      <version>1.2.5</version>
-      <scope>test</scope>
-    </dependency>  
-    
-    <!-- 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-nop</artifactId>
-      <version>${slf4j.version}</version>
-      <type>jar</type>
-      <scope>test</scope>
-    </dependency>
-    -->
+        
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
