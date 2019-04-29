@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Litsec AB
+ * Copyright 2019 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,36 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.opensaml.ecdh.deploy;
+package se.swedenconnect.opensaml;
 
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.xml.BasicParserPool;
-import net.shibboleth.utilities.java.support.xml.ParserPool;
-import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistry;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
-import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.xml.BasicParserPool;
+import net.shibboleth.utilities.java.support.xml.ParserPool;
 
 /**
- * Singleton class for initialization and configuration of the OpenSAML library with ECDH extension support.
+ * Singleton class for initialization and configuration of the OpenSAML library.
  * 
  * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public class OpenSAMLInitializer {
 
   /** Logger instance. */
   private Logger logger = LoggerFactory.getLogger(OpenSAMLInitializer.class);
 
-  /** Whether this component has been initialized. */
+  /** Whether OpenSAML already has been initialized. */
   private boolean initialized;
 
   /** The initializer may be assigned a configured parser pool. */
@@ -105,15 +102,6 @@ public class OpenSAMLInitializer {
         ConfigurationService.register(XMLObjectProviderRegistry.class, registry);
       }
     }
-
-    //Setup ECDH KeyInfo generator
-    KeyAgreementKeyInfoGeneratorFactory ecdhFactory = new KeyAgreementKeyInfoGeneratorFactory();
-    ecdhFactory.setEmitX509IssuerSerial(true);
-    ecdhFactory.setEmitPublicKeyValue(true);
-    ConfigurationService.get(EncryptionConfiguration.class)
-      .getKeyTransportKeyInfoGeneratorManager()
-      .getDefaultManager().registerFactory(ecdhFactory);
-
     if (this.parserPool != null) {
       logger.debug("Installing configured parser pool to XMLObjectProviderRegistry...");
       registry.setParserPool(this.parserPool);

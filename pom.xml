@@ -293,6 +293,13 @@
       <scope>test</scope>
     </dependency>    
     
+    <dependency>
+      <groupId>se.litsec.opensaml</groupId>
+      <artifactId>opensaml3-ext</artifactId>
+      <version>1.2.5</version>
+      <scope>test</scope>
+    </dependency>  
+    
     <!-- 
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -30,6 +30,7 @@ import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.BasicCredential;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.CredentialContext;
+import org.opensaml.security.credential.CredentialResolver;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509DigestCredentialCriterion;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509SubjectKeyIdentifierCredentialCriterion;
 import org.opensaml.security.credential.criteria.impl.EvaluableX509SubjectNameCredentialCriterion;
@@ -47,6 +48,7 @@ import org.opensaml.xmlsec.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.CollectionKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.KeyInfoProvider;
 import org.opensaml.xmlsec.keyinfo.impl.KeyInfoResolutionContext;
+import org.opensaml.xmlsec.keyinfo.impl.LocalKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.provider.AbstractKeyInfoProvider;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.X509Data;
@@ -63,12 +65,19 @@ import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import net.shibboleth.utilities.java.support.resolver.ResolverException;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.ECDHSupport;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 
 /**
  * A {@link KeyInfoProvider} that returns the key agreement key that is derived using the information found in an
  * {@link AgreementMethod} using the decrypter's private EC key(s).
+ * 
+ * <p>
+ * If the provider is instantiated without local credentials, it will only function if its
+ * {@link #process(KeyInfoCredentialResolver, XMLObject, CriteriaSet, KeyInfoResolutionContext)} method is invoked
+ * with a {@code KeyInfoCredentialResolver} that is of {@link LocalKeyInfoCredentialResolver}. This is the typical
+ * case.
+ * </p>
  * 
  * <p>
  * Currently, the agreement method {@value EcEncryptionConstants#ALGO_ID_KEYAGREEMENT_ECDH_ES} is supported along with
@@ -82,10 +91,18 @@ public class KeyAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
 
   /** Class logger. */
   private static final Logger log = LoggerFactory.getLogger(KeyAgreementMethodKeyInfoProvider.class);
+  
+  /** Optional list of local credentials. */
+  private List<Credential> localCredentials = null;
 
-  /** Resolver that finds keys to use during key agreement derivation. */
-  private CollectionKeyInfoCredentialResolver ecCredentialsResolver;
-
+  /**
+   * Constructor.
+   */
+  public KeyAgreementMethodKeyInfoProvider() {
+    log.debug("KeyAgreementMethodKeyInfoProvider being created without local credentials - "
+      + "Will only function with LocalKeyInfoCredentialResolver");
+  }
+  
   /**
    * Constructor.
    * 
@@ -96,22 +113,18 @@ public class KeyAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
     Constraint.isNotNull(credentials, "Input credentials list cannot be null");
 
     // Only save those credentials that can be used ...
-    List<Credential> filteredCredentials = credentials.stream()
+    this.localCredentials = credentials.stream()
       .filter(c -> ECPrivateKey.class.isInstance(c.getPrivateKey()))
       .collect(Collectors.toList());
-
-    this.ecCredentialsResolver = new CollectionKeyInfoCredentialResolver(filteredCredentials);
-    this.ecCredentialsResolver.setSatisfyAllPredicates(false);
+    if (this.localCredentials.isEmpty()) {
+      this.localCredentials = null;
+    }
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean handles(XMLObject keyInfoChild) {
 
-    if (this.ecCredentialsResolver.getCollection().isEmpty()) {
-      log.debug("No EC private key credentials available for ECDH key agreement");
-      return false;
-    }
     if (AgreementMethod.class.isInstance(keyInfoChild)) {
       AgreementMethod am = (AgreementMethod) keyInfoChild;
       if (EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES.equals(am.getAlgorithm())) {
@@ -148,6 +161,21 @@ public class KeyAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
     if (!this.handles(keyInfoChild)) {
       return null;
     }
+  
+    // Set up the KeyInfoCredentialResolver to use ...
+    //
+    CredentialResolver ecCredentialsResolver = null;
+    if (this.localCredentials != null) {
+      // We have local credentials installed - use a simple collection resolver.
+      ecCredentialsResolver = new CollectionKeyInfoCredentialResolver(this.localCredentials);
+    }
+    else if (LocalKeyInfoCredentialResolver.class.isInstance(resolver)) {
+      ecCredentialsResolver = ((LocalKeyInfoCredentialResolver) resolver).getLocalCredentialResolver(); 
+    }
+    else {
+      log.debug("KeyAgreementMethodKeyInfoProvider can not resolve any EC local credentials");
+      return null;
+    }
 
     final AgreementMethod agreementMethod = (AgreementMethod) keyInfoChild;
 
@@ -182,7 +210,7 @@ public class KeyAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
 
       // Loop over all available EC credentials and try to resolve the ECDH key agreement key.
       //
-      for (Credential ecCred : this.ecCredentialsResolver.resolve(ecCriteriaSet)) {
+      for (Credential ecCred : ecCredentialsResolver.resolve(ecCriteriaSet)) {
         try {
           SecretKey keyAgreementKey = ECDHSupport.getKeyAgreementKey(ecCred.getPrivateKey(), agreementMethod,
             keyAlgorithmCriterion.getKeyAlgorithm(), keyLengthCriterion.getKeyLength());
@@ -269,7 +297,7 @@ public class KeyAgreementMethodKeyInfoProvider extends AbstractKeyInfoProvider {
       }
     }
     catch (Exception e) {
-      log.error("Error during building of criteria set for ECDHAgreementMethodKeyInfoProvider - {}", e.getMessage(), e);
+      log.error("Error during building of criteria set for KeyAgreementMethodKeyInfoProvider - {}", e.getMessage(), e);
     }
 
     return criterias;

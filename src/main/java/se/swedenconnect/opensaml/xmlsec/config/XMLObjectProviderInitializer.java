@@ -13,35 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.opensaml.xmlsec.encryption.ecdh;
+package se.swedenconnect.opensaml.xmlsec.config;
+
+import org.opensaml.core.xml.config.AbstractXMLObjectProviderInitializer;
 
 /**
- * Represents ECDH parameters.
+ * Adds XML configuration for the EC extensions.
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class ECDHParameters {
+public class XMLObjectProviderInitializer extends AbstractXMLObjectProviderInitializer {
 
-  /** The key wrapping algorithm. */
-  private String keyWrapMethod;
+  /** Config resources. */
+  private static String[] configs = {
+      "/key-agreement-config.xml"
+  };
 
-  /**
-   * Gets the key wrapping method.
-   * 
-   * @return the key wrapping method
-   */
-  public String getKeyWrapMethod() {
-    return this.keyWrapMethod;
+  /** {@inheritDoc} */
+  protected String[] getConfigResources() {
+    return configs;
   }
 
-  /**
-   * Sets the key wrapping method.
-   * 
-   * @param keyWrapMethod
-   *          the key wrapping method
-   */
-  public void setKeyWrapMethod(String keyWrapMethod) {
-    this.keyWrapMethod = keyWrapMethod;
-  }
 }

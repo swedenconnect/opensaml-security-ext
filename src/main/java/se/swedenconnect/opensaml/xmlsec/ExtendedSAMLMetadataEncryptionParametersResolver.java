@@ -48,9 +48,9 @@ import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.algorithm.ExtendedAlgorithmSupport;
 import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.ECDHSupport;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 
 /**
  * An extension of {@link SAMLMetadataEncryptionParametersResolver} that also lets us resolve encryption parameters for
@@ -66,9 +66,9 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
 
   /**
    * We really would like to inherit from both {@link SAMLMetadataEncryptionParametersResolver} and
-   * {@link ExtendedBasicEncryptionParametersResolver}, but that's not possible, so we fake it.
+   * {@link ExtendedEncryptionParametersResolver}, but that's not possible, so we fake it.
    */
-  private ExtendedBasicEncryptionParametersResolver realSuper;
+  private ExtendedEncryptionParametersResolver realSuper;
 
   /**
    * Constructor.
@@ -78,7 +78,7 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
    */
   public ExtendedSAMLMetadataEncryptionParametersResolver(MetadataCredentialResolver resolver) {
     super(resolver);
-    this.realSuper = new ExtendedBasicEncryptionParametersResolver();
+    this.realSuper = new ExtendedEncryptionParametersResolver();
   }
 
   /**
@@ -220,8 +220,6 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
    * 
    * @param keyTransportCredential
    *          the credential we are resolving for
-   * @param encryptionMethods
-   *          a list of {@code EncryptionMethod} elements (may be empty)
    * @param criteria
    *          the criteria
    * @param whitelistBlacklistPredicate
@@ -288,8 +286,6 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
    * 
    * @param keyTransportCredential
    *          the credential we are resolving for
-   * @param encryptionMethods
-   *          a list of {@code EncryptionMethod} elements (may be empty)
    * @param criteria
    *          the criteria
    * @param whitelistBlacklistPredicate

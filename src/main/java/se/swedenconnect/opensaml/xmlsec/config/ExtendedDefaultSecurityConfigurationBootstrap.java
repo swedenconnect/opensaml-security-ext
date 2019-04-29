@@ -15,19 +15,27 @@
  */
 package se.swedenconnect.opensaml.xmlsec.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
+import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
+import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.EncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
-import org.opensaml.xmlsec.impl.BasicDecryptionConfiguration;
-import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
+import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.opensaml.xmlsec.keyinfo.NamedKeyInfoGeneratorManager;
 
-import se.swedenconnect.opensaml.xmlsec.ExtendedBasicEncryptionConfiguration;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
+import se.swedenconnect.opensaml.xmlsec.BasicExtendedEncryptionConfiguration;
+import se.swedenconnect.opensaml.xmlsec.ExtendedEncryptionConfiguration;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory;
 
 /**
@@ -51,54 +59,87 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
    * @return a new basic configuration with reasonable default values
    */
   @Nonnull
-  public static ExtendedBasicEncryptionConfiguration buildDefaultEncryptionConfiguration() {
-    ExtendedBasicEncryptionConfiguration conf = new ExtendedBasicEncryptionConfiguration();
-
-    conf.setAgreementMethodAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES));
-    conf.setKeyDerivationAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT));
-    
-    conf.setConcatKDFParameters(new ConcatKDFParameters(EncryptionConstants.ALGO_ID_DIGEST_SHA256));
-
-    BasicEncryptionConfiguration openSamlConf = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
-    conf.setBlacklistedAlgorithms(openSamlConf.getBlacklistedAlgorithms());
-    conf.setBlacklistMerge(openSamlConf.isBlacklistMerge());
-    conf.setWhitelistBlacklistPrecedence(openSamlConf.getWhitelistBlacklistPrecedence());
-    conf.setWhitelistedAlgorithms(openSamlConf.getWhitelistedAlgorithms());
-    conf.setWhitelistMerge(openSamlConf.isWhitelistMerge());
-
-    conf.setDataEncryptionAlgorithms(openSamlConf.getDataEncryptionAlgorithms());
-    conf.setDataEncryptionCredentials(openSamlConf.getDataEncryptionCredentials());
-    conf.setDataKeyInfoGeneratorManager(openSamlConf.getDataKeyInfoGeneratorManager());
-    conf.setKeyTransportAlgorithmPredicate(openSamlConf.getKeyTransportAlgorithmPredicate());    
-    conf.setKeyTransportEncryptionCredentials(openSamlConf.getKeyTransportEncryptionCredentials());
-    conf.setRSAOAEPParameters(openSamlConf.getRSAOAEPParameters());
-    conf.setRSAOAEPParametersMerge(openSamlConf.isRSAOAEPParametersMerge());
-
-    conf.setKeyTransportKeyInfoGeneratorManager(ExtendedDefaultSecurityConfigurationBootstrap.buildBasicKeyInfoGeneratorManager());
-    
-    // The order for key wrapping algorithms does not matter for our base class, but it does so for us,
-    // so we set this property ourselves.
-    conf.setKeyTransportEncryptionAlgorithms(Arrays.asList(
-      EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,
-
-      EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
-      EncryptionConstants.ALGO_ID_KEYWRAP_AES192,
-      EncryptionConstants.ALGO_ID_KEYWRAP_AES128,      
-      EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES));
-
-    return conf;
+  public static BasicExtendedEncryptionConfiguration buildDefaultEncryptionConfiguration() {
+    return buildDefaultEncryptionConfiguration(
+      DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration());
   }
 
   /**
-   * Build and return a default decryption configuration.
+   * Builds an {@link ExtendedEncryptionConfiguration} object based on the supplied {@link EncryptionConfiguration}
+   * object.
    * 
-   * @return a new basic configuration with reasonable default values
+   * @param config
+   *          the config to start from
+   * @return an {@code ExtendedEncryptionConfiguration} object
    */
-  @Nonnull
-  public static BasicDecryptionConfiguration buildDefaultDecryptionConfiguration() {
+  public static BasicExtendedEncryptionConfiguration buildDefaultEncryptionConfiguration(EncryptionConfiguration config) {
 
-    // TODO
-    return DefaultSecurityConfigurationBootstrap.buildDefaultDecryptionConfiguration();
+    if (BasicExtendedEncryptionConfiguration.class.isInstance(config)) {
+      return BasicExtendedEncryptionConfiguration.class.cast(config);
+    }
+    if (config == null) {
+      config = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    }
+
+    BasicExtendedEncryptionConfiguration extendedConfig = new BasicExtendedEncryptionConfiguration();
+
+    extendedConfig.setAgreementMethodAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES));
+    extendedConfig.setKeyDerivationAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT));
+
+    extendedConfig.setConcatKDFParameters(new ConcatKDFParameters(EncryptionConstants.ALGO_ID_DIGEST_SHA256));
+
+    extendedConfig.setBlacklistedAlgorithms(config.getBlacklistedAlgorithms());
+    extendedConfig.setBlacklistMerge(config.isBlacklistMerge());
+    extendedConfig.setWhitelistBlacklistPrecedence(config.getWhitelistBlacklistPrecedence());
+    extendedConfig.setWhitelistedAlgorithms(config.getWhitelistedAlgorithms());
+    extendedConfig.setWhitelistMerge(config.isWhitelistMerge());
+
+    extendedConfig.setDataEncryptionAlgorithms(config.getDataEncryptionAlgorithms());
+    extendedConfig.setDataEncryptionCredentials(config.getDataEncryptionCredentials());
+    extendedConfig.setDataKeyInfoGeneratorManager(config.getDataKeyInfoGeneratorManager());
+    extendedConfig.setKeyTransportAlgorithmPredicate(config.getKeyTransportAlgorithmPredicate());
+    extendedConfig.setKeyTransportEncryptionCredentials(config.getKeyTransportEncryptionCredentials());
+    extendedConfig.setRSAOAEPParameters(config.getRSAOAEPParameters());
+    extendedConfig.setRSAOAEPParametersMerge(config.isRSAOAEPParametersMerge());
+
+    extendedConfig.setKeyTransportKeyInfoGeneratorManager(config.getKeyTransportKeyInfoGeneratorManager());
+
+    // The order for key wrapping algorithms does not matter for DefaultSecurityConfigurationBootstrap, but it does so
+    // for us,
+    // so we set this property ourselves.
+    if (config.getKeyTransportEncryptionAlgorithms()
+      .equals(DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration().getKeyTransportEncryptionAlgorithms())) {
+
+      extendedConfig.setKeyTransportEncryptionAlgorithms(Arrays.asList(
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,
+
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES192,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES128,
+        EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES));
+    }
+    else {
+      // The defaults have already been modified.
+      extendedConfig.setKeyTransportEncryptionAlgorithms(config.getKeyTransportEncryptionAlgorithms());
+    }
+
+    return extendedConfig;
+  }
+
+  /**
+   * Build a basic instance of {@link EncryptedKeyResolver}. Extends the one from
+   * {@link DefaultSecurityConfigurationBootstrap} with {@link EncryptedElementTypeEncryptedKeyResolver}.
+   * 
+   * @return an EncryptedKey resolver instance
+   */
+  protected static EncryptedKeyResolver buildBasicEncryptedKeyResolver() {
+    final List<EncryptedKeyResolver> resolverChain = new ArrayList<>();
+    resolverChain.add(new InlineEncryptedKeyResolver());
+    resolverChain.add(new EncryptedElementTypeEncryptedKeyResolver());
+    resolverChain.add(new SimpleRetrievalMethodEncryptedKeyResolver());
+    resolverChain.add(new SimpleKeyInfoReferenceEncryptedKeyResolver());
+
+    return new ChainingEncryptedKeyResolver(resolverChain);
   }
 
   /**
@@ -107,15 +148,31 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
    * @return a named KeyInfo generator manager instance
    */
   public static NamedKeyInfoGeneratorManager buildBasicKeyInfoGeneratorManager() {
+    return buildBasicKeyInfoGeneratorManager(DefaultSecurityConfigurationBootstrap.buildBasicKeyInfoGeneratorManager());
+  }
 
-    final NamedKeyInfoGeneratorManager manager = DefaultSecurityConfigurationBootstrap.buildBasicKeyInfoGeneratorManager();
-
-    final KeyAgreementKeyInfoGeneratorFactory ecdhFactory = new KeyAgreementKeyInfoGeneratorFactory();
-    ecdhFactory.setEmitEntityCertificate(true);
-
-    manager.getDefaultManager().registerFactory(ecdhFactory);
-
+  /**
+   * Build a basic {@link NamedKeyInfoGeneratorManager}.
+   * 
+   * @param manager
+   *          the manager to extend
+   * @return a named KeyInfo generator manager instance
+   */
+  public static NamedKeyInfoGeneratorManager buildBasicKeyInfoGeneratorManager(NamedKeyInfoGeneratorManager manager) {
+    manager.getDefaultManager().registerFactory(buildDefaultKeyAgreementKeyInfoGeneratorFactory());
     return manager;
+  }
+
+  /**
+   * Creates a {@code KeyAgreementKeyInfoGeneratorFactory} with default settings.
+   * 
+   * @return a {@code KeyAgreementKeyInfoGeneratorFactory} instance
+   */
+  public static KeyAgreementKeyInfoGeneratorFactory buildDefaultKeyAgreementKeyInfoGeneratorFactory() {
+    final KeyAgreementKeyInfoGeneratorFactory kaFactory = new KeyAgreementKeyInfoGeneratorFactory();
+    kaFactory.setEmitEntityCertificate(true);
+    kaFactory.setEmitOriginatorKeyInfoPublicKeyValue(true);
+    return kaFactory;
   }
 
 }

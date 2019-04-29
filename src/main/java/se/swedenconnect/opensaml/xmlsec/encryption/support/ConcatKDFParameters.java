@@ -91,6 +91,26 @@ public class ConcatKDFParameters {
   }
 
   /**
+   * Constructor that creates the object from the supplied {@code XMLObject} representation of ConcatKDFParams.
+   * 
+   * @param params
+   *          XML object
+   */
+  public ConcatKDFParameters(ConcatKDFParams params) {
+    Constraint.isNotNull(params, "params must not be null");
+    Constraint.isNotNull(params.getDigestMethod(), "params.DigestMethod must not be null");
+    this.digestMethod = Constraint.isNotEmpty(params.getDigestMethod().getAlgorithm(), "digestMethod must be set");
+    this.algorithmID = Arrays.copyOf(
+      Constraint.isNotEmpty(params.getAlgorithmID(), "params.algorithmID must be set"), params.getAlgorithmID().length);
+    this.partyUInfo = Arrays.copyOf(
+      Constraint.isNotEmpty(params.getPartyUInfo(), "params.partyUInfo must be set"), params.getPartyUInfo().length);
+    this.partyVInfo = Arrays.copyOf(
+      Constraint.isNotEmpty(params.getPartyVInfo(), "params.partyVInfo must be set"), params.getPartyVInfo().length);
+    this.setSuppPubInfo(params.getSuppPubInfo());
+    this.setSuppPrivInfo(params.getSuppPrivInfo());
+  }
+
+  /**
    * Transforms this object into the OpenSAML {@code XMLObject} representation of the ConcatKDF parameters.
    * 
    * @return a {@link ConcatKDFParams} object

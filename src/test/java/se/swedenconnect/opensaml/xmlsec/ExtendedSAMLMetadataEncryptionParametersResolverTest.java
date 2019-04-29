@@ -52,8 +52,8 @@ import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory.KeyAgreementKeyInfoGenerator;
 
 public class ExtendedSAMLMetadataEncryptionParametersResolverTest extends OpenSAMLTestBase {
@@ -211,7 +211,7 @@ public class ExtendedSAMLMetadataEncryptionParametersResolverTest extends OpenSA
     X509Credential rsaCredential = this.getRsaCredential();
     this.setupCredentialResolver(ecCredential, rsaCredential);
 
-    ExtendedBasicEncryptionConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    BasicExtendedEncryptionConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     config.setKeyTransportEncryptionAlgorithms(Arrays.asList(
       EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP, EncryptionConstants.ALGO_ID_KEYWRAP_AES192));
     config.setDataEncryptionAlgorithms(Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192));

@@ -34,12 +34,12 @@ import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurat
 import se.swedenconnect.opensaml.xmlsec.keyinfo.KeyAgreementKeyInfoGeneratorFactory.KeyAgreementKeyInfoGenerator;
 
 /**
- * Test cases for {@link ExtendedBasicEncryptionParametersResolver}.
+ * Test cases for {@link ExtendedEncryptionParametersResolver}.
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestBase {
+public class ExtendedEncryptionParametersResolverTest extends OpenSAMLTestBase {
 
   /**
    * Test using the OpenSAML BasicEncryptionParametersResolver. It won't find any encryption parameters that can be used
@@ -86,13 +86,13 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
       new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
     
-    ExtendedBasicEncryptionConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    BasicExtendedEncryptionConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     config.setKeyTransportEncryptionCredentials(Arrays.asList(ecCredential, rsaCredential));
     
     EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
     CriteriaSet criteriaSet = new CriteriaSet(criterion);
     
-    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();    
+    ExtendedEncryptionParametersResolver resolver = new ExtendedEncryptionParametersResolver();    
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     
     Assert.assertNotNull(params);
@@ -119,7 +119,7 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
       new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
     
-    ExtendedBasicEncryptionConfiguration config = 
+    BasicExtendedEncryptionConfiguration config = 
         ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     config.setKeyTransportEncryptionCredentials(Arrays.asList(rsaCredential));
     config.setKeyAgreementCredentials(Arrays.asList(ecCredential));
@@ -127,7 +127,7 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
     CriteriaSet criteriaSet = new CriteriaSet(criterion);
     
-    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    ExtendedEncryptionParametersResolver resolver = new ExtendedEncryptionParametersResolver();
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     
     Assert.assertNotNull(params);
@@ -152,7 +152,7 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
     CriteriaSet criteriaSet = new CriteriaSet(criterion);
     
-    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    ExtendedEncryptionParametersResolver resolver = new ExtendedEncryptionParametersResolver();
     resolver.setUseKeyAgreementDefaults(true);
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     
@@ -178,7 +178,7 @@ public class ExtendedBasicEncryptionParametersResolverTest extends OpenSAMLTestB
     EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
     CriteriaSet criteriaSet = new CriteriaSet(criterion);
     
-    ExtendedBasicEncryptionParametersResolver resolver = new ExtendedBasicEncryptionParametersResolver();
+    ExtendedEncryptionParametersResolver resolver = new ExtendedEncryptionParametersResolver();
     resolver.setUseKeyAgreementDefaults(false);
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
     

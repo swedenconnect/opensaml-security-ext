@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.opensaml.xmlsec.encryption.ecdh;
+package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.crypto.KeyAgreement;
@@ -120,14 +121,14 @@ public class ECDHSupport {
     Constraint.isTrue(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT.equals(keyDerivationMethod.getAlgorithm()),
       String.format("{} key derivation method is not supported - {} is required", keyDerivationMethod.getAlgorithm(),
         EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT));
-    
-    final ConcatKDFParams concatKDFParams = keyDerivationMethod.getUnknownXMLObjects(ConcatKDFParams.DEFAULT_ELEMENT_NAME).stream()
-        .map(ConcatKDFParams.class::cast)
-        .findFirst()
-        .orElse(null);
-    
+
+    final ConcatKDFParams concatKDFParams = keyDerivationMethod.getUnknownXMLObjects(ConcatKDFParams.DEFAULT_ELEMENT_NAME)
+      .stream()
+      .map(ConcatKDFParams.class::cast)
+      .findFirst()
+      .orElse(null);
+
     Constraint.isNotNull(concatKDFParams, "ConcatKDF params is missing from KeyDerivationMethod");
-    
 
     // Given the curve of the peer EC public key generate a EC key pair.
     //
@@ -335,13 +336,15 @@ public class ECDHSupport {
     // ConcatKDF key derivation
     //
     byte[] combinedConcatParams = Bytes.concat(
-      concatKDFParams.getAlgorithmID(), concatKDFParams.getPartyUInfo(), concatKDFParams.getPartyVInfo());
+      extractConcatKDFParamVal(concatKDFParams.getAlgorithmID()), 
+      extractConcatKDFParamVal(concatKDFParams.getPartyUInfo()), 
+      extractConcatKDFParamVal(concatKDFParams.getPartyVInfo()));
 
     if (concatKDFParams.getSuppPubInfo() != null) {
-      combinedConcatParams = Bytes.concat(combinedConcatParams, concatKDFParams.getSuppPubInfo());
+      combinedConcatParams = Bytes.concat(combinedConcatParams, extractConcatKDFParamVal(concatKDFParams.getSuppPubInfo()));
     }
     if (concatKDFParams.getSuppPrivInfo() != null) {
-      combinedConcatParams = Bytes.concat(combinedConcatParams, concatKDFParams.getSuppPrivInfo());
+      combinedConcatParams = Bytes.concat(combinedConcatParams, extractConcatKDFParamVal(concatKDFParams.getSuppPrivInfo()));
     }
 
     Digest digest = null;
@@ -375,6 +378,41 @@ public class ECDHSupport {
     concatKDF.generateBytes(rawKey, 0, keyLength);
 
     return new SecretKeySpec(rawKey, keyWrappingJcaAlgorithmId);
+  }
+
+  /**
+   * Extract the unpadded ConcatKDF parameter value from a padded parameter (imported from XML representation).
+   *
+   * @param paddedParam
+   *          the bytes of the padded parameter
+   * @return extracted ConcatKDF parameter
+   * @throws SecurityException
+   *           if the parameter has illegal padding and the length of the un-padded value is not a multiple of 8 bits
+   */
+  private static byte[] extractConcatKDFParamVal(byte[] paddedParam) throws SecurityException {
+    if (paddedParam == null) {
+      // The value is absent. Return empty byte array
+      return new byte[] {};
+    }
+    if (paddedParam.length == 0) {
+      // The value is present with empty value. Return empty byte array
+      return new byte[] {};
+    }
+    // Reaching this point meant that a padded value is present. This must be a multiple of 8 bits = has 0 or 8 padding
+    // bits.
+    if (paddedParam[0] == 0x08 && paddedParam.length > 1) {
+      // The value has 8 padding bits. Remove the padding byte and the byte with 8 padding bits.
+      // This should never happen, but is implemented so it can be handled if received. The appropriate representation
+      // is to use 0 padding bits, not 8.
+      return Arrays.copyOfRange(paddedParam, 2, paddedParam.length);
+    }
+    if (paddedParam[0] != 0x00) {
+      // A padding value other than 8 or 0 is encountered. This is an error since we can only handle byte values.
+      throw new IllegalArgumentException("Unsupported use of padding bits in ConcatKDF parameters");
+    }
+    // Return the up-padded value. In this case we know the padding byte has the value 0x00 (0 padding bits), so we
+    // remove the padding byte and keep rest.
+    return Arrays.copyOfRange(paddedParam, 1, paddedParam.length);
   }
 
   /**

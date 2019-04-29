@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<md:EntityDescriptor entityID="http://id.example.com/sp1" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">
+    <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <md:KeyDescriptor use="encryption">
+            <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+                <ds:X509Data>
+                    <ds:X509Certificate>MIIBYTCCAQigAwIBAgIEXG53TTAKBggqhkjOPQQDAjA5MQswCQYDVQQGEwJTRTEYMBYGA1UECgwPSURzZWMgU29sdXRpb25zMRAwDgYDVQQDDAdFQyB0ZXN0MB4XDTE5MDIyMTEwMDI1M1oXDTIwMDIyMTEwMDI1M1owOTELMAkGA1UEBhMCU0UxGDAWBgNVBAoMD0lEc2VjIFNvbHV0aW9uczEQMA4GA1UEAwwHRUMgdGVzdDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABP0/ikbavyVpfO8+TO1xCO4E9R1OuLygZrDx+2LmL5BeAA5ZyNNfyob0OE+L0/kFs6xySGGX2Q1IRoB2KIoVSp4wCgYIKoZIzj0EAwIDRwAwRAIgRA3wwRponjfNXNQcD4C52vwkYv46fjsO3fRT4CPWcg0CIFmJ14OTPs09jMCCiHNLIKzHq5QbxlBRfDQdC/AEoizR</ds:X509Certificate>
+                </ds:X509Data>
+            </ds:KeyInfo>
+        </md:KeyDescriptor>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</md:NameIDFormat>
+        <md:AssertionConsumerService
+            Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            Location="https://eid.example.com/sp1/post" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"/>
+    </md:SPSSODescriptor>
+</md:EntityDescriptor>

@@ -17,7 +17,7 @@ package se.swedenconnect.opensaml.xmlsec.algorithm.descriptors;
 
 import org.opensaml.xmlsec.algorithm.KeyAgreementAlgorithm;
 
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 
 /**
  * Algorithm descriptor for key agreement algorithm: Elliptic Curve Diffie-Hellman Ephemeral Static.

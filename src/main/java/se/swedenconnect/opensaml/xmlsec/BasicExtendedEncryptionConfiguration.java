@@ -18,8 +18,6 @@ package se.swedenconnect.opensaml.xmlsec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,7 +33,6 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElemen
 import net.shibboleth.utilities.java.support.annotation.constraint.NotLive;
 import net.shibboleth.utilities.java.support.annotation.constraint.Unmodifiable;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
-import se.swedenconnect.opensaml.xmlsec.algorithm.ExtendedAlgorithmSupport;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
 
 /**
@@ -45,17 +42,12 @@ import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class ExtendedBasicEncryptionConfiguration extends BasicEncryptionConfiguration implements ExtendedEncryptionConfiguration {
+public class BasicExtendedEncryptionConfiguration extends BasicEncryptionConfiguration implements ExtendedEncryptionConfiguration {
 
   /** Key agreement credentials. */
   @Nonnull
   @NonnullElements
   private List<Credential> keyAgreementCredentials;
-
-  /** Key agreement credentials found among assigned key transport credentials. */
-  @Nonnull
-  @NonnullElements
-  private List<Credential> additionalkeyAgreementCredentials;
 
   /** Agreement method algorithm URIs. */
   @Nonnull
@@ -74,10 +66,9 @@ public class ExtendedBasicEncryptionConfiguration extends BasicEncryptionConfigu
   /**
    * Constructor.
    */
-  public ExtendedBasicEncryptionConfiguration() {
+  public BasicExtendedEncryptionConfiguration() {
     super();
     this.keyAgreementCredentials = Collections.emptyList();
-    this.additionalkeyAgreementCredentials = new ArrayList<>();
     this.agreementMethodAlgorithms = Collections.emptyList();
     this.keyDerivationAlgorithms = Collections.emptyList();
   }
@@ -89,9 +80,7 @@ public class ExtendedBasicEncryptionConfiguration extends BasicEncryptionConfigu
   @Unmodifiable
   @NotLive
   public List<Credential> getKeyAgreementCredentials() {
-    return ImmutableList.copyOf(Stream.concat(
-      this.keyAgreementCredentials.stream(), this.additionalkeyAgreementCredentials.stream())
-      .collect(Collectors.toList()));
+    return ImmutableList.copyOf(this.keyAgreementCredentials);
   }
 
   /**
@@ -110,22 +99,6 @@ public class ExtendedBasicEncryptionConfiguration extends BasicEncryptionConfigu
       return;
     }
     this.keyAgreementCredentials = new ArrayList<>(Collections2.filter(keyAgreementCredentials, Predicates.notNull()));
-  }
-
-  /**
-   * Since the core OpenSAML classes does not support key agreement, we override this method and look at each
-   * credential. If the credential may be used in a key agreement protocol, we also save it among the key agreement
-   * credentials (see {@link #setKeyAgreementCredentials(List)}).
-   */
-  @Override
-  public void setKeyTransportEncryptionCredentials(List<Credential> credentials) {
-    super.setKeyTransportEncryptionCredentials(credentials);
-
-    if (credentials != null) {
-      credentials.stream()
-        .filter(ExtendedAlgorithmSupport::peerCredentialSupportsKeyAgreement)
-        .forEach(this.additionalkeyAgreementCredentials::add);
-    }
   }
 
   /** {@inheritDoc} */

@@ -28,7 +28,6 @@ import javax.xml.namespace.QName;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
-import org.opensaml.core.config.InitializationService;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilder;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -65,7 +64,8 @@ public abstract class OpenSAMLTestBase {
     //
     Security.addProvider(new BouncyCastleProvider());
     
-    InitializationService.initialize();
+    OpenSAMLInitializer.getInstance().initialize();
+    OpenSAMLExtInitializer.getInstance().initialize();
   }
 
   /**

@@ -47,9 +47,9 @@ import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.algorithm.ExtendedAlgorithmSupport;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.ECDHSupport;
-import se.swedenconnect.opensaml.xmlsec.encryption.ecdh.EcEncryptionConstants;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.ECDHSupport;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 
 /**
  * Extends OpenSAML's {@link BasicEncryptionParametersResolver} with support for key agreement.
@@ -57,10 +57,10 @@ import se.swedenconnect.opensaml.xmlsec.encryption.support.ConcatKDFParameters;
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionParametersResolver {
+public class ExtendedEncryptionParametersResolver extends BasicEncryptionParametersResolver {
 
   /** Logger. */
-  private Logger log = LoggerFactory.getLogger(ExtendedBasicEncryptionParametersResolver.class);
+  private Logger log = LoggerFactory.getLogger(ExtendedEncryptionParametersResolver.class);
 
   /**
    * A setting that tells whether we should rely on that we received an {@link ExtendedEncryptionConfiguration} object
@@ -73,7 +73,7 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
   /**
    * Constructor.
    */
-  public ExtendedBasicEncryptionParametersResolver() {
+  public ExtendedEncryptionParametersResolver() {
   }
 
   /**
@@ -188,8 +188,8 @@ public class ExtendedBasicEncryptionParametersResolver extends BasicEncryptionPa
    * 
    * @param credential
    *          the peer credential
-   * @param keyWrappingAlgorithms
-   *          key wrapping algorithms
+   * @param keyWrappingAlgorithm
+   *          key wrapping algorithm
    * @param keyAgreementMethods
    *          key agreement methods
    * @param keyDerivationAlgorithms

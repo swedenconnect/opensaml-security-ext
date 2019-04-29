@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Key;
 import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.X509EncodedKeySpec;
@@ -26,7 +24,6 @@ import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
-import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
 import org.opensaml.core.xml.XMLObjectBuilder;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -36,8 +33,6 @@ import org.opensaml.xmlsec.encryption.EncryptedKey;
 import org.opensaml.xmlsec.encryption.EncryptionMethod;
 import org.opensaml.xmlsec.encryption.OriginatorKeyInfo;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
-import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
-import org.opensaml.xmlsec.signature.DigestMethod;
 import org.opensaml.xmlsec.signature.ECKeyValue;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.KeyValue;
@@ -49,9 +44,9 @@ import com.google.common.primitives.Bytes;
 
 import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.logic.Constraint;
-import se.swedenconnect.opensaml.security.credential.ECDHPeerCredential;
 import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 import se.swedenconnect.opensaml.xmlsec.encryption.KeyDerivationMethod;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 
 /**
  * Utility class for ECDH key agreement operations
@@ -63,50 +58,6 @@ public class ECDHKeyAgreementBase {
   /** Class logger. */
   private static final Logger log = LoggerFactory.getLogger(ECDHKeyAgreementBase.class);
 
-  /**
-   * This function derives the ephemeral-static DH agreed key encryption key for the encryption process
-   * <p>
-   * ECDH is used to calculate the shared secret
-   * </p>
-   * <p>
-   * The ConcatKDF key derivation function is assumed and required for constructing the derived key encryption key
-   * </p>
-   *
-   * @param kekParams
-   *          The key encryption parameters provided for encryption
-   * @param encryptionKey
-   *          The key extracted from kekParams which is to be used as the public encryption key
-   * @param keyWrapMethod
-   *          the key wrapping algorithm
-   * @return Agreed key encryption key
-   * @throws IllegalArgumentException
-   *           todo
-   */
-  public static Key getECDHKeyAgreementKey(KeyEncryptionParameters kekParams, Key encryptionKey, String keyWrapMethod)
-      throws IllegalArgumentException {
-    try {
-      ECDHPeerCredential cred = (ECDHPeerCredential) kekParams.getEncryptionCredential();
-      KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", "BC");
-      ECNamedCurveGenParameterSpec parameterSpec = getNamedCurveSpec((ECPublicKey) encryptionKey, 256);
-      kpg.initialize(parameterSpec);
-      KeyPair tempKeyPair = kpg.generateKeyPair();
-      cred.setSenderGeneratedPublicKey(tempKeyPair.getPublic());
-
-      KeyAgreement ka = KeyAgreement.getInstance("ECDH", "BC");
-      ka.init(tempKeyPair.getPrivate());
-      ka.doPhase(encryptionKey, true);
-      byte[] sharedSecret = ka.generateSecret();
-
-      ConcatKDFParams concatKDFParams = cred.getConcatKDFParams();
-
-      return getAgreedKey(sharedSecret, keyWrapMethod, concatKDFParams);
-
-    }
-    catch (Exception e) {
-      log.debug("Unable to generate key agreement key based on provided parameters. Exception: {}", e.getMessage());
-      throw new IllegalArgumentException("Unable to generate key agreement key based on provided parameters");
-    }
-  }
 
   /**
    * This function derives the ephemeral-static DH agreed key encryption key for the decryption process
@@ -250,29 +201,29 @@ public class ECDHKeyAgreementBase {
    * @throws IllegalArgumentException
    *           if the provided public key is not a suitable EC public key with a defined named curve
    */
-  public static ECNamedCurveGenParameterSpec getNamedCurveSpec(PublicKey ecPubKey, int minLen) throws IllegalArgumentException {
-    ASN1StreamParser parser = new ASN1StreamParser(ecPubKey.getEncoded());
-    try {
-      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
-      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
-      ASN1ObjectIdentifier ecPubKeyoid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(0).toASN1Primitive();
-      if (!ecPubKeyoid.getId().equalsIgnoreCase("1.2.840.10045.2.1")) {
-        log.debug("The provided public key with key type oid {} is not an EC public key", ecPubKeyoid.getId());
-        throw new IllegalArgumentException("The provided public key is not an EC public key");
-      }
-      ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
-      NamedEcCurve namedEcCurve = NamedEcCurve.getCurveByOid(oid.getId(), minLen);
-      if (namedEcCurve == null) {
-        log.debug("The provided public EC key with named curve oid {} does not specify a supported named EC curve", oid.getId());
-        throw new IllegalArgumentException("The provided public EC key does not specify a supported named EC curve");
-      }
-      return new ECNamedCurveGenParameterSpec(namedEcCurve.name());
-    }
-    catch (Exception e) {
-      throw new IllegalArgumentException("Unable to parse the provided public key as an EC public key based on a named EC curve");
-    }
-
-  }
+//  public static ECNamedCurveGenParameterSpec getNamedCurveSpec(PublicKey ecPubKey, int minLen) throws IllegalArgumentException {
+//    ASN1StreamParser parser = new ASN1StreamParser(ecPubKey.getEncoded());
+//    try {
+//      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
+//      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+//      ASN1ObjectIdentifier ecPubKeyoid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(0).toASN1Primitive();
+//      if (!ecPubKeyoid.getId().equalsIgnoreCase("1.2.840.10045.2.1")) {
+//        log.debug("The provided public key with key type oid {} is not an EC public key", ecPubKeyoid.getId());
+//        throw new IllegalArgumentException("The provided public key is not an EC public key");
+//      }
+//      ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
+//      NamedEcCurve namedEcCurve = NamedEcCurve.getCurveByOid(oid.getId(), minLen);
+//      if (namedEcCurve == null) {
+//        log.debug("The provided public EC key with named curve oid {} does not specify a supported named EC curve", oid.getId());
+//        throw new IllegalArgumentException("The provided public EC key does not specify a supported named EC curve");
+//      }
+//      return new ECNamedCurveGenParameterSpec(namedEcCurve.name());
+//    }
+//    catch (Exception e) {
+//      throw new IllegalArgumentException("Unable to parse the provided public key as an EC public key based on a named EC curve");
+//    }
+//
+//  }
 
   /**
    * Builds an {@link ECKeyValue} XMLObject from the Java security EC public key type.
@@ -320,40 +271,4 @@ public class ECDHKeyAgreementBase {
 
     return ecKeyValue;
   }
-
-  /**
-   * Prepares the ECDH receiver credential with parameters for ECDH encryption
-   *
-   * <p>
-   * This sets up the concatKDF parameters ans the ECDH parameters in the credential
-   * </p>
-   *
-   * <p>
-   * The reason the ECDH parameters are added to the
-   * </p>
-   *
-   * @param receiverCredential
-   *          Public key credentials of the receiver
-   * @param hashAlgo
-   *          The selected digestMethod algorithm.
-   */
-  public static void prepareBasicKeyAgreementParameters(ECDHPeerCredential receiverCredential, SupportedConcatKDFHash hashAlgo) {
-    XMLObjectBuilder<ConcatKDFParams> kdfBuilder = XMLObjectProviderRegistrySupport.getBuilderFactory()
-      .getBuilderOrThrow(ConcatKDFParams.DEFAULT_ELEMENT_NAME);
-    ConcatKDFParams concatKDFParams = kdfBuilder.buildObject(ConcatKDFParams.DEFAULT_ELEMENT_NAME);
-    concatKDFParams.setAlgorithmID(new byte[1]);
-    concatKDFParams.setPartyUInfo(new byte[0]);
-    concatKDFParams.setPartyVInfo(new byte[0]);
-
-    XMLObjectBuilder<DigestMethod> digestBuilder = XMLObjectProviderRegistrySupport.getBuilderFactory()
-      .getBuilderOrThrow(DigestMethod.DEFAULT_ELEMENT_NAME);
-    DigestMethod digestMethod = digestBuilder.buildObject(DigestMethod.DEFAULT_ELEMENT_NAME);
-    digestMethod.setAlgorithm(hashAlgo.getId());
-    concatKDFParams.setDigestMethod(digestMethod);
-    receiverCredential.setConcatKDF(concatKDFParams);
-    ECDHParameters ecdhParams = new ECDHParameters();
-    ecdhParams.setKeyWrapMethod(EncryptionConstants.ALGO_ID_KEYWRAP_AES256);
-    receiverCredential.setECDHParameters(ecdhParams);
-  }
-
 }

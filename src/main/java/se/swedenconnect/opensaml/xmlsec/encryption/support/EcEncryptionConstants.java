@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.opensaml.xmlsec.config;
+package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
-import org.opensaml.core.xml.config.AbstractXMLObjectProviderInitializer;
+import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 
 /**
- * Adds XML configuration for the EC extensions.
+ * Constants for Elliptic Curve Diffie-Hellman algorithms.
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class EcXMLObjectProviderInitializer extends AbstractXMLObjectProviderInitializer {
+public class EcEncryptionConstants {
 
-  /** Config resources. */
-  private static String[] configs = {
-      "/ec-encryption-config.xml"
-  };
+  /** Key Derivation - ConcatKDF. */
+  public static final String ALGO_ID_KEYDERIVATION_CONCAT = EncryptionConstants.XMLENC11_NS + "ConcatKDF";
 
-  /** {@inheritDoc} */
-  protected String[] getConfigResources() {
-    return configs;
-  }
+  /** Key Agreement - ECDH-ES. */
+  public static final String ALGO_ID_KEYAGREEMENT_ECDH_ES = EncryptionConstants.XMLENC11_NS + "ECDH-ES";
+
+  /** Hidden constructor. */
+  protected EcEncryptionConstants() {}
 
 }

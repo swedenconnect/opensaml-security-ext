@@ -75,7 +75,7 @@ import net.shibboleth.utilities.java.support.resolver.ResolverException;
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public class Pkcs11Decrypter extends ExtendedDecrypter {
+public class Pkcs11Decrypter extends Decrypter {
 
   /** Class logger. */
   private static final Logger log = LoggerFactory.getLogger(Pkcs11Decrypter.class);
