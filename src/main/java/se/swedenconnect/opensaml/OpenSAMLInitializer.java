@@ -31,13 +31,17 @@ import net.shibboleth.utilities.java.support.xml.ParserPool;
 
 /**
  * Singleton class for initialization and configuration of the OpenSAML library.
+ * <p>
+ * Subclasses may override the methods {@link #preInitialize()} and {@link #postInitialize()} in order to add additional
+ * initialization and configuration.
+ * </p>
  * 
  * @author Martin Lindström (martin@idsec.se)
  */
 public class OpenSAMLInitializer {
 
   /** Logger instance. */
-  private Logger logger = LoggerFactory.getLogger(OpenSAMLInitializer.class);
+  private Logger log = LoggerFactory.getLogger(OpenSAMLInitializer.class);
 
   /** Whether OpenSAML already has been initialized. */
   private boolean initialized;
@@ -79,17 +83,33 @@ public class OpenSAMLInitializer {
   /**
    * Initializes the OpenSAML library.
    * 
+   * <p>
+   * The {@link OpenSAMLInitializerConfig#preInitialize()} for all supplied {@code customConfigs} are called in order
+   * before OpenSAML is initialized ({@link InitializationService#initialize()}. After OpenSAML has been initialized,
+   * all {@link OpenSAMLInitializerConfig#postInitialize()} methods are invoked.
+   * </p>
+   * 
+   * @param customConfigs
+   *          custom configuration of OpenSAML
    * @throws Exception
    *           thrown if there is a problem initializing the library
    */
-  public final synchronized void initialize() throws Exception {
+  public final synchronized void initialize(OpenSAMLInitializerConfig... customConfigs) throws Exception {
 
     if (this.initialized) {
-      logger.info("OpenSAML 3.X library has already been initialized");
+      log.info("OpenSAML 3.X library has already been initialized");
       return;
     }
+    
+    if (customConfigs != null) {
+      for (OpenSAMLInitializerConfig config : customConfigs) {
+        log.debug("Invoking preInitialize for configurer '{}' ...", config.getName());
+        config.preInitialize();
+        log.debug("preInitialize for configurer '{}' was successfully executed", config.getName());
+      }
+    }
 
-    logger.debug("Initializing OpenSAML 3.X library...");
+    log.debug("Initializing OpenSAML 3.X library...");
 
     InitializationService.initialize();
 
@@ -97,21 +117,29 @@ public class OpenSAMLInitializer {
     synchronized (ConfigurationService.class) {
       registry = ConfigurationService.get(XMLObjectProviderRegistry.class);
       if (registry == null) {
-        logger.debug("XMLObjectProviderRegistry did not exist in ConfigurationService, will be created");
+        log.debug("XMLObjectProviderRegistry did not exist in ConfigurationService, will be created");
         registry = new XMLObjectProviderRegistry();
         ConfigurationService.register(XMLObjectProviderRegistry.class, registry);
       }
     }
     if (this.parserPool != null) {
-      logger.debug("Installing configured parser pool to XMLObjectProviderRegistry...");
+      log.debug("Installing configured parser pool to XMLObjectProviderRegistry...");
       registry.setParserPool(this.parserPool);
     }
     else if (registry.getParserPool() == null) {
-      logger.debug("Installing default parser pool to XMLObjectProviderRegistry...");
+      log.debug("Installing default parser pool to XMLObjectProviderRegistry...");
       registry.setParserPool(createDefaultParserPool());
     }
 
-    logger.info("OpenSAML library 3.X successfully initialized");
+    log.info("OpenSAML library 3.X successfully initialized");
+    
+    if (customConfigs != null) {
+      for (OpenSAMLInitializerConfig config : customConfigs) {
+        log.debug("Invoking postInitialize for configurer '{}' ...", config.getName());
+        config.postInitialize();
+        log.debug("postInitialize for configurer '{}' was successfully executed", config.getName());
+      }
+    }
 
     this.initialized = true;
   }
@@ -125,7 +153,7 @@ public class OpenSAMLInitializer {
   public void setParserPool(ParserPool parserPool) {
     this.parserPool = parserPool;
     if (this.isInitialized()) {
-      logger.info("OpenSAML 3.X library has already been initialized - setting supplied parser pool to registry");
+      log.info("OpenSAML 3.X library has already been initialized - setting supplied parser pool to registry");
       XMLObjectProviderRegistrySupport.setParserPool(parserPool);
     }
   }
@@ -150,7 +178,7 @@ public class OpenSAMLInitializer {
   }
 
   // Hidden constructor
-  private OpenSAMLInitializer() {
+  protected OpenSAMLInitializer() {
   }
 
 }

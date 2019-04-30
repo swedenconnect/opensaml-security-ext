@@ -31,21 +31,17 @@ Include the following snippet in your Maven POM to add opensaml-security-ext as 
 OpenSAML needs to be initialized in order to function. The opensaml-security-ext provides the
 singleton class [OpenSAMLInitializer](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/OpenSAMLInitializer.java) for this purpose.
 
-Also, in order to utilize the extensions from this library, the [OpenSAMLExtInitializer](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/OpenSAMLExtInitializer.java) should be used.
+One or more [OpenSAMLInitializerConfig](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/OpenSAMLInitializerConfig.java) instances may be supplied as arguments to the `OpenSAMLInitializer.initialize` method in order to add customized configuration.
+
+In order to utilize the extensions from this library, the [OpenSAMLSecurityExtensionConfig](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/OpenSAMLSecurityExtensionConfig.java) should be supplied in the `initialize`-call.
 
 ```
 // Initialize OpenSAML and the security extensions ...
-OpenSAMLInitializer.getInstance().initialize();
-OpenSAMLExtInitializer.getInstance().initialize();
+OpenSAMLInitializer.getInstance().initialize(new OpenSAMLSecurityExtensionConfig());
 ```
 
-> Note: We may add different "modes" to the initializing. For example, one that registers default algorithms according to SAML2Int and one that registers algorithms according to the eIDAS defaults.
+> Note: For our test cases we had to add the Bouncy Castle crypto provider manually in order to implement ECDH. It should be sufficient to have it in the class path, but to be safe, the `preInitialize` method of the `OpenSAMLSecurityExtensionConfig` checks whether this provider is installed and does so if it isn't already installed.
 
-> Note: For our test cases we had to add the Bouncy Castle crypto provider manually in order to implement ECDH. It should be sufficient to have it in the class path, but if you run into problems you may have to add this:
-
-```
-Security.addProvider(new BouncyCastleProvider());
-```
 
 ## Extended encryption and decryption support
 

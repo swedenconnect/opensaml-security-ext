@@ -21,12 +21,10 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.security.cert.CertificateException;
 
 import javax.xml.namespace.QName;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilder;
@@ -58,14 +56,7 @@ public abstract class OpenSAMLTestBase {
    */
   @BeforeClass
   public static void initializeOpenSAML() throws Exception {
-    
-    // We need to explicity register the Bouncy Castle provider for our tests ...
-    // Don't really understand why. Just having it in the classpath should be enough.
-    //
-    Security.addProvider(new BouncyCastleProvider());
-    
-    OpenSAMLInitializer.getInstance().initialize();
-    OpenSAMLExtInitializer.getInstance().initialize();
+    OpenSAMLInitializer.getInstance().initialize(new OpenSAMLSecurityExtensionConfig());
   }
 
   /**
