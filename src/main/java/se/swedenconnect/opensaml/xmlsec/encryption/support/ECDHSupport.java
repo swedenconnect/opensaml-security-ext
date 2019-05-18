@@ -36,6 +36,7 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1StreamParser;
@@ -358,7 +359,7 @@ public class ECDHSupport {
       // Black-list checking should already have been done ...
       digest = new SHA1Digest();
     }
-    else if (concatKDFParams.getDigestMethod().getAlgorithm().equals(EncryptionConstants.XMLENC_NS + "sha384")) {
+    else if (concatKDFParams.getDigestMethod().getAlgorithm().equals(MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA384)) {
       digest = new SHA384Digest();
     }
     else if (concatKDFParams.getDigestMethod().getAlgorithm().equals(EncryptionConstants.ALGO_ID_DIGEST_RIPEMD160)) {

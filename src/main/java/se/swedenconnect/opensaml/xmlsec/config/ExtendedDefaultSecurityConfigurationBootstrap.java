@@ -94,11 +94,19 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
     extendedConfig.setWhitelistedAlgorithms(config.getWhitelistedAlgorithms());
     extendedConfig.setWhitelistMerge(config.isWhitelistMerge());
 
-    extendedConfig.setDataEncryptionAlgorithms(config.getDataEncryptionAlgorithms());
+    // We want to upgrade the default data encryption algorithms to AEAD crypto.
+    extendedConfig.setDataEncryptionAlgorithms(Arrays.asList(
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192_GCM,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM
+    ));
+
     extendedConfig.setDataEncryptionCredentials(config.getDataEncryptionCredentials());
     extendedConfig.setDataKeyInfoGeneratorManager(config.getDataKeyInfoGeneratorManager());
     extendedConfig.setKeyTransportAlgorithmPredicate(config.getKeyTransportAlgorithmPredicate());
     extendedConfig.setKeyTransportEncryptionCredentials(config.getKeyTransportEncryptionCredentials());
+    // In accordance to new saml2int the default digest algorithm for RSA-OAEP should be SHA-256
+    config.getRSAOAEPParameters().setDigestMethod(EncryptionConstants.ALGO_ID_DIGEST_SHA256);
     extendedConfig.setRSAOAEPParameters(config.getRSAOAEPParameters());
     extendedConfig.setRSAOAEPParametersMerge(config.isRSAOAEPParametersMerge());
 
