@@ -97,7 +97,7 @@ public class ExtendedKeyInfoSupport {
       final org.opensaml.xmlsec.signature.PublicKey publicKey = (org.opensaml.xmlsec.signature.PublicKey) XMLObjectSupport.buildXMLObject(
         org.opensaml.xmlsec.signature.PublicKey.DEFAULT_ELEMENT_NAME);
       DERBitString key = (DERBitString) seq.getObjectAt(1).toASN1Primitive();
-      publicKey.setValue(Base64Support.encode(key.getBytes(), Base64Support.CHUNKED)); 
+      publicKey.setValue(Base64Support.encode(key.getBytes(), Base64Support.UNCHUNKED)); 
       ecKeyValue.setPublicKey(publicKey);
 
       return ecKeyValue;
