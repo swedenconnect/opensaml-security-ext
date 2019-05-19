@@ -31,13 +31,13 @@ import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 public class ConcatKDFParameters {
 
   /** Default value for the mandatory attribute AlgorithmID. */
-  public static final byte[] DEFAULT_ALGORITHM_ID = new byte[] { 0x00, 0x00 };
+  public static final byte[] DEFAULT_ALGORITHM_ID = new byte[] { 0x00 };
 
   /** Default value for mandatory attribute PartyUInfo. */
-  public static final byte[] DEFAULT_PARTY_UINFO = new byte[] { 0x00, 0x00 };
+  public static final byte[] DEFAULT_PARTY_UINFO = new byte[] { 0x00 };
 
   /** Default value for mandatory attribute PartyVInfo. */
-  public static final byte[] DEFAULT_PARTY_VINFO = new byte[] { 0x00, 0x00 };
+  public static final byte[] DEFAULT_PARTY_VINFO = new byte[] { 0x00 };
 
   /** Digest method algorithm URI. */
   private String digestMethod;

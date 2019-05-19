@@ -28,6 +28,7 @@ import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.EncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.RSAOAEPParameters;
 import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.opensaml.xmlsec.keyinfo.NamedKeyInfoGeneratorManager;
@@ -94,19 +95,43 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
     extendedConfig.setWhitelistedAlgorithms(config.getWhitelistedAlgorithms());
     extendedConfig.setWhitelistMerge(config.isWhitelistMerge());
 
-    extendedConfig.setDataEncryptionAlgorithms(config.getDataEncryptionAlgorithms());
+    // We want to upgrade the default data encryption algorithms to AEAD crypto.
+    //
+    // TODO: We will move this to a specific bootstrap class for SAML2Int.
+    //
+    extendedConfig.setDataEncryptionAlgorithms(Arrays.asList(
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192_GCM,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+      EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES));
+
     extendedConfig.setDataEncryptionCredentials(config.getDataEncryptionCredentials());
     extendedConfig.setDataKeyInfoGeneratorManager(config.getDataKeyInfoGeneratorManager());
     extendedConfig.setKeyTransportAlgorithmPredicate(config.getKeyTransportAlgorithmPredicate());
     extendedConfig.setKeyTransportEncryptionCredentials(config.getKeyTransportEncryptionCredentials());
-    extendedConfig.setRSAOAEPParameters(config.getRSAOAEPParameters());
+
+    // In accordance to new saml2int the default digest algorithm for RSA-OAEP should be SHA-256
+    //
+    // TODO: We will move this to a specific bootstrap class for SAML2Int.
+    //
+    RSAOAEPParameters rsaOaepPars = config.getRSAOAEPParameters() != null
+        ? new RSAOAEPParameters(EncryptionConstants.ALGO_ID_DIGEST_SHA256,
+          config.getRSAOAEPParameters().getMaskGenerationFunction(),
+          config.getRSAOAEPParameters().getOAEPParams())
+        : new RSAOAEPParameters(EncryptionConstants.ALGO_ID_DIGEST_SHA256,
+          EncryptionConstants.ALGO_ID_MGF1_SHA1,
+          null);
+    extendedConfig.setRSAOAEPParameters(rsaOaepPars);
     extendedConfig.setRSAOAEPParametersMerge(config.isRSAOAEPParametersMerge());
 
     extendedConfig.setKeyTransportKeyInfoGeneratorManager(config.getKeyTransportKeyInfoGeneratorManager());
 
-    // The order for key wrapping algorithms does not matter for DefaultSecurityConfigurationBootstrap, but it does so
-    // for us,
-    // so we set this property ourselves.
+    // The order for key wrapping algorithms does not matter for DefaultSecurityConfigurationBootstrap,
+    // but it does so for us, so we set this property ourselves.
+    //
     if (config.getKeyTransportEncryptionAlgorithms()
       .equals(DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration().getKeyTransportEncryptionAlgorithms())) {
 
