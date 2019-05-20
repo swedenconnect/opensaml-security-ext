@@ -31,10 +31,6 @@ import net.shibboleth.utilities.java.support.xml.ParserPool;
 
 /**
  * Singleton class for initialization and configuration of the OpenSAML library.
- * <p>
- * Subclasses may override the methods {@link #preInitialize()} and {@link #postInitialize()} in order to add additional
- * initialization and configuration.
- * </p>
  * 
  * @author Martin Lindström (martin@idsec.se)
  */
