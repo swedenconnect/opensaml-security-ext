@@ -10,9 +10,9 @@ Crypto and security extensions to OpenSAML
 
 The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. This library also offers a workaround for using RSA-OAEP with HSM protected keys where the PKCS#11 API does not support RSA-OAEP.
 
-Java API documentation of the opensaml-security-ext library is found at [https://swedenconnect.github.io/opensaml-security-ext](https://swedenconnect.github.io/opensaml-security-ext/).
+Java API documentation of the opensaml-security-ext library is found at [https://docs.swedenconnect.se/opensaml-security-ext](https://docs.swedenconnect.se/opensaml-security-ext/).
 
-Generated project information is found at [https://swedenconnect.github.io/opensaml-security-ext/site](https://swedenconnect.github.io/opensaml-security-ext/site).
+Generated project information is found at [https://docs.swedenconnect.se/opensaml-security-ext/site](https://docs.swedenconnect.se/opensaml-security-ext/site).
 
 ### Maven and opensaml-security-ext
 
