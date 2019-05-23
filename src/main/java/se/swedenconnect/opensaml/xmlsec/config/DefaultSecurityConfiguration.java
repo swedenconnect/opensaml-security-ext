@@ -15,21 +15,33 @@
  */
 package se.swedenconnect.opensaml.xmlsec.config;
 
+import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 
 /**
- * An interface that enables us to instantiate different types of security configuration defaults.
+ * A security configuration for OpenSAML default settings (with the extensions for key agreement).
  * <p>
- * OpenSAML has its {@link DefaultSecurityConfigurationBootstrap} class, but that class contains only of static methods.
- * We want to have the possibility to instantiate the {@link SecurityConfigurationDefaultsHolder} with the security
- * configuration of our own choice.
+ * For a listing of the security defaults see {@link ExtendedDefaultSecurityConfigurationBootstrap} and
+ * {@link DefaultSecurityConfigurationBootstrap}.
  * </p>
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-public interface SecurityConfigurationDefaults {
-  
-  
+public class DefaultSecurityConfiguration extends AbstractSecurityConfiguration {
+
+  /** {@inheritDoc} */
+  @Override
+  public String getProfileName() {
+    return "opensaml-extensions-default";
+  }
+
+  /**
+   * Returns the extended encryption configuration that has support for key agreement and key derivation.
+   */
+  @Override
+  protected EncryptionConfiguration createDefaultEncryptionConfiguration() {
+    return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+  }
 
 }
