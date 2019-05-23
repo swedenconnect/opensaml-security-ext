@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.swedenconnect.opensaml.xmlsec.ExtendedEncryptionConfiguration;
-import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
+import se.swedenconnect.opensaml.xmlsec.config.DefaultSecurityConfiguration;
 
 /**
  * Configuration that extends OpenSAML's encryption support with key agreement algorithms.
@@ -33,7 +33,7 @@ import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurat
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public class OpenSAMLSecurityExtensionConfig implements OpenSAMLInitializerConfig {
-  
+
   /** Logger instance. */
   private Logger log = LoggerFactory.getLogger(OpenSAMLSecurityExtensionConfig.class);
 
@@ -49,43 +49,33 @@ public class OpenSAMLSecurityExtensionConfig implements OpenSAMLInitializerConfi
   @Override
   public void preInitialize() throws Exception {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      log.info("{}: Crypto provider '{}' is not installed, installing it ...", 
+      log.info("{}: Crypto provider '{}' is not installed, installing it ...",
         this.getName(), BouncyCastleProvider.PROVIDER_NAME);
-      
+
       Security.addProvider(new BouncyCastleProvider());
-      
-      log.info("{}: Crypto provider '{}' was installed", 
+
+      log.info("{}: Crypto provider '{}' was installed",
         this.getName(), BouncyCastleProvider.PROVIDER_NAME);
     }
   }
 
   /**
-   * Extends OpenSAML's encryption configuration with support for key agreement.
+   * We don't know if a {@link OpenSAMLSecurityDefaultsConfig} object is sent to the initializer. Therefore, we always
+   * make sure that we extends OpenSAML's encryption configuration with support for key agreement.
    */
   @Override
   public void postInitialize() throws Exception {
     
-    synchronized (ConfigurationService.class) {
-      ExtendedEncryptionConfiguration extendedEncryptionConfiguration = null;
-      EncryptionConfiguration encryptionConfiguration = ConfigurationService.get(EncryptionConfiguration.class);      
-      if (encryptionConfiguration == null) {
-        log.warn("{}: OpenSAML does not seem to have installed an EncryptionConfiguration", this.getName());
-        extendedEncryptionConfiguration = 
-            ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
-      }
-      else if (ExtendedEncryptionConfiguration.class.isInstance(encryptionConfiguration)) {
-        // It seems like the configuration already contains the extensions needed.
-        log.debug("{}: ExtendedEncryptionConfiguration already present in OpenSAML configuration", this.getName());
-        return;
-      }
-      else {
-        extendedEncryptionConfiguration = ExtendedDefaultSecurityConfigurationBootstrap
-            .buildDefaultEncryptionConfiguration(encryptionConfiguration);
-      }
-            
-      ConfigurationService.register(EncryptionConfiguration.class, extendedEncryptionConfiguration);
-      log.debug("{}: Extended encryption configuration successfully registered", this.getName());
+    EncryptionConfiguration encryptionConfiguration = ConfigurationService.get(EncryptionConfiguration.class);
+    if (ExtendedEncryptionConfiguration.class.isInstance(encryptionConfiguration)) {
+      // It seems like the configuration already contains the extensions needed.
+      log.debug("{}: ExtendedEncryptionConfiguration already present in OpenSAML configuration", this.getName());
+      return;
     }
+    
+    DefaultSecurityConfiguration securityConfiguration = new DefaultSecurityConfiguration();
+    securityConfiguration.initOpenSAML();
+    log.debug("{}: Extended encryption configuration successfully registered", this.getName());
   }
 
 }

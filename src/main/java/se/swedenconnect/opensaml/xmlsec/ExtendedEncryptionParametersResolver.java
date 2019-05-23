@@ -24,10 +24,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.CredentialSupport;
+import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.EncryptionParameters;
 import org.opensaml.xmlsec.KeyTransportAlgorithmPredicate;
 import org.opensaml.xmlsec.algorithm.AlgorithmDescriptor;
@@ -69,6 +71,9 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
    * assume that default key agreement methods are available.
    */
   private boolean useKeyAgreementDefaults = false;
+
+  /** If we are using defaults, we save the BasicExtendedEncryptionConfiguration here. */
+  private BasicExtendedEncryptionConfiguration defaultEncryptionConfiguration;
 
   /**
    * Constructor.
@@ -223,7 +228,7 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
     }
     if (concatKDFParameters == null) {
       log.debug("No ConcatKDFPars found in configuration, using default parameters ...");
-      concatKDFParameters = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration().getConcatKDFParameters();
+      concatKDFParameters = this.getDefaultEncryptionConfiguration().getConcatKDFParameters();
     }
     KeyDerivationMethod keyDerivationMethod = (KeyDerivationMethod) XMLObjectSupport.buildXMLObject(
       KeyDerivationMethod.DEFAULT_ELEMENT_NAME);
@@ -253,9 +258,7 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
 
     if (cfgList.isEmpty()) {
       if (this.useKeyAgreementDefaults) {
-        methods.addAll(ExtendedDefaultSecurityConfigurationBootstrap
-          .buildDefaultEncryptionConfiguration()
-          .getAgreementMethodAlgorithms());
+        methods.addAll(this.getDefaultEncryptionConfiguration().getAgreementMethodAlgorithms());
         log.debug("Assuming default key agreement methods: {}", methods);
       }
       else {
@@ -293,9 +296,7 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
 
     if (cfgList.isEmpty()) {
       if (this.useKeyAgreementDefaults) {
-        algos.addAll(ExtendedDefaultSecurityConfigurationBootstrap
-          .buildDefaultEncryptionConfiguration()
-          .getKeyDerivationAlgorithms());
+        algos.addAll(this.getDefaultEncryptionConfiguration().getKeyDerivationAlgorithms());
         log.debug("Assuming default key derivation algorithms: {}", algos);
       }
       else {
@@ -339,7 +340,7 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
       }
     }
     else if (this.useKeyAgreementDefaults) {
-      return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration().getConcatKDFParameters();
+      return this.getDefaultEncryptionConfiguration().getConcatKDFParameters();
     }
     return null;
   }
@@ -453,6 +454,20 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
         super.logResult(params);
       }
     }
+  }
+
+  /**
+   * If this object has been configured to work even without an installed {@link ExtendedEncryptionConfiguration}
+   * object, this method is called to get the extended configuration with defaults for key agreement and derivation.
+   * 
+   * @return a {@code BasicExtendedEncryptionConfiguration} object
+   */
+  private BasicExtendedEncryptionConfiguration getDefaultEncryptionConfiguration() {
+    if (this.defaultEncryptionConfiguration == null) {
+      this.defaultEncryptionConfiguration = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration(
+        ConfigurationService.get(EncryptionConfiguration.class));
+    }
+    return this.defaultEncryptionConfiguration;
   }
 
 }

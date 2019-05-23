@@ -37,12 +37,20 @@ One or more [OpenSAMLInitializerConfig](https://github.com/swedenconnect/opensam
 
 In order to utilize the extensions from this library, the [OpenSAMLSecurityExtensionConfig](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/OpenSAMLSecurityExtensionConfig.java) should be supplied in the `initialize`-call.
 
+It is also possible to configure other algorithm defaults than what is the OpenSAML defaults. This is done by using the [OpenSAMLSecurityDefaultsConfig](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/OpenSAMLSecurityDefaultsConfig.java) class that takes a [SecurityConfiguration](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/config/SecurityConfiguration.java) instance. In the example below the security configuration is set up according to [SAML2Int](https://kantarainitiative.github.io/SAMLprofiles/saml2int.html).
+
 ```
-// Initialize OpenSAML and the security extensions ...
-OpenSAMLInitializer.getInstance().initialize(new OpenSAMLSecurityExtensionConfig());
+// Initialize OpenSAML and the security extensions.
+// We also configure algorithm defaults according to SAML2Int ...
+//
+OpenSAMLInitializer.getInstance().initialize(
+  new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()),
+  new OpenSAMLSecurityExtensionConfig());
 ```
 
-> Note: For our test cases we had to add the Bouncy Castle crypto provider manually in order to implement ECDH. It should be sufficient to have it in the class path, but to be safe, the `preInitialize` method of the `OpenSAMLSecurityExtensionConfig` checks whether this provider is installed and does so if it isn't already installed.
+> For our test cases we had to add the Bouncy Castle crypto provider manually in order to implement ECDH. It should be sufficient to have it in the class path, but to be safe, the `preInitialize` method of the `OpenSAMLSecurityExtensionConfig` checks whether this provider is installed and does so if it isn't already installed.
+
+**Note**: The [eidas-opensaml](https://github.com/litsec/eidas-opensaml) library will be updated to use opensaml-security-ext. It will then define a `SecurityConfiguration` class for eIDAS security configuration.
 
 
 ## Extended encryption and decryption support

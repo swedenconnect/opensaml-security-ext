@@ -39,6 +39,7 @@ import org.w3c.dom.Element;
 
 import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
 
 /**
  * Abstract base class that initializes OpenSAML for test classes.
@@ -56,7 +57,9 @@ public abstract class OpenSAMLTestBase {
    */
   @BeforeClass
   public static void initializeOpenSAML() throws Exception {
-    OpenSAMLInitializer.getInstance().initialize(new OpenSAMLSecurityExtensionConfig());
+    OpenSAMLInitializer.getInstance().initialize(
+      new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()),
+      new OpenSAMLSecurityExtensionConfig());
   }
 
   /**
