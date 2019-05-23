@@ -10,7 +10,7 @@
   <packaging>jar</packaging>
   <version>1.0.1-SNAPSHOT</version>
   
-  <name>Sweden Connect :: OpenSAML 3.X security extensions</name>
+  <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 3.X</description>
   <url>https://github.com/swedenconnect/opensaml-security-ext</url>
   
@@ -344,6 +344,12 @@
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.7.1</version>
+      </plugin>
+                  
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>3.0.0-M2</version>
         <executions>
@@ -430,7 +436,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.0-M1</version>
             <executions>
               <execution>
                 <id>attach-javadoc</id>
@@ -441,18 +447,18 @@
             </executions>
             <configuration>
             
-              <doctitle>OpenSAML 3.x security extensions - ${project.version}</doctitle>
-              <windowtitle>OpenSAML 3.x security extensions - ${project.version}</windowtitle>             
+              <doctitle>OpenSAML 3.x Security Extensions - ${project.version}</doctitle>
+              <windowtitle>OpenSAML 3.x Security Extensions - ${project.version}</windowtitle>             
               <links>
                 <!-- 
                   Doesn't work to use the Shib Wiki links for API docs since the Shib webserver sets X-Frame-Options 
                   to SAMEORIGIN which makes it impossible to use frames. 
                 -->
-                <!--               
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/3.4.2/apidocs/</link>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/7.4.0/apidocs/</link>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/spring-extensions/5.2.0/apidocs/</link>
-                -->
+                <!-- 
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/${opensaml.version}/apidocs/</link>
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/${shibboleth.java-support.version}/apidocs/</link>
+                <link>https://build.shibboleth.net/nexus/content/sites/site/spring-extensions/5.4.1/apidocs/</link>
+                -->                
                 <link>https://litsec.github.io/opensaml-javadoc-mirror/org/opensaml/opensaml-core/${opensaml.version}/</link>
                 <link>https://litsec.github.io/opensaml-javadoc-mirror/org/opensaml/opensaml-messaging-api/${opensaml.version}/</link>
                 <link>https://litsec.github.io/opensaml-javadoc-mirror/org/opensaml/opensaml-messaging-impl/${opensaml.version}/</link>

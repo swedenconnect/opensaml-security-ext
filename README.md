@@ -2,13 +2,17 @@
 
 # opensaml-security-ext
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/se.swedenconnect.opensaml/opensaml-security-ext/badge.svg)](https://maven-badges.herokuapp.com/maven-central/se.swedenconnect.opensaml/opensaml-security-ext)
 
 Crypto and security extensions to OpenSAML
 
 ---
 
 The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. This library also offers a workaround for using RSA-OAEP with HSM protected keys where the PKCS#11 API does not support RSA-OAEP.
+
+Java API documentation of the opensaml-security-ext library is found at [https://docs.swedenconnect.se/opensaml-security-ext](https://docs.swedenconnect.se/opensaml-security-ext/).
+
+Generated project information is found at [https://docs.swedenconnect.se/opensaml-security-ext/site](https://docs.swedenconnect.se/opensaml-security-ext/site).
 
 ### Maven and opensaml-security-ext
 
@@ -23,8 +27,6 @@ Include the following snippet in your Maven POM to add opensaml-security-ext as 
   <version>${opensaml-security-ext.version}</version>
 </dependency>
 ```
-
-> Note: Publication to Maven central will be done for the first non-snapshot version.
 
 ## Initializing support
 
@@ -71,7 +73,8 @@ Below we illustrate how this is done using the [ExtendedSAMLMetadataEncryptionPa
 final EntityDescriptor metadata = ...;
 
 // Set up a MetadataCredentialResolver (a resolver that reads from SAML metadata)
-MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();    credentialResolver.setKeyInfoCredentialResolver(
+MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();    
+credentialResolver.setKeyInfoCredentialResolver(
   DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
 credentialResolver.initialize();
 
