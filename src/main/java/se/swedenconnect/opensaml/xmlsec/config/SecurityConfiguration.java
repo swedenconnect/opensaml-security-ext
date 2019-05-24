@@ -28,18 +28,16 @@ import se.swedenconnect.opensaml.OpenSAMLInitializer;
 
 /**
  * An interface that enables us to work with security configurations and defaults in a simple fashion.
- * 
  * <p>
  * The OpenSAML {@link ConfigurationService} singleton may be queried for the configuration to use for a certain
  * security operation. For example, to get the {@link EncryptionConfiguration} to use, the following code gives us the
  * config for an encryption operation:
  * </p>
  * 
- * <pre>
- * <code>
+ * <pre><code>
  * EncryptionConfiguration encryptionConfiguration = ConfigurationService.get(EncryptionConfiguration.class);
- * </code>
- * </pre>
+ * </code></pre>
+ * 
  * <p>
  * This is simple and straightforward, and you should probably stick with that way of getting the system defaults for
  * security configuration. However, in some cases, for example when a SAML SP or IdP should support several different
@@ -48,14 +46,9 @@ import se.swedenconnect.opensaml.OpenSAMLInitializer;
  * security configuration.
  * </p>
  * 
- * <pre>
- * <code>
- * SecurityConfiguration saml2intConfig = setupSaml2intConfig();
+ * <pre><code>SecurityConfiguration saml2intConfig = setupSaml2intConfig();
  * ...
- * ...
- * EncryptionConfig config = saml2intConfig.getEncryptionConfiguration();
- * </code>
- * </pre>
+ * EncryptionConfig config = saml2intConfig.getEncryptionConfiguration();</code></pre>
  * 
  * <p>
  * When OpenSAML is initialized (using {@link InitializationService#initialize()}) the {@link ConfigurationService} will
@@ -63,37 +56,24 @@ import se.swedenconnect.opensaml.OpenSAMLInitializer;
  * initialized it is possible to modify these defaults by replacing the stored default objects.
  * </p>
  * 
- * <pre>
- * <code>
- * EncryptionConfiguration myEncryptionConfiguration = ...;
+ * <pre><code>EncryptionConfiguration myEncryptionConfiguration = ...;
  * ... a lot of code setting algorithms ...
- * 
- * ConfigurationService.register(EncryptionConfiguration.class, myEncryptionConfiguration);
- * </code>
- * </pre>
+ * ConfigurationService.register(EncryptionConfiguration.class, myEncryptionConfiguration);</code></pre>
  * 
  * <p>
  * By using a {@code SecurityConfiguration} object this step may be simplified. For example, to configure the system to
  * use the SAML2Int algorithm requirements you simply do:
  * </p>
  * 
- * <pre>
- * <code>
- * SecurityConfiguration saml2intConfig = new SAML2IntSecurityConfiguration();
- * saml2intConfig.initOpenSAML();
- * </code>
- * </pre>
+ * <pre><code>SecurityConfiguration saml2intConfig = new SAML2IntSecurityConfiguration();
+ * saml2intConfig.initOpenSAML();</code></pre>
  * <p>
  * If you use the {@link OpenSAMLInitializer} you can do the following instead:
  * </p>
  * 
- * <pre>
- * <code>
- * OpenSAMLInitializer.getInstance().initialize(
+ * <pre><code>OpenSAMLInitializer.getInstance().initialize(
  *   new OpenSAMLSecurityExtensionConfig(),
- *   new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()));
- * </code>
- * </pre>
+ *   new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()));</code></pre>
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -138,13 +118,8 @@ public interface SecurityConfiguration {
   /**
    * Initializes OpenSAML with the defaults that has been installed for this instance.
    * 
-   * <pre>
-   * <code>
-   * ConfigurationService.register(XXXConfiguration.class, xxxConfiguration);
-   * </code>
-   * </pre>
    * <p>
-   * The method also sets up the {@link SecurityConfigurationHolder} singleton with this configuration.
+   * {@code ConfigurationService.register(XXXConfiguration.class, xxxConfiguration);}
    * </p>
    * 
    * @throws InitializationException
