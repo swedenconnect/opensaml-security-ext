@@ -21,8 +21,10 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.apache.xml.security.signature.XMLSignature;
 import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
 import org.opensaml.xmlsec.EncryptionConfiguration;
+import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.EncryptedKeyResolver;
@@ -30,6 +32,7 @@ import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
+import org.opensaml.xmlsec.impl.BasicSignatureSigningConfiguration;
 import org.opensaml.xmlsec.keyinfo.NamedKeyInfoGeneratorManager;
 
 import se.swedenconnect.opensaml.xmlsec.BasicExtendedEncryptionConfiguration;
@@ -122,6 +125,66 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
     }
 
     return extendedConfig;
+  }
+
+  /**
+   * Extends {@link DefaultSecurityConfigurationBootstrap#buildDefaultSignatureSigningConfiguration()} with
+   * http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1, http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1 and
+   * http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1.
+   * 
+   * @return signature signing configuration
+   */
+  public static BasicSignatureSigningConfiguration buildDefaultSignatureSigningConfiguration() {
+    return buildDefaultSignatureSigningConfiguration(null);
+  }
+
+  /**
+   * Given a {@code SignatureSigningConfiguration} the method ensures that the signature algorithms
+   * http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1, http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1 and
+   * http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1 are among the signature algorithms and returns a
+   * {@code BasicSignatureSigningConfiguration} object.
+   * 
+   * @param config
+   *          the configuration
+   * @return a signing configuration with RSA-PSS algorithms included
+   */
+  public static BasicSignatureSigningConfiguration buildDefaultSignatureSigningConfiguration(SignatureSigningConfiguration config) {
+    BasicSignatureSigningConfiguration updatedConfig;
+    if (config == null) {
+      updatedConfig = DefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
+    }
+    else if (BasicSignatureSigningConfiguration.class.isInstance(config)) { 
+      updatedConfig = BasicSignatureSigningConfiguration.class.cast(config);
+    }
+    else {
+      updatedConfig = new BasicSignatureSigningConfiguration();
+      updatedConfig.setBlacklistedAlgorithms(config.getBlacklistedAlgorithms());
+      updatedConfig.setBlacklistMerge(config.isBlacklistMerge());
+      updatedConfig.setWhitelistedAlgorithms(config.getWhitelistedAlgorithms());
+      updatedConfig.setWhitelistMerge(config.isWhitelistMerge());
+      updatedConfig.setWhitelistBlacklistPrecedence(config.getWhitelistBlacklistPrecedence());
+      updatedConfig.setKeyInfoGeneratorManager(config.getKeyInfoGeneratorManager());
+      updatedConfig.setSignatureCanonicalizationAlgorithm(config.getSignatureCanonicalizationAlgorithm());
+      updatedConfig.setSignatureHMACOutputLength(config.getSignatureHMACOutputLength());
+      updatedConfig.setSignatureReferenceCanonicalizationAlgorithm(config.getSignatureReferenceCanonicalizationAlgorithm());
+      updatedConfig.setSignatureReferenceDigestMethods(config.getSignatureReferenceDigestMethods());
+      updatedConfig.setSigningCredentials(config.getSigningCredentials());
+      updatedConfig.setSignatureAlgorithms(config.getSignatureAlgorithms());
+    }    
+    
+    List<String> signatureAlgorithms = new ArrayList<>(updatedConfig.getSignatureAlgorithms());
+    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1)) {
+      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1);
+    }
+    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1)) {
+      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1);
+    }
+    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1)) {
+      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1);
+    }
+    updatedConfig.setSignatureAlgorithms(signatureAlgorithms);
+    
+    return updatedConfig;
   }
 
   /**
