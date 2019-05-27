@@ -16,6 +16,7 @@
 package se.swedenconnect.opensaml.xmlsec.config;
 
 import org.opensaml.xmlsec.EncryptionConfiguration;
+import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 
 /**
@@ -43,5 +44,15 @@ public class DefaultSecurityConfiguration extends AbstractSecurityConfiguration 
   protected EncryptionConfiguration createDefaultEncryptionConfiguration() {
     return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
   }
+
+  /**
+   * Returns the default signing configuration with RSA-PSS extensions.
+   */
+  @Override
+  protected SignatureSigningConfiguration createDefaultSignatureSigningConfiguration() {
+    return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
+  }
+  
+  
 
 }

@@ -15,13 +15,17 @@
  */
 package se.swedenconnect.opensaml.xmlsec.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.opensaml.xmlsec.EncryptionConfiguration;
+import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.RSAOAEPParameters;
 import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
+import org.opensaml.xmlsec.impl.BasicSignatureSigningConfiguration;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 /**
@@ -71,6 +75,25 @@ public class SAML2IntSecurityConfiguration extends AbstractSecurityConfiguration
 
     // Make sure to get support for key agreement algorithms ...
     return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration(config);
+  }
+
+  /**
+   * Black-lists SHA-1 from use and adds RSA-PSS algos.
+   */
+  @Override
+  protected SignatureSigningConfiguration createDefaultSignatureSigningConfiguration() {
+    BasicSignatureSigningConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
+    
+    // Remove SHA-1
+    List<String> blacklistedAlgorithms = new ArrayList<>(config.getBlacklistedAlgorithms());
+    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_DIGEST_SHA1);
+    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
+    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1);
+    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_DSA_SHA1);
+    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_MAC_HMAC_SHA1);    
+    config.setBlacklistedAlgorithms(blacklistedAlgorithms);
+    
+    return config;
   }
 
 }
