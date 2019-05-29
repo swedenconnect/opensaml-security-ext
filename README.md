@@ -31,6 +31,8 @@ Include the following snippet in your Maven POM to add opensaml-security-ext as 
 </dependency>
 ```
 
+The [OpenSAML BOM](https://github.com/swedenconnect/opensaml-bom) is used by the opensaml-security-ext library to get OpenSAML dependencies with no known vulnerabilities. We suggest you make use of that POM-file in your OpenSAML projects.
+
 ## Initializing support
 
 OpenSAML needs to be initialized in order to function. The opensaml-security-ext provides the
