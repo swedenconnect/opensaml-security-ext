@@ -182,6 +182,23 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
     if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1)) {
       signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1);
     }
+    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA224_MGF1)) {
+      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA224_MGF1);
+    }
+    // Needs dependency to Bouncy Castle 1.62
+    //
+//    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_256_MGF1)) {
+//      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_256_MGF1);
+//    }
+//    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_384_MGF1)) {
+//      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_384_MGF1);
+//    }
+//    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_512_MGF1)) {
+//      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_512_MGF1);
+//    }
+//    if (!signatureAlgorithms.contains(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_224_MGF1)) {
+//      signatureAlgorithms.add(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_224_MGF1);
+//    }    
     updatedConfig.setSignatureAlgorithms(signatureAlgorithms);
     
     return updatedConfig;

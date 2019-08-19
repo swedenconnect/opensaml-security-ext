@@ -75,6 +75,9 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
    */
   public RSAPSSSignatureTest(String algorithm) {
     this.algorithm = algorithm;
+    
+    // Test our implementation (even though we are not using HSM).
+    System.setProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode", "true");
   }
 
   /**
@@ -85,7 +88,7 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
    */
   @Test
   public void signAndVerify() throws Exception {
-
+    
     X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
       new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
 
@@ -150,7 +153,7 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
       BasicSignatureSigningConfiguration signatureCreds = new BasicSignatureSigningConfiguration();
       signatureCreds.setSigningCredentials(Collections.singletonList(signingCredentials));
       signatureCreds.setSignatureAlgorithms(Arrays.asList(signatureAlgorithm));
-            
+
       BasicSignatureSigningParametersResolver signatureParametersResolver = new BasicSignatureSigningParametersResolver();
       CriteriaSet criteriaSet = new CriteriaSet(new SignatureSigningConfigurationCriterion(
         signatureCreds,

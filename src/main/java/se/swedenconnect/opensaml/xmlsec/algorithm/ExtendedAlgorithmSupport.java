@@ -17,6 +17,7 @@ package se.swedenconnect.opensaml.xmlsec.algorithm;
 
 import javax.annotation.Nullable;
 
+import org.apache.xml.security.signature.XMLSignature;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.algorithm.AlgorithmDescriptor;
 import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
@@ -29,6 +30,25 @@ import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public final class ExtendedAlgorithmSupport {
+
+  /**
+   * Predicate that tells whether the supplied algorithm is a RSA-PSS algorithm.
+   * 
+   * @param signatureAlgorithm
+   *          the algorithm to test
+   * @return {@code true} if the algorithm is a RSA-PSS algorithm, and {@code false} otherwise
+   */
+  public static boolean isRSAPSS(final String signatureAlgorithm) {
+    return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1.equals(signatureAlgorithm)        
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1.equals(signatureAlgorithm)
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1.equals(signatureAlgorithm)
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1_MGF1.equals(signatureAlgorithm)
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA224_MGF1.equals(signatureAlgorithm)
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_256_MGF1.equals(signatureAlgorithm)        
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_384_MGF1.equals(signatureAlgorithm)
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_512_MGF1.equals(signatureAlgorithm)
+        || XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_224_MGF1.equals(signatureAlgorithm);        
+  }
 
   /**
    * Checks whether the supplied descriptor represents an algorithm that my be used for key wrapping.

@@ -1,4 +1,12 @@
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.KeyTransportECDH_ES
+se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA1_RSA_MGF1
+se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA224_RSA_MGF1
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA256_RSA_MGF1
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA384_RSA_MGF1
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA512_RSA_MGF1
+
+# Will need a newer Bouncy Castle dependency (1.62)
+# se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA3_224_RSA_MGF1
+# se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA3_256_RSA_MGF1
+# se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA3_384_RSA_MGF1
+# se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA3_512_RSA_MGF1
