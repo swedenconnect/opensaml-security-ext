@@ -8,7 +8,9 @@ Crypto and security extensions to OpenSAML
 
 ---
 
-The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. This library also offers a workaround for using RSA-OAEP with HSM protected keys where the PKCS#11 API does not support RSA-OAEP.
+The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. 
+
+The library also offers a workaround for using RSA-OAEP and RSA-PSS with HSM protected keys since the Sun PKCS#11 provider does not support RSA-OAEP and RSA-PSS padding.
 
 As of version 1.0.2, the signature algorithms `http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1`, 
 `http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1` and `http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1` are represented as OpenSAML algorithm descriptors and installed in the OpenSAML algorithm registry.
@@ -244,14 +246,21 @@ EncryptedData encryptedData = encrypter.encryptElement(this.encryptedObject,
 The decryption phase is the same as the previous example.
 
 
-## PKCS11 RSA OAEP workaround
-The standard Sun Java PKCS#11 API does not support RSA-OAEP decryption which is a problem if the decryption key is stored in a HSM accessed through a PKCS#11 API. See this [Stack Overflow](https://stackoverflow.com/questions/23844694/bad-padding-exception-rsa-ecb-oaepwithsha-256andmgf1padding-in-pkcs11) article.
+## Workarounds for the Sun PKCS#11 provider
+
+The standard Sun Java PKCS#11 provider does not support RSA-OAEP decryption which is a problem if the decryption key is stored in a HSM accessed through a PKCS#11 API. See this [Stack Overflow](https://stackoverflow.com/questions/23844694/bad-padding-exception-rsa-ecb-oaepwithsha-256andmgf1padding-in-pkcs11) article.
 
 The [Pkcs11Decrypter](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/encryption/support/Pkcs11Decrypter.java) extends OpenSAML's `Decrypter` implementation with a work-around for this problem.
 This work-around comprises of:
 
 - Performing a raw RSA decryption on the encrypted data.
 - Performing OAEP padding processing on the decrypted data outside of the HSM to extract the decrypted plaintext.
+
+Furthermore, the Sun PKCS#11 provider does not implement PSS-padding, making it impossible to sign using RSA-PSS if the signing key is stored on a HSM and the Sun PKCS#11 provider is used. The opensaml-security-ext library solves this by overriding OpenSAML's standard `SignerProvider` (`ApacheSantuarioSignerProviderImpl`) with an extension, [ExtendedSignerProvider](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/signature/support/provider/ExtendedSignerProvider.java). This extension handles padding in software and only the raw RSA transform is performed on the HSM.
+
+By adding the opensaml-security-ext library to your classpath, the `ExtendedSignerProvider` will be made the default OpenSAML signer provider, and when RSA-PSS signing is ordered and the current crypto provider is the Sun PKCS#11 provider, the above described workaround will kick in. Otherwise, the default provider handles the operation.
+
+If you, for some reason, want to disable the `ExtendedSignerProvider` functionality, set the system property `se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.disabled` to `true`. You can also force the provider to execute all RSA-based signatures by setting the property `se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode` to `true`. This is for testing purposes.
         
 ---
 

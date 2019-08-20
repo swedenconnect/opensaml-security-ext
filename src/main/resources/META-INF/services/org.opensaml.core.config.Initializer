@@ -1,2 +1,4 @@
 se.swedenconnect.opensaml.xmlsec.config.XMLObjectProviderInitializer
 se.swedenconnect.opensaml.xmlsec.config.NamedCurveRegistryInitializer
+se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProviderInitializer
+
