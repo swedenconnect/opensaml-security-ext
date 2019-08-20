@@ -1,0 +1,15 @@
+se.swedenconnect.opensaml
+se.swedenconnect.opensaml.security.credential
+se.swedenconnect.opensaml.xmlsec
+se.swedenconnect.opensaml.xmlsec.algorithm
+se.swedenconnect.opensaml.xmlsec.algorithm.descriptors
+se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.curves
+se.swedenconnect.opensaml.xmlsec.config
+se.swedenconnect.opensaml.xmlsec.encryption
+se.swedenconnect.opensaml.xmlsec.encryption.impl
+se.swedenconnect.opensaml.xmlsec.encryption.support
+se.swedenconnect.opensaml.xmlsec.keyinfo
+se.swedenconnect.opensaml.xmlsec.keyinfo.provider
+se.swedenconnect.opensaml.xmlsec.signature.support
+se.swedenconnect.opensaml.xmlsec.signature.support.provider
+se.swedenconnect.opensaml.xmlsec.signature.support.provider.padding

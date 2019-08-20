@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>1.0.4</version>
   
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 3.X</description>
@@ -33,19 +33,19 @@
       <name>Stefan Santesson</name>
       <email>stefan@idsec.se</email>
       <organization>IDsec Solutions AB</organization>
-      <organizationUrl>http://www.idsec.se</organizationUrl>
+      <organizationUrl>https://www.idsec.se</organizationUrl>
     </developer>  
     <developer>
       <name>Martin Lindström</name>
       <email>martin@idsec.se</email>
       <organization>IDsec Solutions AB</organization>
-      <organizationUrl>http://www.idsec.se</organizationUrl>
+      <organizationUrl>https://www.idsec.se</organizationUrl>
     </developer>
   </developers>
   
   <organization>
     <name>Sweden Connect</name>
-    <url>https://swedenconnect.se</url>
+    <url>https://www.swedenconnect.se</url>
   </organization>
 
   <properties>
@@ -55,11 +55,7 @@
     <!-- Versions on dependencies -->
     <opensaml.version>3.4.3</opensaml.version>
     <shibboleth.java-support.version>7.5.0</shibboleth.java-support.version>
-    <slf4j.version>1.7.25</slf4j.version>
-    <spring.version>4.3.19.RELEASE</spring.version>
     
-    <guava.version>27.0-jre</guava.version>
-    <bcprov-jdk15on.version>1.60</bcprov-jdk15on.version>
     <commons-lang.version>2.4</commons-lang.version>
     <joda-time.version>2.9</joda-time.version>    
     <junit.version>4.12</junit.version>    
