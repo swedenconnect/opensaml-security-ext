@@ -57,7 +57,7 @@ OpenSAMLInitializer.getInstance().initialize(
 
 > For our test cases we had to add the Bouncy Castle crypto provider manually in order to implement ECDH. It should be sufficient to have it in the class path, but to be safe, the `preInitialize` method of the `OpenSAMLSecurityExtensionConfig` checks whether this provider is installed and does so if it isn't already installed.
 
-**Note**: The [eidas-opensaml](https://github.com/litsec/eidas-opensaml) library will be updated to use opensaml-security-ext. It will then define a `SecurityConfiguration` class for eIDAS security configuration.
+**Note**: The [eidas-opensaml](https://github.com/litsec/eidas-opensaml) library uses opensaml-security-ext. It defines `SecurityConfiguration` classes for eIDAS security configuration, one "strict" will small chances of interoperability and one "relaxed" that will actually work against a node using the CEF-software.
 
 
 ## Extended encryption and decryption support
