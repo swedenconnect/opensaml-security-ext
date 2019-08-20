@@ -322,7 +322,6 @@ public class Pkcs11Decrypter extends Decrypter {
    * @throws XMLEncryptionException
    *           for errors
    */
-  @SuppressWarnings("restriction")
   private Key customizedDecryptKey(org.apache.xml.security.encryption.EncryptedKey encryptedKey, String algorithm, Key kek, int keysize)
       throws XMLEncryptionException {
 
