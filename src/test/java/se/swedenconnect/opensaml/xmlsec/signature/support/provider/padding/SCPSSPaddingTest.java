@@ -56,7 +56,7 @@ public class SCPSSPaddingTest extends OpenSAMLTestBase {
   }
 
   /**
-   * Test that an attempt to provide padding for too small TSA modulus is rejected.
+   * Test that an attempt to provide padding for too small RSA modulus is rejected.
    */
   @Test(expected = IllegalArgumentException.class)
   public void testIllegalPadding() throws Exception {
