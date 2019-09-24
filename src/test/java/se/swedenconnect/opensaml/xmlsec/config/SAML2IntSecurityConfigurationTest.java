@@ -44,7 +44,7 @@ public class SAML2IntSecurityConfigurationTest {
     
     // Assert we have the SAML2Int defaults.
     Assert.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM, config.getDataEncryptionAlgorithms().get(0));
-    Assert.assertEquals(SignatureConstants.ALGO_ID_DIGEST_SHA256, config.getRSAOAEPParameters().getDigestMethod());
+    Assert.assertEquals(SignatureConstants.ALGO_ID_DIGEST_SHA1, config.getRSAOAEPParameters().getDigestMethod());
     Assert.assertTrue(config.getKeyTransportEncryptionAlgorithms().contains(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11));
     
     // Assert that the extensions of this lib are there ...
