@@ -69,7 +69,7 @@ public class SAML2IntSecurityConfiguration extends AbstractSecurityConfiguration
       EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES));
 
     config.setRSAOAEPParameters(new RSAOAEPParameters(
-      SignatureConstants.ALGO_ID_DIGEST_SHA256,
+      SignatureConstants.ALGO_ID_DIGEST_SHA1,
       EncryptionConstants.ALGO_ID_MGF1_SHA1,
       null));
 
