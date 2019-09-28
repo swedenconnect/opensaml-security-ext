@@ -23,9 +23,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1StreamParser;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERSequence;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.SecurityException;
 import org.opensaml.xmlsec.keyinfo.KeyInfoSupport;
@@ -86,8 +86,10 @@ public class ExtendedKeyInfoSupport {
 
       ASN1StreamParser parser = new ASN1StreamParser(ecPubKey.getEncoded());
 
-      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
-      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+//      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
+      ASN1Sequence seq = (ASN1Sequence) parser.readObject().toASN1Primitive();
+//      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+      ASN1Sequence innerSeq = (ASN1Sequence) seq.getObjectAt(0).toASN1Primitive();
       ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
       
       final NamedCurve namedCurve = (NamedCurve) XMLObjectSupport.buildXMLObject(NamedCurve.DEFAULT_ELEMENT_NAME);      

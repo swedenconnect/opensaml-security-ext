@@ -38,9 +38,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1StreamParser;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
@@ -444,10 +445,13 @@ public class ECDHSupport {
     publicKeySeq.add(new DERBitString(publicKeyBytes));
 
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    DEROutputStream dout = new DEROutputStream(bout);
-
+    // DEROutputStream is deprecated in Bouncy Castle 1.63, but if we change to 
+    // ASN1OutputStream.create(OutputStream, String) as suggested in 1.63, it won't 
+    // work for older versions of BC since this method does not exist.    
+    @SuppressWarnings("deprecation")
+    ASN1OutputStream dout = new org.bouncycastle.asn1.DEROutputStream(bout);
     try {
-      dout.writeObject((new DERSequence(publicKeySeq)));
+      dout.writeObject(new DERSequence(publicKeySeq));
       return bout.toByteArray();
     }
     catch (IOException e) {
@@ -462,7 +466,7 @@ public class ECDHSupport {
       }
     }
   }
-
+  
   /**
    * Given a EC public key its named curve is returned.
    * 
@@ -473,8 +477,8 @@ public class ECDHSupport {
   public static NamedCurve getNamedCurve(ECPublicKey publicKey) {
     try {
       ASN1StreamParser parser = new ASN1StreamParser(publicKey.getEncoded());
-      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
-      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+      ASN1Sequence seq = (ASN1Sequence) parser.readObject().toASN1Primitive();
+      ASN1Sequence innerSeq = (ASN1Sequence) seq.getObjectAt(0).toASN1Primitive();
       ASN1ObjectIdentifier ecPubKeyoid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(0).toASN1Primitive();
       if (!ecPubKeyoid.getId().equals(EC_PUBLIC_KEY_OID)) {
         log.error("The provided public key with key type OID {} is not a valid EC public key", ecPubKeyoid.getId());
