@@ -54,7 +54,7 @@ public class SignatureSHA3_224_RSA_MGF1 implements SignatureAlgorithm {
   @Override
   @Nonnull
   public String getJCAAlgorithmID() {
-    return "RSAwithSHA3_224andMGF1";
+    return "SHA3-224withRSAandMGF1";
   }
 
   /** {@inheritDoc} */

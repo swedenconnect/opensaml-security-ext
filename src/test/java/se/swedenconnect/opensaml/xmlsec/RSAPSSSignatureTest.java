@@ -79,7 +79,7 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
     // Test our implementation (even though we are not using HSM).
     System.setProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode", "true");
   }
-
+  
   /**
    * Tests sign and verify.
    * 
@@ -112,7 +112,11 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
     return Arrays.asList(
       XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1,
       XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1);
+      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1,
+      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_224_MGF1,
+      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_256_MGF1,
+      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_384_MGF1,
+      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_512_MGF1);
   }
 
   /**
@@ -158,7 +162,7 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
       CriteriaSet criteriaSet = new CriteriaSet(new SignatureSigningConfigurationCriterion(
         signatureCreds,
         SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration()));
-
+      
       SignatureSigningParameters parameters = signatureParametersResolver.resolveSingle(criteriaSet);
       SignatureSupport.signObject(object, parameters);
     }
