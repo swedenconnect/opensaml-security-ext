@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.5-SNAPSHOT</version>
+  <version>1.0.5</version>
   
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 3.X</description>
@@ -91,7 +91,7 @@
       <dependency>
         <groupId>se.swedenconnect.opensaml</groupId>
         <artifactId>opensaml-bom</artifactId>
-        <version>${opensaml.version}.R3-SNAPSHOT</version>
+        <version>${opensaml.version}.R3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
