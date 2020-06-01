@@ -144,7 +144,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       // Next, perform a raw RSA transform (the signing) ...
       //
       final Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
-      cipher.init(Cipher.ENCRYPT_MODE, signingKey);
+      cipher.init(Cipher.DECRYPT_MODE, signingKey);
       final byte[] signatureBytes = cipher.doFinal(emBytes);
 
       // Finally, place the signature in its correct place in the XML signature object ...
