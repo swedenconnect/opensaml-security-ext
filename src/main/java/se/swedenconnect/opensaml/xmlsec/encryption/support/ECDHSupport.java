@@ -68,6 +68,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.primitives.Bytes;
 
 import net.shibboleth.utilities.java.support.codec.Base64Support;
+import net.shibboleth.utilities.java.support.codec.DecodingException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.NamedCurve;
@@ -294,6 +295,9 @@ public class ECDHSupport {
     }
     catch (InvalidKeyException e) {
       throw new SecurityException("Failed to generate shared secret", e);
+    }
+    catch (DecodingException e) {
+      throw new SecurityException("Decoding error", e);
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Sweden Connect
+ * Copyright 2019-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package se.swedenconnect.opensaml.xmlsec;
 
 import java.security.Key;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,9 +38,6 @@ import org.opensaml.xmlsec.algorithm.AlgorithmRegistry;
 import org.opensaml.xmlsec.keyinfo.KeyInfoGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
@@ -85,8 +83,8 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
    * A copy of SAMLMetadataEncryptionParametersResolver's implementation with some changes for key agreement.
    */
   @Override
-  protected void resolveAndPopulateCredentialsAndAlgorithms(@Nonnull final EncryptionParameters params,
-      @Nonnull final CriteriaSet criteria, @Nonnull final Predicate<String> whitelistBlacklistPredicate) {
+  protected void resolveAndPopulateCredentialsAndAlgorithms(final EncryptionParameters params, final CriteriaSet criteria,
+      final Predicate<String> whitelistBlacklistPredicate) {
 
     // Create a new CriteriaSet for input to the metadata credential resolver, explicitly
     // setting/forcing an encryption usage criterion.
@@ -244,15 +242,16 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
         }
 
         if (ExtendedAlgorithmSupport.isKeyWrappingAlgorithm(algorithmDescriptor)) {
-          if (Predicates.and(this.getAlgorithmRuntimeSupportedPredicate(), whitelistBlacklistPredicate)
-            .apply(algorithmDescriptor.getURI())) {
+          if (this.getAlgorithmRuntimeSupportedPredicate().test(algorithmDescriptor.getURI())
+              && whitelistBlacklistPredicate.test(algorithmDescriptor.getURI())) {
             log.debug("Found key wrapping algorithm '{}' under EncryptionMethod for credential of type '{}'",
               algorithmDescriptor.getURI(), CredentialSupport.extractEncryptionKey(keyTransportCredential).getAlgorithm());
             return algorithmDescriptor.getURI();
           }
           else {
             log.debug("Key wrapping algorithm '{}' found under EncryptionMethod for credential of type '{}' is not "
-                + "allowed according to white/black list configuration", algorithmDescriptor.getURI(),
+                + "allowed according to white/black list configuration",
+              algorithmDescriptor.getURI(),
               CredentialSupport.extractEncryptionKey(keyTransportCredential).getAlgorithm());
           }
         }
@@ -402,7 +401,7 @@ public class ExtendedSAMLMetadataEncryptionParametersResolver extends SAMLMetada
 
     return new Pair<>(keyAgreementAlgorithm, keyDerivationMethod);
   }
-  
+
   /** {@inheritDoc} */
   @Override
   @Nullable

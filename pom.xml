@@ -8,10 +8,10 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.7</version>
+  <version>4.0.1.0-SNAPSHOT</version>
   
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
-  <description>Security and crypto extension library for OpenSAML 3.X</description>
+  <description>Security and crypto extension library for OpenSAML 4.X</description>
   <url>https://github.com/swedenconnect/opensaml-security-ext</url>
   
   <licenses>
@@ -50,11 +50,11 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>1.8</java.version>
+    <java.version>11</java.version>
     
     <!-- Versions on dependencies -->
-    <opensaml.version>3.4.5</opensaml.version>
-    <shibboleth.java-support.version>7.5.1</shibboleth.java-support.version>
+    <opensaml.version>4.0.1</opensaml.version>
+    <shibboleth.java-support.version>8.0.0</shibboleth.java-support.version>
     
     <commons-lang.version>2.4</commons-lang.version>
     <joda-time.version>2.9</joda-time.version>    
@@ -91,7 +91,7 @@
       <dependency>
         <groupId>se.swedenconnect.opensaml</groupId>
         <artifactId>opensaml-bom</artifactId>
-        <version>${opensaml.version}.R1</version>
+        <version>${opensaml.version}.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -200,7 +200,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>4.3.19.RELEASE</version>
+      <version>[5.0.0.RELEASE,)</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
