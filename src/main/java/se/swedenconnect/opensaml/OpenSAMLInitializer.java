@@ -93,7 +93,7 @@ public class OpenSAMLInitializer {
   public final synchronized void initialize(OpenSAMLInitializerConfig... customConfigs) throws Exception {
 
     if (this.initialized) {
-      log.info("OpenSAML 3.X library has already been initialized");
+      log.info("OpenSAML library has already been initialized");
       return;
     }
     
@@ -105,7 +105,7 @@ public class OpenSAMLInitializer {
       }
     }
 
-    log.debug("Initializing OpenSAML 3.X library...");
+    log.debug("Initializing OpenSAML library...");
 
     InitializationService.initialize();
 
@@ -127,7 +127,7 @@ public class OpenSAMLInitializer {
       registry.setParserPool(createDefaultParserPool());
     }
 
-    log.info("OpenSAML library 3.X successfully initialized");
+    log.info("OpenSAML library successfully initialized");
     
     if (customConfigs != null) {
       for (OpenSAMLInitializerConfig config : customConfigs) {
@@ -149,7 +149,7 @@ public class OpenSAMLInitializer {
   public void setParserPool(ParserPool parserPool) {
     this.parserPool = parserPool;
     if (this.isInitialized()) {
-      log.info("OpenSAML 3.X library has already been initialized - setting supplied parser pool to registry");
+      log.info("OpenSAML library has already been initialized - setting supplied parser pool to registry");
       XMLObjectProviderRegistrySupport.setParserPool(parserPool);
     }
   }
