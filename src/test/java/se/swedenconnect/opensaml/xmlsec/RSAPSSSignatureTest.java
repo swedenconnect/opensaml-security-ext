@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Sweden Connect
+ * Copyright 2019-2021 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 package se.swedenconnect.opensaml.xmlsec;
 
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.xml.security.signature.XMLSignature;
-import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,7 +127,7 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
   private static AuthnRequest getMockAuthnRequest() {
     AuthnRequest authnRequest = (AuthnRequest) XMLObjectSupport.buildXMLObject(AuthnRequest.DEFAULT_ELEMENT_NAME);
     authnRequest.setID("_BmPDpaRGHfHCsqRdeoTHVnsPhNvr3ulQdUoXGgnV");
-    authnRequest.setIssueInstant(new DateTime());
+    authnRequest.setIssueInstant(Instant.now());
     Issuer issuer = (Issuer) XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
     issuer.setFormat(Issuer.ENTITY);
     issuer.setValue("http://www.fake.issuer.com");

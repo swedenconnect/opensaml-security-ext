@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Sweden Connect
+ * Copyright 2019-2021 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -40,10 +41,7 @@ import org.opensaml.xmlsec.keyinfo.KeyInfoGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-
+import net.shibboleth.utilities.java.support.logic.PredicateSupport;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
 import se.swedenconnect.opensaml.xmlsec.algorithm.ExtendedAlgorithmSupport;
@@ -254,7 +252,7 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
       @Nonnull final Predicate<String> whitelistBlacklistPredicate) {
 
     final ArrayList<String> methods = new ArrayList<>();
-    List<ExtendedEncryptionConfiguration> cfgList = this.getExtendedConfiguration(criteria);
+    final List<ExtendedEncryptionConfiguration> cfgList = this.getExtendedConfiguration(criteria);
 
     if (cfgList.isEmpty()) {
       if (this.useKeyAgreementDefaults) {
@@ -267,11 +265,11 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
       }
       return methods;
     }
-
-    cfgList.stream()
-      .map(c -> Collections2.filter(c.getAgreementMethodAlgorithms(),
-        Predicates.and(getAlgorithmRuntimeSupportedPredicate(), whitelistBlacklistPredicate)))
-      .forEach(methods::addAll);
+    for (final ExtendedEncryptionConfiguration config : cfgList) {
+      config.getAgreementMethodAlgorithms().stream()
+        .filter(PredicateSupport.and(getAlgorithmRuntimeSupportedPredicate(), whitelistBlacklistPredicate))
+        .forEach(methods::add);
+    }
 
     return methods;
   }
@@ -331,7 +329,7 @@ public class ExtendedEncryptionParametersResolver extends BasicEncryptionParamet
       for (final ExtendedEncryptionConfiguration config : cfgList) {
         ConcatKDFParameters pars = config.getConcatKDFParameters();
         // Ensure that the digest method is not black listed ...
-        if (!whitelistBlacklistPredicate.apply(pars.getDigestMethod())) {
+        if (!whitelistBlacklistPredicate.test(pars.getDigestMethod())) {
           log.debug("ConcatKDFParams found in criteria states digest method '{}' - this is not valid according to white/black list",
             pars.getDigestMethod());
           continue;

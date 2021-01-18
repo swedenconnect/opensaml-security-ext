@@ -8,6 +8,10 @@ Crypto and security extensions to OpenSAML
 
 ---
 
+**NOTE:** Support for OpenSAML 3.X has been discontinued and the last release supporting OpenSAML 3.X is 1.0.7.
+
+---
+
 The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. 
 
 The library also offers a workaround for using RSA-OAEP and RSA-PSS with HSM protected keys since the Sun PKCS#11 provider does not support RSA-OAEP and RSA-PSS padding.
@@ -32,6 +36,8 @@ Include the following snippet in your Maven POM to add opensaml-security-ext as 
   <version>${opensaml-security-ext.version}</version>
 </dependency>
 ```
+
+**Note:** The version numbering of the opensaml-security-ext library now follows OpenSAML's, so the three first digits gives the OpenSAML version and the fourth (`Rx`) gives the revision number of the opensaml-security-ext library.
 
 The [OpenSAML BOM](https://github.com/swedenconnect/opensaml-bom) is used by the opensaml-security-ext library to get OpenSAML dependencies with no known vulnerabilities. We suggest you make use of that POM-file in your OpenSAML projects.
 
@@ -264,4 +270,4 @@ If you, for some reason, want to disable the `ExtendedSignerProvider` functional
         
 ---
 
-Copyright &copy; 2016-2020, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2016-2021, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

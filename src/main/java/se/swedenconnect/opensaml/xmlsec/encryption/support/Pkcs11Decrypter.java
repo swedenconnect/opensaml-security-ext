@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Sweden Connect
+ * Copyright 2019-2021 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Collection;
@@ -346,9 +345,8 @@ public class Pkcs11Decrypter extends Decrypter {
       OAEPParameterSpec oaepParameters = constructOAEPParameters(encMethod.getAlgorithm(), encMethod.getDigestAlgorithm(),
         encMethod.getMGFAlgorithm(), encMethod.getOAEPparams());
 
-      sun.security.rsa.RSAPadding padding = sun.security.rsa.RSAPadding.getInstance(
-        sun.security.rsa.RSAPadding.PAD_OAEP_MGF1, keysize / 8, new SecureRandom(), oaepParameters);
-      byte[] secretKeyBytes = padding.unpad(paddedPlainText);
+      RsaOaepMgf1Unpadding unpadder = new RsaOaepMgf1Unpadding(keysize / 8, oaepParameters);     
+      byte[] secretKeyBytes = unpadder.unpad(paddedPlainText);
 
       String jceKeyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(algorithm);
 

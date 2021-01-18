@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Sweden Connect
+ * Copyright 2019-2021 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.opensaml.xmlsec.signature.KeyValue;
 import org.opensaml.xmlsec.signature.NamedCurve;
 
 import net.shibboleth.utilities.java.support.codec.Base64Support;
+import net.shibboleth.utilities.java.support.codec.EncodingException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /**
@@ -58,14 +59,19 @@ public class ExtendedKeyInfoSupport {
   public static void addPublicKey(@Nonnull final KeyInfo keyInfo, @Nullable final PublicKey pk) throws SecurityException {
     Constraint.isNotNull(keyInfo, "KeyInfo cannot be null");
 
-    if (!ECPublicKey.class.isInstance(pk)) {
-      KeyInfoSupport.addPublicKey(keyInfo, pk);
-      return;
-    }
+    try {
+      if (!ECPublicKey.class.isInstance(pk)) {
+        KeyInfoSupport.addPublicKey(keyInfo, pk);
+        return;
+      }
 
-    final KeyValue keyValue = (KeyValue) XMLObjectSupport.buildXMLObject(KeyValue.DEFAULT_ELEMENT_NAME);
-    keyValue.setECKeyValue(buildECKeyValue((ECPublicKey) pk));
-    keyInfo.getKeyValues().add(keyValue);
+      final KeyValue keyValue = (KeyValue) XMLObjectSupport.buildXMLObject(KeyValue.DEFAULT_ELEMENT_NAME);
+      keyValue.setECKeyValue(buildECKeyValue((ECPublicKey) pk));
+      keyInfo.getKeyValues().add(keyValue);
+    }
+    catch (EncodingException e) {
+      throw new SecurityException("Encoding error", e);
+    }
   }
 
   /**
@@ -86,26 +92,29 @@ public class ExtendedKeyInfoSupport {
 
       ASN1StreamParser parser = new ASN1StreamParser(ecPubKey.getEncoded());
 
-//      DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
+      // DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
       ASN1Sequence seq = (ASN1Sequence) parser.readObject().toASN1Primitive();
-//      DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+      // DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
       ASN1Sequence innerSeq = (ASN1Sequence) seq.getObjectAt(0).toASN1Primitive();
       ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
-      
-      final NamedCurve namedCurve = (NamedCurve) XMLObjectSupport.buildXMLObject(NamedCurve.DEFAULT_ELEMENT_NAME);      
+
+      final NamedCurve namedCurve = (NamedCurve) XMLObjectSupport.buildXMLObject(NamedCurve.DEFAULT_ELEMENT_NAME);
       namedCurve.setURI("urn:oid:" + oid.getId());
       ecKeyValue.setNamedCurve(namedCurve);
 
       final org.opensaml.xmlsec.signature.PublicKey publicKey = (org.opensaml.xmlsec.signature.PublicKey) XMLObjectSupport.buildXMLObject(
         org.opensaml.xmlsec.signature.PublicKey.DEFAULT_ELEMENT_NAME);
       DERBitString key = (DERBitString) seq.getObjectAt(1).toASN1Primitive();
-      publicKey.setValue(Base64Support.encode(key.getBytes(), Base64Support.UNCHUNKED)); 
+      publicKey.setValue(Base64Support.encode(key.getBytes(), Base64Support.UNCHUNKED));
       ecKeyValue.setPublicKey(publicKey);
 
       return ecKeyValue;
     }
     catch (IOException e) {
       throw new SecurityException("Invalid EC public key parameters", e);
+    }
+    catch (EncodingException e) {
+      throw new SecurityException("Key encoding error", e);
     }
   }
 

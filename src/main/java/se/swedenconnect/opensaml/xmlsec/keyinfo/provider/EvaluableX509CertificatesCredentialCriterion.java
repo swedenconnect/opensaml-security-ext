@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Sweden Connect
+ * Copyright 2019-2021 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.criteria.impl.EvaluableCredentialCriterion;
 import org.opensaml.security.x509.X509Credential;
@@ -88,8 +87,7 @@ public class EvaluableX509CertificatesCredentialCriterion implements EvaluableCr
 
   /** {@inheritDoc} */
   @Override
-  public boolean apply(@Nullable Credential input) {
-
+  public boolean test(final Credential input) {
     if (input == null) {
       log.error("Credential input was null");
       return false;
