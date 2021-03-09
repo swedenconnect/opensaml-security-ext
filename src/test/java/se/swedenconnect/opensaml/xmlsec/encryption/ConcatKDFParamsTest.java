@@ -23,7 +23,6 @@ import org.opensaml.xmlsec.signature.DigestMethod;
 import org.w3c.dom.Element;
 
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
-import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 
 /**
  * Test cases for {@link ConcatKDFParams}.
