@@ -22,7 +22,6 @@ import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Issuer;
 
 import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
-import se.swedenconnect.opensaml.xmlsec.encryption.ConcatKDFParams;
 
 /**
  * Test cases for {@code OpenSAMLInitializer}.
@@ -51,9 +50,6 @@ public class OpenSAMLInitializerTest {
 
     // Now, it should work
     XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
-
-    // Also try to create an XMLObject defined in this lib ...
-    XMLObjectSupport.buildXMLObject(ConcatKDFParams.DEFAULT_ELEMENT_NAME);
   }
 
 }

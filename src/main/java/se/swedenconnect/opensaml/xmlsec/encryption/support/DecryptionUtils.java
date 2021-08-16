@@ -37,12 +37,13 @@ import org.opensaml.xmlsec.keyinfo.impl.CollectionKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.KeyInfoProvider;
 import org.opensaml.xmlsec.keyinfo.impl.LocalKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
+import org.opensaml.xmlsec.keyinfo.impl.provider.AgreementMethodKeyInfoProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.DEREncodedKeyValueProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.DSAKeyValueProvider;
+import org.opensaml.xmlsec.keyinfo.impl.provider.ECKeyValueProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.InlineX509DataProvider;
+import org.opensaml.xmlsec.keyinfo.impl.provider.KeyInfoReferenceProvider;
 import org.opensaml.xmlsec.keyinfo.impl.provider.RSAKeyValueProvider;
-
-import se.swedenconnect.opensaml.xmlsec.keyinfo.provider.KeyAgreementMethodKeyInfoProvider;
 
 /**
  * Utility class with helper methods for decryption.
@@ -59,21 +60,21 @@ public class DecryptionUtils {
    *          the decrypter's credentials
    * @return the parameters needed to instantiate a a {@link Decrypter} object
    */
-  public static DecryptionParameters createDecryptionParameters(Credential... localCredentials) {
-    DecryptionParameters parameters = new DecryptionParameters();
+  public static DecryptionParameters createDecryptionParameters(final Credential... localCredentials) {
+    final DecryptionParameters parameters = new DecryptionParameters();
 
     DecryptionConfiguration config = ConfigurationService.get(DecryptionConfiguration.class);
     if (config == null) {
       config = DefaultSecurityConfigurationBootstrap.buildDefaultDecryptionConfiguration();
     }
 
-    parameters.setBlacklistedAlgorithms(config.getBlacklistedAlgorithms());
-    parameters.setWhitelistedAlgorithms(config.getWhitelistedAlgorithms());
+    parameters.setExcludedAlgorithms(config.getExcludedAlgorithms());
+    parameters.setIncludedAlgorithms(config.getIncludedAlgorithms());
     parameters.setDataKeyInfoCredentialResolver(config.getDataKeyInfoCredentialResolver());
 
-    // We set our own encrypted key resolver (OpenSAML defaults don't include EncryptedElementTypeEncryptedKeyResolver.
+    // We set our own encrypted key resolver (OpenSAML defaults don't include EncryptedElementTypeEncryptedKeyResolver).
     //
-    ChainingEncryptedKeyResolver encryptedKeyResolver = new ChainingEncryptedKeyResolver(Arrays.asList(
+    final ChainingEncryptedKeyResolver encryptedKeyResolver = new ChainingEncryptedKeyResolver(Arrays.asList(
       new InlineEncryptedKeyResolver(),
       new EncryptedElementTypeEncryptedKeyResolver(),
       new SimpleRetrievalMethodEncryptedKeyResolver(),
@@ -95,14 +96,16 @@ public class DecryptionUtils {
    *          the decrypter's credentials
    * @return a {@code KeyInfoCredentialResolver} instance.
    */
-  public static KeyInfoCredentialResolver createKeyInfoCredentialResolver(Credential... localCredentials) {
+  public static KeyInfoCredentialResolver createKeyInfoCredentialResolver(final Credential... localCredentials) {
 
     final ArrayList<KeyInfoProvider> providers = new ArrayList<>();
-    providers.add(new KeyAgreementMethodKeyInfoProvider());
+    providers.add(new AgreementMethodKeyInfoProvider());
     providers.add(new RSAKeyValueProvider());
+    providers.add(new ECKeyValueProvider());
     providers.add(new DSAKeyValueProvider());
-    providers.add(new DEREncodedKeyValueProvider());
+    providers.add(new DEREncodedKeyValueProvider());    
     providers.add(new InlineX509DataProvider());
+    providers.add(new KeyInfoReferenceProvider());
 
     final List<Credential> credList = localCredentials != null ? Arrays.asList(localCredentials) : Collections.emptyList();
 

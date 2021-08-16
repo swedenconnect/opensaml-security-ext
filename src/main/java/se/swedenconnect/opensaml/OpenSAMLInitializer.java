@@ -70,7 +70,7 @@ public class OpenSAMLInitializer {
   /**
    * Predicate that tells if the OpenSAML library already has been initialized.
    * 
-   * @return if the library has been initialized {@code true} is returned, otherwise {@code false}
+   * @return if the library has been initialized true is returned, otherwise false
    */
   public boolean isInitialized() {
     return this.initialized;
@@ -90,7 +90,7 @@ public class OpenSAMLInitializer {
    * @throws Exception
    *           thrown if there is a problem initializing the library
    */
-  public final synchronized void initialize(OpenSAMLInitializerConfig... customConfigs) throws Exception {
+  public final synchronized void initialize(final OpenSAMLInitializerConfig... customConfigs) throws Exception {
 
     if (this.initialized) {
       log.info("OpenSAML library has already been initialized");
@@ -146,7 +146,7 @@ public class OpenSAMLInitializer {
    * @param parserPool
    *          the parserPool to assign
    */
-  public void setParserPool(ParserPool parserPool) {
+  public void setParserPool(final ParserPool parserPool) {
     this.parserPool = parserPool;
     if (this.isInitialized()) {
       log.info("OpenSAML library has already been initialized - setting supplied parser pool to registry");

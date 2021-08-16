@@ -23,7 +23,6 @@ import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
-import org.opensaml.xmlsec.encryption.support.RSAOAEPParameters;
 import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 import org.opensaml.xmlsec.impl.BasicSignatureSigningConfiguration;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
@@ -68,13 +67,7 @@ public class SAML2IntSecurityConfiguration extends AbstractSecurityConfiguration
       EncryptionConstants.ALGO_ID_KEYWRAP_AES128,
       EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES));
 
-    config.setRSAOAEPParameters(new RSAOAEPParameters(
-      SignatureConstants.ALGO_ID_DIGEST_SHA1,
-      EncryptionConstants.ALGO_ID_MGF1_SHA1,
-      null));
-
-    // Make sure to get support for key agreement algorithms ...
-    return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration(config);
+    return config;
   }
 
   /**
@@ -85,13 +78,13 @@ public class SAML2IntSecurityConfiguration extends AbstractSecurityConfiguration
     BasicSignatureSigningConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
     
     // Remove SHA-1
-    List<String> blacklistedAlgorithms = new ArrayList<>(config.getBlacklistedAlgorithms());
-    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_DIGEST_SHA1);
-    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
-    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1);
-    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_DSA_SHA1);
-    blacklistedAlgorithms.add(SignatureConstants.ALGO_ID_MAC_HMAC_SHA1);    
-    config.setBlacklistedAlgorithms(blacklistedAlgorithms);
+    List<String> excludedAlgorithms = new ArrayList<>(config.getExcludedAlgorithms());
+    excludedAlgorithms.add(SignatureConstants.ALGO_ID_DIGEST_SHA1);
+    excludedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
+    excludedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1);
+    excludedAlgorithms.add(SignatureConstants.ALGO_ID_SIGNATURE_DSA_SHA1);
+    excludedAlgorithms.add(SignatureConstants.ALGO_ID_MAC_HMAC_SHA1);    
+    config.setExcludedAlgorithms(excludedAlgorithms);
     
     return config;
   }

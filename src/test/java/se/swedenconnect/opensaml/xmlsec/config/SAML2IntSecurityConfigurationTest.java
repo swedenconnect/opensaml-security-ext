@@ -24,7 +24,6 @@ import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 import se.swedenconnect.opensaml.OpenSAMLInitializer;
 import se.swedenconnect.opensaml.OpenSAMLSecurityDefaultsConfig;
-import se.swedenconnect.opensaml.xmlsec.ExtendedEncryptionConfiguration;
 
 /**
  * Test cases for {@code SAML2IntSecurityConfiguration}.
@@ -47,15 +46,6 @@ public class SAML2IntSecurityConfigurationTest {
     Assert.assertEquals(SignatureConstants.ALGO_ID_DIGEST_SHA1, config.getRSAOAEPParameters().getDigestMethod());
     Assert.assertTrue(config.getKeyTransportEncryptionAlgorithms().contains(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11));
     
-    // Assert that the extensions of this lib are there ...
-    Assert.assertTrue("Expected encryption configuration to be of ExtendedEncryptionConfiguration",
-      ExtendedEncryptionConfiguration.class.isInstance(config));
-
-    ExtendedEncryptionConfiguration extConfig = ExtendedEncryptionConfiguration.class.cast(config);
-    Assert.assertFalse(extConfig.getAgreementMethodAlgorithms().isEmpty());
-    Assert.assertFalse(extConfig.getKeyDerivationAlgorithms().isEmpty());
-    Assert.assertNotNull(extConfig.getConcatKDFParameters());
-
   }
 
 }

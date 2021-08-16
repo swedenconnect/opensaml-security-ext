@@ -15,12 +15,11 @@
  */
 package se.swedenconnect.opensaml.xmlsec.config;
 
-import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 
 /**
- * A security configuration for OpenSAML default settings (with the extensions for key agreement).
+ * A security configuration for OpenSAML default settings.
  * <p>
  * For a listing of the security defaults see {@link ExtendedDefaultSecurityConfigurationBootstrap} and
  * {@link DefaultSecurityConfigurationBootstrap}.
@@ -38,21 +37,11 @@ public class DefaultSecurityConfiguration extends AbstractSecurityConfiguration 
   }
 
   /**
-   * Returns the extended encryption configuration that has support for key agreement and key derivation.
-   */
-  @Override
-  protected EncryptionConfiguration createDefaultEncryptionConfiguration() {
-    return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
-  }
-
-  /**
    * Returns the default signing configuration with RSA-PSS extensions.
    */
   @Override
   protected SignatureSigningConfiguration createDefaultSignatureSigningConfiguration() {
     return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
   }
-  
-  
 
 }
