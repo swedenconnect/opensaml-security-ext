@@ -8,11 +8,11 @@ Crypto and security extensions to OpenSAML
 
 ---
 
-**NOTE:** Support for OpenSAML 3.X has been discontinued and the last release supporting OpenSAML 3.X is 1.0.7.
+**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.7 of you are still using OpenSAML 3.
 
 ---
 
-The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement. 
+The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement (pre-3.0 only). 
 
 The library also offers a workaround for using RSA-OAEP and RSA-PSS with HSM protected keys since the Sun PKCS#11 provider does not support RSA-OAEP and RSA-PSS padding.
 
@@ -68,6 +68,8 @@ OpenSAMLInitializer.getInstance().initialize(
 
 ## Extended encryption and decryption support
 
+> Applies to versions earlier than 2.X of the opensaml-security-ext only. More recent versions of the library have removed the below described functionality since it has been added to OpenSAML (4.1.0).
+
 In order to add support for key agreement to OpenSAML in a way that an application that wishes to have this support only needs to make configuration changes we had to add quite a number of different extensions. We tested this on a Shibboleth deployment and managed to add ECDH support to an IdP.
 
 When encrypting a SAML object, for example an `Assertion`, for a peer, the following steps are generally taken:
@@ -79,7 +81,7 @@ When encrypting a SAML object, for example an `Assertion`, for a peer, the follo
 
 #### Resolving encryption parameters from metadata
 
-Below we illustrate how this is done using the [ExtendedSAMLMetadataEncryptionParametersResolver](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/ExtendedSAMLMetadataEncryptionParametersResolver.java). For details, see `resolvedEncryptionParametersFromMetadata` method in the [EncryptionDecryptionTest.java](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/test/java/se/swedenconnect/opensaml/examples/EncryptionDecryptionTest.java) file.
+Below we illustrate how this is done using the [ExtendedSAMLMetadataEncryptionParametersResolver](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/main/java/se/swedenconnect/opensaml/xmlsec/ExtendedSAMLMetadataEncryptionParametersResolver.java). For details, see `resolvedEncryptionParametersFromMetadata` method in the [EncryptionDecryptionTest.java](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/test/java/se/swedenconnect/opensaml/examples/EncryptionDecryptionTest.java) file.
 
 ```
 // The peer metadata.
@@ -176,11 +178,11 @@ decrypter.setRootInNewDocument(true);
 Type decryptedObject = (Type) decrypter.decryptData(encryptedData);
 ```
 
-The trick here that allows us to decrypt the above data is the [KeyAgreementMethodKeyInfoProvider](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/keyinfo/provider/KeyAgreementMethodKeyInfoProvider.java). This is a special purpose provider that handles key agreement and sets up a `KeyAgreementCredential` that makes it possible to use the standard OpenSAML decrypter. See [DecryptionUtils](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/encryption/support/DecryptionUtils.java) for how to set up decryption parameters.
+The trick here that allows us to decrypt the above data is the [KeyAgreementMethodKeyInfoProvider](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/main/java/se/swedenconnect/opensaml/xmlsec/keyinfo/provider/KeyAgreementMethodKeyInfoProvider.java). This is a special purpose provider that handles key agreement and sets up a `KeyAgreementCredential` that makes it possible to use the standard OpenSAML decrypter. See [DecryptionUtils](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/main/java/se/swedenconnect/opensaml/xmlsec/encryption/support/DecryptionUtils.java) for how to set up decryption parameters.
 
 #### Resolving encryption parameters from local configuration
 
-The opensaml-security-ext library also offers another encryption parameter provider, the [ExtendedEncryptionParametersResolver](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/ExtendedEncryptionParametersResolver.java). This provider does not locate peer credentials in metadata. Instead we hand them over directly. For details, see `resolvedEncryptionParameters` method in the [EncryptionDecryptionTest.java](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/test/java/se/swedenconnect/opensaml/examples/EncryptionDecryptionTest.java) file.
+The opensaml-security-ext library also offers another encryption parameter provider, the [ExtendedEncryptionParametersResolver](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/main/java/se/swedenconnect/opensaml/xmlsec/ExtendedEncryptionParametersResolver.java). This provider does not locate peer credentials in metadata. Instead we hand them over directly. For details, see `resolvedEncryptionParameters` method in the [EncryptionDecryptionTest.java](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/test/java/se/swedenconnect/opensaml/examples/EncryptionDecryptionTest.java) file.
 
 ```
 // We use the default encryption configuration. The extended part introduces support
@@ -222,9 +224,9 @@ The decryption phase is the same as the previous example.
 Finally, the opensaml-security-ext library offers a way to manually setup the parameters needed
 for ECDH encryption.
 
-For details, see `manualEncryptionSetup` method in the [EncryptionDecryptionTest.java](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/test/java/se/swedenconnect/opensaml/examples/EncryptionDecryptionTest.java) file.
+For details, see `manualEncryptionSetup` method in the [EncryptionDecryptionTest.java](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/test/java/se/swedenconnect/opensaml/examples/EncryptionDecryptionTest.java) file.
 
-In this case we need to use the "hack", [ECDHKeyAgreementParameters](https://github.com/swedenconnect/opensaml-security-ext/blob/master/src/main/java/se/swedenconnect/opensaml/xmlsec/encryption/support/ECDHKeyAgreementParameters.java) which is an extension of OpenSAML's `KeyEncryptionParameters` class. The `ECDHKeyAgreementParameters` has defaults for ECDH using ConcatKDF for key derivation.
+In this case we need to use the "hack", [ECDHKeyAgreementParameters](https://github.com/swedenconnect/opensaml-security-ext/tree/2.1.0/src/main/java/se/swedenconnect/opensaml/xmlsec/encryption/support/ECDHKeyAgreementParameters.java) which is an extension of OpenSAML's `KeyEncryptionParameters` class. The `ECDHKeyAgreementParameters` has defaults for ECDH using ConcatKDF for key derivation.
 
 ```
 // Set up parameters for encryption manually ...
