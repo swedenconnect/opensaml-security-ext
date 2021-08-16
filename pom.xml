@@ -2,18 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  
+
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
   <version>3.0.0-SNAPSHOT</version>
-  
+
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 4.X</description>
   <url>https://github.com/swedenconnect/opensaml-security-ext</url>
-  
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -21,20 +21,20 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
+
   <scm>
     <connection>scm:https://github.com/swedenconnect/opensaml-security-ext.git</connection>
     <developerConnection>scm:https://github.com/swedenconnect/opensaml-security-ext.git</developerConnection>
     <url>https://github.com/swedenconnect/opensaml-security-ext/tree/master</url>
   </scm>
-  
+
   <developers>
     <developer>
       <name>Stefan Santesson</name>
       <email>stefan@idsec.se</email>
       <organization>IDsec Solutions AB</organization>
       <organizationUrl>https://www.idsec.se</organizationUrl>
-    </developer>  
+    </developer>
     <developer>
       <name>Martin Lindström</name>
       <email>martin@idsec.se</email>
@@ -42,7 +42,7 @@
       <organizationUrl>https://www.idsec.se</organizationUrl>
     </developer>
   </developers>
-  
+
   <organization>
     <name>Sweden Connect</name>
     <url>https://www.swedenconnect.se</url>
@@ -51,9 +51,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
-    
+
     <opensaml.min.version>4.1.0</opensaml.min.version>
-    <junit.version>4.13.1</junit.version> 
+    <junit.version>4.13.1</junit.version>
   </properties>
 
   <repositories>
@@ -68,7 +68,7 @@
       <url>https://build.shibboleth.net/nexus/content/repositories/releases</url>
     </repository>
   </repositories>
-  
+
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
@@ -79,23 +79,23 @@
     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-  
+
   <dependencies>
-  
+
     <!-- Bouncy Castle -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
       <version>[1.68,)</version>
     </dependency>
-  
-    <!-- OpenSAML -->    
+
+    <!-- OpenSAML -->
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core</artifactId>
       <version>[${opensaml.min.version},)</version>
-    </dependency>  
-    
+    </dependency>
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
@@ -109,10 +109,10 @@
         <exclusion>
           <groupId>commons-codec</groupId>
           <artifactId>commons-codec</artifactId>
-        </exclusion>        
+        </exclusion>
       </exclusions>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
@@ -126,10 +126,10 @@
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpcore</artifactId>
-        </exclusion>        
+        </exclusion>
       </exclusions>
     </dependency>
-        
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-api</artifactId>
@@ -142,25 +142,25 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-impl</artifactId>
       <version>[${opensaml.min.version},)</version>
-    </dependency>    
-    
+    </dependency>
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-api</artifactId>
       <version>[${opensaml.min.version},)</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
       <version>[${opensaml.min.version},)</version>
     </dependency>
-        
+
     <!-- For testing -->
     <dependency>
       <groupId>junit</groupId>
@@ -169,21 +169,21 @@
       <scope>test</scope>
       <type>jar</type>
     </dependency>
-    
+
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>2.27.0</version>
       <scope>test</scope>
-    </dependency>    
-        
+    </dependency>
+
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
       <scope>test</scope>
     </dependency>
-        
+
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -196,8 +196,8 @@
           <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>    
-    
+    </dependency>
+
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
@@ -205,12 +205,12 @@
       <scope>test</scope>
       <type>jar</type>
     </dependency>
-        
+
   </dependencies>
 
   <build>
     <plugins>
-    
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -220,25 +220,25 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.1</version>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>      
+        <version>3.0.0</version>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.7.1</version>
       </plugin>
-                  
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -255,22 +255,22 @@
               <goal>enforce</goal>
             </goals>
           </execution>
-        </executions>        
+        </executions>
       </plugin>
-      
+
     </plugins>
   </build>
-  
+
   <profiles>
 
     <profile>
       <id>release</id>
-      
+
       <!-- See http://central.sonatype.org/pages/apache-maven.html for setup -->
-      
+
       <build>
         <plugins>
-        
+
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -284,11 +284,11 @@
                 Allows manual inspection of the staging repo before deploying
                 it to the central repo.
                 Use 'mvn nexus-staging:release -Prelease' to release and
-                'mvn nexus-staging:drop' to abort. 
+                'mvn nexus-staging:drop' to abort.
                -->
             </configuration>
-          </plugin>        
-        
+          </plugin>
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
@@ -320,10 +320,10 @@
                 <goals>
                   <goal>test-jar-no-fork</goal>
                 </goals>
-              </execution>              
+              </execution>
             </executions>
           </plugin>
-          
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -337,20 +337,20 @@
               </execution>
             </executions>
             <configuration>
-            
+
               <doctitle>OpenSAML 4.x Security Extensions - ${project.version}</doctitle>
-              <windowtitle>OpenSAML 4.x Security Extensions - ${project.version}</windowtitle>             
+              <windowtitle>OpenSAML 4.x Security Extensions - ${project.version}</windowtitle>
               <detectJavaApiLink>true</detectJavaApiLink>
               <links>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/4.0.1/apidocs/</link>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.0.0/apidocs/</link>                
-              </links>              
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.0.0/apidocs/</link>
+              </links>
               <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
               <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
               <additionalJOptions>
                 <additionalJOption>-Xdoclint:all</additionalJOption>
                 <additionalJOption>-Xdoclint:-missing</additionalJOption>
-              </additionalJOptions>              
+              </additionalJOptions>
             </configuration>
           </plugin>
 
@@ -359,6 +359,6 @@
 
     </profile>
 
-  </profiles>  
+  </profiles>
 
 </project>
