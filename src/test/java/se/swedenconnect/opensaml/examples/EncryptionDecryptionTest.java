@@ -24,36 +24,35 @@ import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.criterion.RoleDescriptorCriterion;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.encryption.Decrypter;
-import org.opensaml.saml.saml2.encryption.Encrypter;
-import org.opensaml.saml.saml2.encryption.Encrypter.KeyPlacement;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
+import org.opensaml.saml.security.impl.SAMLMetadataEncryptionParametersResolver;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.x509.BasicX509Credential;
 import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.EncryptionParameters;
 import org.opensaml.xmlsec.EncryptionParametersResolver;
+import org.opensaml.xmlsec.agreement.KeyAgreementCredential;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.criterion.EncryptionConfigurationCriterion;
+import org.opensaml.xmlsec.derivation.impl.ConcatKDF;
 import org.opensaml.xmlsec.encryption.EncryptedData;
 import org.opensaml.xmlsec.encryption.support.DataEncryptionParameters;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
+import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
+import org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver;
 import org.springframework.core.io.ClassPathResource;
 
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
-import se.swedenconnect.opensaml.security.credential.KeyAgreementCredential;
-import se.swedenconnect.opensaml.xmlsec.BasicExtendedEncryptionConfiguration;
-import se.swedenconnect.opensaml.xmlsec.ExtendedEncryptionParametersResolver;
-import se.swedenconnect.opensaml.xmlsec.ExtendedSAMLMetadataEncryptionParametersResolver;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.DecryptionUtils;
-import se.swedenconnect.opensaml.xmlsec.encryption.support.ECDHKeyAgreementParameters;
-import se.swedenconnect.opensaml.xmlsec.encryption.support.EcEncryptionConstants;
 
 /**
- * Examples for different ways of encrypting and decrypting using key agreement.
+ * Examples for different ways of encrypting and decrypting using key agreement. This functionality was previously part
+ * of the opensaml-security-ext library, but since it was introduced in OpenSAML 4.1.0, it was removed and this class
+ * illustrates how to use OpenSAML for encrypting and decrypting using key agreement.
  *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -105,54 +104,7 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
   }
 
   /**
-   * Illustrates how we encrypt using ECDH key agreement where we set up the encryption parameters manually. Normally,
-   * we obtain encryption parameters from a {@link EncryptionParametersResolver} (see below).
-   * 
-   * @throws Exception
-   *           for test errors
-   */
-  @Test
-  public void manualEncryptionSetup() throws Exception {
-
-    // Set up parameters for encryption manually ...
-    //
-    DataEncryptionParameters dataEncryptionParameters = new DataEncryptionParameters();
-    dataEncryptionParameters.setAlgorithm(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM);
-
-    // In order for ECDH to be possible with OpenSAML's Encrypter class we need to instantiate
-    // our special purpose key encryption parameters object.
-    //
-    ECDHKeyAgreementParameters kekParams = new ECDHKeyAgreementParameters();
-    kekParams.setPeerCredential(this.ecPeerCredential);
-    // The kekParams will use default algorithms for key wrapping and key agreement.
-
-    // We also need the special purpose key info generator (for key agreement).
-    kekParams.setKeyInfoGenerator(
-      ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultKeyAgreementKeyInfoGeneratorFactory().newInstance());
-
-    // Encrypt
-    //
-    Encrypter encrypter = new Encrypter(dataEncryptionParameters, kekParams);
-    encrypter.setKeyPlacement(KeyPlacement.INLINE);
-
-    EncryptedData encryptedData = encrypter.encryptElement(this.encryptedObject, dataEncryptionParameters, kekParams);
-
-    System.out.println("Encrypted data:\n" + OpenSAMLTestBase.toString(encryptedData));
-
-    // OK, let's decrypt ...
-    //
-    Decrypter decrypter = new Decrypter(DecryptionUtils.createDecryptionParameters(rsaCredential, ecCredential));
-    decrypter.setRootInNewDocument(true);
-
-    Issuer decryptedObject = (Issuer) decrypter.decryptData(encryptedData);
-    System.out.println(OpenSAMLTestBase.toString(decryptedObject));
-
-    Assert.assertEquals(String.format("Expected '%s' as decrypted message", VALUE), VALUE, decryptedObject.getValue());
-  }
-
-  /**
-   * Illustrates how we use the {@link ExtendedEncryptionParametersResolver} to resolve encryption parameters before
-   * encrypting.
+   * Illustrates how we use the {@link EncryptionParametersResolver} to resolve encryption parameters before encrypting.
    * 
    * @throws Exception
    *           for test errors
@@ -160,31 +112,25 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
   @Test
   public void resolvedEncryptionParameters() throws Exception {
 
-    // We use the default encryption configuration. The extended part introduces support
-    // for key agreement and key derivation configuration.
+    // We use the default encryption configuration.
     //
-    BasicExtendedEncryptionConfiguration config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    BasicEncryptionConfiguration config = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
 
     // Install our key transport encryption credentials.
-    // The setKeyTransportEncryptionCredentials will analyze whether the added credential can be
-    // used for ordinary key transport or key agreement.
-    // Note: You may also use the setKeyAgreementCredentials to explicitly assign credentials that
-    // may be used for key agreement.
     //
     config.setKeyTransportEncryptionCredentials(Arrays.asList(this.ecPeerCredential, this.rsaPeerCredential));
 
     // Make our encryption configuration into a criteria for the resolver.
     //
-    EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
-    CriteriaSet criteriaSet = new CriteriaSet(criterion);
+    CriteriaSet criteriaSet = new CriteriaSet(new EncryptionConfigurationCriterion(config));
 
     // Instantiate our extension of the EncryptionParametersResolver to get the parameters needed
     // for encryption.
     //
-    ExtendedEncryptionParametersResolver resolver = new ExtendedEncryptionParametersResolver();
+    EncryptionParametersResolver resolver = new BasicEncryptionParametersResolver();
     EncryptionParameters params = resolver.resolveSingle(criteriaSet);
 
-    // As you see above we have both an EC credential and a RSA credential. The ExtendedEncryptionParametersResolver
+    // As you see above we have both an EC credential and a RSA credential. The EncryptionParametersResolver
     // will use the first credential that matches the supplied EncryptionConfigurationCriterion.
     // In this case it should be the EC credential. Let's assert that ...
     //
@@ -216,8 +162,7 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
     config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     config.setKeyTransportEncryptionCredentials(Arrays.asList(this.rsaPeerCredential, this.ecPeerCredential));
 
-    criterion = new EncryptionConfigurationCriterion(config);
-    params = resolver.resolveSingle(new CriteriaSet(criterion));
+    params = resolver.resolveSingle(new CriteriaSet(new EncryptionConfigurationCriterion(config)));
 
     Assert.assertEquals("RSA", params.getKeyTransportEncryptionCredential().getPublicKey().getAlgorithm());
   }
@@ -230,14 +175,14 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
    */
   @Test
   public void resolvedEncryptionParametersFromMetadata() throws Exception {
-    
+
     // The peer metadata.
     final EntityDescriptor metadata = OpenSAMLTestBase.unmarshall(
       new ClassPathResource("metadata-ec-with-enc-method.xml").getInputStream(), EntityDescriptor.class);
 
     // Set up a MetadataCredentialResolver (a resolver that reads from SAML metadata)
     //
-    MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();
+    final MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();
     credentialResolver.setKeyInfoCredentialResolver(DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
     credentialResolver.initialize();
 
@@ -245,26 +190,26 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
     //
 
     // We need default algorithms (in case no are given in EncryptionMethod in metadata).
-    EncryptionConfigurationCriterion encConfCriterion = new EncryptionConfigurationCriterion(
-      ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration());
+    final EncryptionConfigurationCriterion encConfCriterion = new EncryptionConfigurationCriterion(
+      DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration());
 
-    // RoleDescriptorCriterion gives us the metadata. In a real case a RoleDescriptorResolver would
-    // be used.
-    RoleDescriptorCriterion rdCriterion = new RoleDescriptorCriterion(metadata.getRoleDescriptors().get(0));
+    // RoleDescriptorCriterion gives us the metadata. In a real case a RoleDescriptorResolver would be used.
+    final RoleDescriptorCriterion rdCriterion = new RoleDescriptorCriterion(metadata.getRoleDescriptors().get(0));
 
-    CriteriaSet criteriaSet = new CriteriaSet(encConfCriterion, rdCriterion);
+    final CriteriaSet criteriaSet = new CriteriaSet(encConfCriterion, rdCriterion);
 
     // Resolve encryption parameters and encrypt.
     //
-    ExtendedSAMLMetadataEncryptionParametersResolver resolver = new ExtendedSAMLMetadataEncryptionParametersResolver(credentialResolver);
-
-    EncryptionParameters params = resolver.resolveSingle(criteriaSet);
+    final SAMLMetadataEncryptionParametersResolver resolver =
+        new SAMLMetadataEncryptionParametersResolver(credentialResolver);
+    final EncryptionParameters params = resolver.resolveSingle(criteriaSet);
 
     // The metadata specifies which algorithms that should be used.
     // Let's assert that the peer's suggestions are used.
     //
-    Assert.assertTrue(String.format("Expected KeyAgreementCredential for KeyTransportEncryptionCredential, but was '%s'", 
-      params.getKeyTransportEncryptionCredential() != null ? params.getKeyTransportEncryptionCredential().getClass().getSimpleName() : "null"), 
+    Assert.assertTrue(String.format("Expected KeyAgreementCredential for KeyTransportEncryptionCredential, but was '%s'",
+      params.getKeyTransportEncryptionCredential() != null ? params.getKeyTransportEncryptionCredential().getClass().getSimpleName()
+          : "null"),
       KeyAgreementCredential.class.isInstance(params.getKeyTransportEncryptionCredential()));
 
     Assert.assertEquals(String.format("Expected '%s' for data encryption algorithm", EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256),
@@ -273,18 +218,18 @@ public class EncryptionDecryptionTest extends OpenSAMLTestBase {
       EncryptionConstants.ALGO_ID_KEYWRAP_AES256, params.getKeyTransportEncryptionAlgorithm());
 
     // The special KeyAgreementCredential holds the rest of the information ...
-    Assert.assertEquals("AESWrap", params.getKeyTransportEncryptionCredential().getSecretKey().getAlgorithm());
     final KeyAgreementCredential kaCred = KeyAgreementCredential.class.cast(params.getKeyTransportEncryptionCredential());
-    Assert.assertEquals(String.format("Expected KeyAgreement algorithm '%s'", EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES),
-      EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES, kaCred.getAgreementMethodAlgorithm());
-    Assert.assertEquals(String.format("Expected KeyDerivation algorithm '{}'", EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT),
-      EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT, kaCred.getKeyDerivationMethod().getAlgorithm());
+    Assert.assertEquals(String.format("Expected KeyAgreement algorithm '%s'", EncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES),
+      EncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES, kaCred.getAlgorithm());
+    Assert.assertTrue(
+      String.format("Expected KeyDerivation algorithm '{}'", EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF),
+      kaCred.getParameters().contains(ConcatKDF.class));
 
     org.opensaml.xmlsec.encryption.support.Encrypter encrypter = new org.opensaml.xmlsec.encryption.support.Encrypter();
 
     EncryptedData encryptedData = encrypter.encryptElement(this.encryptedObject,
       new DataEncryptionParameters(params), new KeyEncryptionParameters(params, metadata.getEntityID()));
-    
+
     System.out.println("Encrypted data:\n" + OpenSAMLTestBase.toString(encryptedData));
 
     // OK, let's decrypt ...

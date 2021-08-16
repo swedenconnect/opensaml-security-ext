@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>2.0.1</version>
+  <version>3.0.0-SNAPSHOT</version>
   
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 4.X</description>
@@ -52,6 +52,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
     
+    <opensaml.min.version>4.1.0</opensaml.min.version>
     <junit.version>4.13.1</junit.version> 
   </properties>
 
@@ -80,19 +81,25 @@
   </distributionManagement>
   
   <dependencies>
-
+  
+    <!-- Bouncy Castle -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>[1.68,)</version>
+    </dependency>
   
     <!-- OpenSAML -->    
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
     </dependency>  
     
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -109,38 +116,49 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
       <exclusions>
         <!-- Older version than other OpenSAML deps ... -->
         <exclusion>
           <groupId>commons-codec</groupId>
           <artifactId>commons-codec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
         </exclusion>        
-      </exclusions>      
+      </exclusions>
     </dependency>
         
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-api</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
+      <exclusions>
+        <!-- Older version than other OpenSAML deps ... -->
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15on</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-impl</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
     </dependency>    
     
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-api</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
     </dependency>
     
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
-      <version>[4.0.0,)</version>
+      <version>[${opensaml.min.version},)</version>
     </dependency>
         
     <!-- For testing -->

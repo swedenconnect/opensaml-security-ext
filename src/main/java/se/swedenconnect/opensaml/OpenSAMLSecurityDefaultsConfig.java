@@ -43,7 +43,7 @@ public class OpenSAMLSecurityDefaultsConfig implements OpenSAMLInitializerConfig
    * @param securityConfiguration
    *          the security configuration to install
    */
-  public OpenSAMLSecurityDefaultsConfig(SecurityConfiguration securityConfiguration) {
+  public OpenSAMLSecurityDefaultsConfig(final SecurityConfiguration securityConfiguration) {
     this.securityConfiguration = Constraint.isNotNull(securityConfiguration, "securityConfiguration must not be null");
   }
 

@@ -19,17 +19,15 @@ import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.opensaml.core.config.ConfigurationService;
-import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.SecurityConfigurationSupport;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.swedenconnect.opensaml.xmlsec.ExtendedEncryptionConfiguration;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 
 /**
- * Configuration that extends OpenSAML's encryption support with key agreement algorithms.
+ * Configuration that extends OpenSAML's signature support with RSA-PSS algorithms.
  * 
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -63,28 +61,14 @@ public class OpenSAMLSecurityExtensionConfig implements OpenSAMLInitializerConfi
 
   /**
    * We don't know if a {@link OpenSAMLSecurityDefaultsConfig} object is sent to the initializer. Therefore, we always
-   * make sure that we extends OpenSAML's encryption configuration with support for key agreement. We also add the
-   * RSA-PSS signing algorithms.
+   * make sure that we extend OpenSAML's signature configuration with support for the RSA-PSS signing algorithms.
    */
   @Override
   public void postInitialize() throws Exception {
 
-    EncryptionConfiguration encryptionConfiguration = ConfigurationService.get(EncryptionConfiguration.class);
-    if (ExtendedEncryptionConfiguration.class.isInstance(encryptionConfiguration)) {
-      // It seems like the configuration already contains the extensions needed.
-      log.debug("{}: ExtendedEncryptionConfiguration already present in OpenSAML configuration", this.getName());
-    }
-    else {
-      log.info("Adding key agreement support to system EncryptionConfiguration");
-      ConfigurationService.register(EncryptionConfiguration.class,
-        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration(
-          SecurityConfigurationSupport.getGlobalEncryptionConfiguration()));
-      log.debug("{}: Extended encryption configuration successfully registered", this.getName());
-    }
-
-    SignatureSigningConfiguration signingConfiguration = ExtendedDefaultSecurityConfigurationBootstrap
-      .buildDefaultSignatureSigningConfiguration(
-        SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration());
+    final SignatureSigningConfiguration signingConfiguration =
+        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration(
+          SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration());
     ConfigurationService.register(SignatureSigningConfiguration.class, signingConfiguration);
   }
 

@@ -1,4 +1,3 @@
-se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.KeyTransportECDH_ES
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA1_RSA_MGF1
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA224_RSA_MGF1
 se.swedenconnect.opensaml.xmlsec.algorithm.descriptors.SignatureSHA256_RSA_MGF1
