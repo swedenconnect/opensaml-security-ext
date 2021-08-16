@@ -19,7 +19,13 @@ The library also offers a workaround for using RSA-OAEP and RSA-PSS with HSM pro
 As of version 1.0.2, the signature algorithms `http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1`, 
 `http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1` and `http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1` are represented as OpenSAML algorithm descriptors and installed in the OpenSAML algorithm registry.
 
-Java API documentation of the opensaml-security-ext library is found at [https://docs.swedenconnect.se/opensaml-security-ext](https://docs.swedenconnect.se/opensaml-security-ext/).
+Java API documentation of the opensaml-security-ext library is found at:
+
+* [Latest](https://docs.swedenconnect.se/opensaml-security-ext/)
+
+* [2.1.0](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/2.1.0/index.html)
+
+* [1.0.7](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/1.0.7/index.html).
 
 Generated project information is found at [https://docs.swedenconnect.se/opensaml-security-ext/site](https://docs.swedenconnect.se/opensaml-security-ext/site).
 
@@ -36,10 +42,6 @@ Include the following snippet in your Maven POM to add opensaml-security-ext as 
   <version>${opensaml-security-ext.version}</version>
 </dependency>
 ```
-
-**Note:** The version numbering of the opensaml-security-ext library now follows OpenSAML's, so the three first digits gives the OpenSAML version and the fourth (`Rx`) gives the revision number of the opensaml-security-ext library.
-
-The [OpenSAML BOM](https://github.com/swedenconnect/opensaml-bom) is used by the opensaml-security-ext library to get OpenSAML dependencies with no known vulnerabilities. We suggest you make use of that POM-file in your OpenSAML projects.
 
 ## Initializing support
 
