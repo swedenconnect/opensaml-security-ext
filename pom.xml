@@ -342,8 +342,8 @@
               <windowtitle>OpenSAML 4.x Security Extensions - ${project.version}</windowtitle>
               <detectJavaApiLink>true</detectJavaApiLink>
               <links>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/4.0.1/apidocs/</link>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.0.0/apidocs/</link>
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/4.1.1/apidocs/</link>
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.2.1/apidocs/</link>
               </links>
               <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
               <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
