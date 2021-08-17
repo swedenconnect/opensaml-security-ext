@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.0.0</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 4.X</description>
@@ -115,23 +115,6 @@
 
     <dependency>
       <groupId>org.opensaml</groupId>
-      <artifactId>opensaml-saml-impl</artifactId>
-      <version>[${opensaml.min.version},)</version>
-      <exclusions>
-        <!-- Older version than other OpenSAML deps ... -->
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-api</artifactId>
       <version>[${opensaml.min.version},)</version>
       <exclusions>
@@ -139,6 +122,14 @@
         <exclusion>
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcprov-jdk15on</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -202,6 +193,14 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
       <version>[5.0.0.RELEASE,)</version>
+      <scope>test</scope>
+      <type>jar</type>
+    </dependency>
+     
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-saml-impl</artifactId>
+      <version>[${opensaml.min.version},)</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
