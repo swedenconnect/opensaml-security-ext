@@ -22,6 +22,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 import javax.xml.namespace.QName;
 
@@ -48,6 +50,18 @@ import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public abstract class OpenSAMLTestBase {
+  
+  /** Factory for creating certificates. */
+  private static CertificateFactory certFactory = null;
+
+  static {
+    try {
+      certFactory = CertificateFactory.getInstance("X.509");
+    }
+    catch (CertificateException e) {
+      throw new SecurityException(e);
+    }
+  }  
 
   /**
    * Initializes the OpenSAML library.
@@ -188,5 +202,9 @@ public abstract class OpenSAMLTestBase {
     KeyStore keyStore = loadKeyStore(keyStoreStream, keyStorePassword, "jks");
     return new KeyStoreX509CredentialAdapter(keyStore, alias, keyPassword.toCharArray());
   }
+  
+  public static X509Certificate decodeCertificate(final InputStream stream) throws CertificateException {
+    return (X509Certificate) certFactory.generateCertificate(stream);
+  }    
 
 }
