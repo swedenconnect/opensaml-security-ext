@@ -21,7 +21,7 @@ As of version 1.0.2, the signature algorithms `http://www.w3.org/2007/05/xmldsig
 
 Java API documentation of the opensaml-security-ext library is found at:
 
-* [Latest](https://docs.swedenconnect.se/opensaml-security-ext/)
+* [Latest](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/latest/index.html)
 
 * [2.1.0](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/2.1.0/index.html)
 
