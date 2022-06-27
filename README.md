@@ -12,8 +12,8 @@ Crypto and security extensions to OpenSAML
 
 ---
 
-**NOTE:** There is an interoperability issue between OpenSAML 4.0.X and version 1.0.7 with regard to the use of ECDH. The issue conerns the requirements on precense of ConcatKDF parameters in ECDH where the interpretation of the standard differes and where OpenSAML does not allow the empty parameters sent by 1.0.7. An issue is raised with the OpenSAML team to resolve this issue to bring OpenSAML 4 in alignment with 1.0.7 if possible.
-We recommend any implementations till using OpenSAML 3 to move to the fixed version 1.0.8 that interoperates with the current version of OpenSAML 4.0.X
+**NOTE:** There is an interoperability issue between OpenSAML 4.0.X and version 1.0.7 regarding the use of ECDH. The issue concerns the requirements on presence of ConcatKDF parameters in ECDH where OpenSAML does not allow the empty parameters sent by 1.0.7. An issue is raised with the OpenSAML team to resolve this issue to bring OpenSAML 4 in alignment with 1.0.7 if possible. Implementations still using OpenSAML 3 should move to the fixed version 1.0.8 to avoid this issue.
+
 
 ---
 
