@@ -89,7 +89,8 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
     extendedConfig.setAgreementMethodAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES));
     extendedConfig.setKeyDerivationAlgorithms(Arrays.asList(EcEncryptionConstants.ALGO_ID_KEYDERIVATION_CONCAT));
 
-    extendedConfig.setConcatKDFParameters(new ConcatKDFParameters(EncryptionConstants.ALGO_ID_DIGEST_SHA256));
+    extendedConfig.setConcatKDFParameters(new ConcatKDFParameters(
+      EncryptionConstants.ALGO_ID_DIGEST_SHA256, new byte[]{0x00}, new byte[]{0x00}, new byte[]{0x00}));
 
     extendedConfig.setBlacklistedAlgorithms(config.getBlacklistedAlgorithms());
     extendedConfig.setBlacklistMerge(config.isBlacklistMerge());
