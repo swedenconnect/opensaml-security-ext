@@ -8,15 +8,21 @@ Crypto and security extensions to OpenSAML
 
 ---
 
-**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.8 of you are still using OpenSAML 3.
+**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.8 if you are still using OpenSAML 3.
 
 ---
 
-The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement (pre-3.0 only). 
+**NOTE:** There is an interoperability issue between OpenSAML 4.0.X and version 1.0.7 regarding the use of ECDH. The issue concerns the requirements on presence of ConcatKDF parameters in ECDH where OpenSAML does not allow the empty parameters sent by 1.0.7. An issue is raised with the OpenSAML team to resolve this issue to bring OpenSAML 4 in alignment with 1.0.7 if possible. Implementations still using OpenSAML 3 should move to the fixed version 1.0.8 to avoid this issue.
+
+
+---
+
+
+The opensaml-security-ext extends the core OpenSAML libraries with the capability to encrypt and decrypt XML data using ephemeral-static ECDH key agreement (pre-3.0 only).
 
 The library also offers a workaround for using RSA-OAEP and RSA-PSS with HSM protected keys since the Sun PKCS#11 provider does not support RSA-OAEP and RSA-PSS padding.
 
-As of version 1.0.2, the signature algorithms `http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1`, 
+As of version 1.0.2, the signature algorithms `http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1`,
 `http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1` and `http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1` are represented as OpenSAML algorithm descriptors and installed in the OpenSAML algorithm registry.
 
 Java API documentation of the opensaml-security-ext library is found at:
@@ -90,7 +96,7 @@ Below we illustrate how this is done using the [ExtendedSAMLMetadataEncryptionPa
 final EntityDescriptor metadata = ...;
 
 // Set up a MetadataCredentialResolver (a resolver that reads from SAML metadata)
-MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();    
+MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();
 credentialResolver.setKeyInfoCredentialResolver(
   DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
 credentialResolver.initialize();
@@ -103,14 +109,14 @@ EncryptionConfigurationCriterion encConfCriterion = new EncryptionConfigurationC
 
 // RoleDescriptorCriterion gives us the metadata. In a real case a RoleDescriptorResolver
 // would be used.
-RoleDescriptorCriterion rdCriterion = 
+RoleDescriptorCriterion rdCriterion =
   new RoleDescriptorCriterion(metadata.getRoleDescriptors().get(0));
 
 CriteriaSet criteriaSet = new CriteriaSet(encConfCriterion, rdCriterion);
 
 // Resolve encryption parameters and encrypt.
 //
-ExtendedSAMLMetadataEncryptionParametersResolver resolver = 
+ExtendedSAMLMetadataEncryptionParametersResolver resolver =
   new ExtendedSAMLMetadataEncryptionParametersResolver(credentialResolver);
 
 EncryptionParameters params = resolver.resolveSingle(criteriaSet);
@@ -125,34 +131,34 @@ EncryptedData encryptedData = encrypter.encryptElement(this.encryptedObject,
 The encrypted data is represented in XML as:
 
 ```
-<xenc:EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" 
+<xenc:EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element"
                     xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
-  <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc" 
+  <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"
                          xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"/>
   <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-    <xenc:EncryptedKey Recipient="http://id.example.com/sp1" 
+    <xenc:EncryptedKey Recipient="http://id.example.com/sp1"
                        xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
-      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#kw-aes256" 
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#kw-aes256"
                              xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"/>
       <ds:KeyInfo>
         <xenc:AgreementMethod Algorithm="http://www.w3.org/2009/xmlenc11#ECDH-ES">
           <xenc11:KeyDerivationMethod Algorithm="http://www.w3.org/2009/xmlenc11#ConcatKDF"
                                       xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
             <xenc11:ConcatKDFParams AlgorithmID="0000" PartyUInfo="0000" PartyVInfo="0000">
-              <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" 
+              <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"
                                xmlns:ds="http://www.w3.org/2000/09/xmldsig#"/>
             </xenc11:ConcatKDFParams>
           </xenc11:KeyDerivationMethod>
           <xenc:OriginatorKeyInfo>
             <ds:KeyValue>
               <ds11:ECKeyValue xmlns:ds11="http://www.w3.org/2009/xmldsig11#">
-                <ds11:NamedCurve URI="urn:oid:1.2.840.10045.3.1.7"/>                                 
+                <ds11:NamedCurve URI="urn:oid:1.2.840.10045.3.1.7"/>
                 <ds11:PublicKey>BPqJLXfFWIjsa9hPug...umuc=</ds11:PublicKey>
               </ds11:ECKeyValue>
             </ds:KeyValue>
           </xenc:OriginatorKeyInfo>
            <xenc:RecipientKeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-            <ds:X509Data xmlns:ds="http://www.w3.org/2000/09/xmldsig#">                              
+            <ds:X509Data xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
               <ds:X509Certificate>MIIB...AEoizR</ds:X509Certificate>
             </ds:X509Data>
           </xenc:RecipientKeyInfo>
@@ -163,7 +169,7 @@ The encrypted data is represented in XML as:
       </xenc:CipherData>
     </xenc:EncryptedKey>
   </ds:KeyInfo>
-  <xenc:CipherData xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">        
+  <xenc:CipherData xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
     <xenc:CipherValue>WreMTql...rXWg4=</xenc:CipherValue>
   </xenc:CipherData>
 </xenc:EncryptedData>
@@ -271,7 +277,7 @@ Furthermore, the Sun PKCS#11 provider does not implement PSS-padding, making it 
 By adding the opensaml-security-ext library to your classpath, the `ExtendedSignerProvider` will be made the default OpenSAML signer provider, and when RSA-PSS signing is ordered and the current crypto provider is the Sun PKCS#11 provider, the above described workaround will kick in. Otherwise, the default provider handles the operation.
 
 If you, for some reason, want to disable the `ExtendedSignerProvider` functionality, set the system property `se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.disabled` to `true`. You can also force the provider to execute all RSA-based signatures by setting the property `se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode` to `true`. This is for testing purposes.
-        
+
 ---
 
 Copyright &copy; 2016-2022, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
