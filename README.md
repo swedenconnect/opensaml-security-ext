@@ -8,7 +8,7 @@ Crypto and security extensions to OpenSAML
 
 ---
 
-**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.8 of you are still using OpenSAML 3.
+**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.8 if you are still using OpenSAML 3.
 
 ---
 
