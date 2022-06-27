@@ -8,7 +8,7 @@ Crypto and security extensions to OpenSAML
 
 ---
 
-**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.7 of you are still using OpenSAML 3.
+**NOTE:** OpenSAML has introduced support for ECDH key agreement starting from version 4.1.0. Therefore, this functionality has been removed from the opensaml-security-ext library in version 3.0.0. If you are using OpenSAML 4.0.X you need to use version 2.1.0 of opensaml-security-ext and 1.0.8 of you are still using OpenSAML 3.
 
 ---
 
@@ -25,7 +25,7 @@ Java API documentation of the opensaml-security-ext library is found at:
 
 * [2.1.0](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/2.1.0/index.html)
 
-* [1.0.7](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/1.0.7/index.html).
+* [1.0.8](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/1.0.8/index.html).
 
 Generated project information is found at [https://docs.swedenconnect.se/opensaml-security-ext/site](https://docs.swedenconnect.se/opensaml-security-ext/site).
 
@@ -274,4 +274,4 @@ If you, for some reason, want to disable the `ExtendedSignerProvider` functional
         
 ---
 
-Copyright &copy; 2016-2021, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2016-2022, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
