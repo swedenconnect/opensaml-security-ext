@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.opensaml.xmlsec.signature.support.provider;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.MessageDigest;
@@ -117,7 +118,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       ExtendedSignerProvider.log.error(msg);
       throw new SignatureException(msg);
     }
-    
+
     log.debug("{} executing during signature with {}", ExtendedSignerProvider.class.getSimpleName(), signedInfo.getSignatureMethodURI());
 
     try {
@@ -160,7 +161,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       ExtendedSignerProvider.log.error("Failure during digest calculation - {}", e.getMessage(), e);
       throw new SignatureException("Failure during digest calculation", e);
     }
-    catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+    catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException e) {
       ExtendedSignerProvider.log.error("RSA transform failed - {}", e.getMessage(), e);
       throw new SignatureException("RSA signature failure", e);
     }
@@ -204,11 +205,11 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
    * @param signatureAlgorithm
    *          signature algorithm
    * @return the digest algorithm
-   * @throws NoSuchAlgorithmException if no support for the algorithm is available 
+   * @throws NoSuchAlgorithmException if no support for the algorithm is available
    */
   private MessageDigest getDigest(final String signatureAlgorithm) throws NoSuchAlgorithmException {
-    
-    final AlgorithmRegistry algorithmRegistry = AlgorithmSupport.getGlobalAlgorithmRegistry();    
+
+    final AlgorithmRegistry algorithmRegistry = AlgorithmSupport.getGlobalAlgorithmRegistry();
     final AlgorithmDescriptor algorithmDescriptor = algorithmRegistry.get(signatureAlgorithm);
     if (algorithmDescriptor == null || !AlgorithmDescriptor.AlgorithmType.Signature.equals(algorithmDescriptor.getType())) {
       log.error("Unsupported signature algorithm - {}", signatureAlgorithm);
