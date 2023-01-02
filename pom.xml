@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>3.1.1</version>
+  <version>3.1.2</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 4.X</description>
@@ -54,6 +54,7 @@
 
     <opensaml.min.version>4.2.0</opensaml.min.version>
     <junit.version>4.13.2</junit.version>
+    <bc.version>1.72</bc.version>
   </properties>
 
   <repositories>
@@ -81,32 +82,73 @@
   </distributionManagement>
   
   <dependencyManagement>
-  
     <dependencies>
     
       <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk15on</artifactId>
-        <version>1.70</version>
+        <groupId>org.cryptacular</groupId>
+        <artifactId>cryptacular</artifactId>
+        <version>1.2.5</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       
       <dependency>
-        <groupId>org.cryptacular</groupId>
-        <artifactId>cryptacular</artifactId>
-        <version>1.2.4</version>
-      </dependency>    
+        <groupId>org.apache.santuario</groupId>
+        <artifactId>xmlsec</artifactId>
+        <version>2.3.2</version>
+        <exclusions>
+          <!-- Version included has reported vulnerabilities -->
+          <exclusion>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      
+      <dependency>
+        <groupId>com.fasterxml.woodstox</groupId>
+        <artifactId>woodstox-core</artifactId>
+        <version>6.4.0</version>
+      </dependency>      
     
-    </dependencies>
-  
+    </dependencies>  
   </dependencyManagement>
-
+  
   <dependencies>
+  
+    <!-- XMLsec -->
+    <dependency>
+      <groupId>org.apache.santuario</groupId>
+      <artifactId>xmlsec</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.fasterxml.woodstox</groupId>
+      <artifactId>woodstox-core</artifactId>
+    </dependency>    
 
     <!-- Bouncy Castle -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>    
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bc.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcutil-jdk18on</artifactId>
+      <version>${bc.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bc.version}</version>
+    </dependency>    
     
     <dependency>
       <groupId>org.cryptacular</groupId>
@@ -117,13 +159,13 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -140,7 +182,7 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -161,12 +203,20 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-api</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
       <exclusions>
         <!-- Older version than other OpenSAML deps ... -->
         <exclusion>
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcprov-jdk15on</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcpkix-jdk15on</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcutil-jdk15on</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-codec</groupId>
@@ -182,19 +232,19 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-impl</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-api</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
-      <version>[${opensaml.min.version},)</version>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
     </dependency>
 
     <!-- For testing -->
@@ -223,7 +273,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>[5.3.0,)</version>
+      <version>[5.3.0, 6.0.0)</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
