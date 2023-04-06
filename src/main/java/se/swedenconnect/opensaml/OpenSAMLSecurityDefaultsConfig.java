@@ -15,11 +15,11 @@
  */
 package se.swedenconnect.opensaml;
 
+import net.shibboleth.shared.logic.Constraint;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.shibboleth.utilities.java.support.logic.Constraint;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 
 /**

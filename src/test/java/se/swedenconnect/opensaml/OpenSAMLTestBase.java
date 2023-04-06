@@ -27,6 +27,8 @@ import java.security.cert.X509Certificate;
 
 import javax.xml.namespace.QName;
 
+import net.shibboleth.shared.xml.SerializeSupport;
+import net.shibboleth.shared.xml.XMLParserException;
 import org.junit.BeforeClass;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilder;
@@ -39,8 +41,6 @@ import org.opensaml.security.x509.X509Credential;
 import org.opensaml.security.x509.impl.KeyStoreX509CredentialAdapter;
 import org.w3c.dom.Element;
 
-import net.shibboleth.utilities.java.support.xml.SerializeSupport;
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
 import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
 
 /**
@@ -78,7 +78,7 @@ public abstract class OpenSAMLTestBase {
 
   /**
    * Utility method for creating an OpenSAML {@code XMLObject} given its element name.
-   * 
+   *
    * @param clazz
    *          the class to create
    * @param elementName
@@ -87,8 +87,8 @@ public abstract class OpenSAMLTestBase {
    *          the type
    * @return the SAML object
    */
-  public static <T extends XMLObject> T createXmlObject(Class<T> clazz, QName elementName) {
-    XMLObjectBuilder<T> builder = XMLObjectProviderRegistrySupport.getBuilderFactory().<T> getBuilderOrThrow(elementName);
+  public static <T extends XMLObject> XMLObject createXmlObject(Class<T> clazz, QName elementName) {
+    XMLObjectBuilder<?> builder = XMLObjectProviderRegistrySupport.getBuilderFactory().<T> getBuilder(elementName);
     return builder.buildObject(elementName);
   }
 

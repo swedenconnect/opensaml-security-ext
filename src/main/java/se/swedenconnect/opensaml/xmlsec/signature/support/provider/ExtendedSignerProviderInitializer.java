@@ -18,6 +18,7 @@ package se.swedenconnect.opensaml.xmlsec.signature.support.provider;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import net.shibboleth.shared.logic.ConstraintViolationException;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.Initializer;
 import org.opensaml.xmlsec.signature.support.SignatureException;
@@ -26,8 +27,6 @@ import org.opensaml.xmlsec.signature.support.SignerProvider;
 import org.opensaml.xmlsec.signature.support.impl.provider.ApacheSantuarioSignerProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.shibboleth.utilities.java.support.logic.ConstraintViolationException;
 
 /**
  * OpenSAML uses the Java service loader to load the {@link SignerProvider} that should be used. Any number of providers

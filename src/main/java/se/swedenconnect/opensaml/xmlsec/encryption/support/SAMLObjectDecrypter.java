@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import net.shibboleth.shared.logic.Constraint;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.EncryptedElementType;
 import org.opensaml.security.credential.Credential;
@@ -28,7 +29,6 @@ import org.opensaml.xmlsec.encryption.EncryptedData;
 import org.opensaml.xmlsec.encryption.support.Decrypter;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 
-import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /**
  * A support bean for easy decryption.

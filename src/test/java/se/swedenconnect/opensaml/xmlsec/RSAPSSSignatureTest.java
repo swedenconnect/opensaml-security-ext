@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import net.shibboleth.shared.resolver.CriteriaSet;
+import net.shibboleth.shared.resolver.ResolverException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,8 +53,6 @@ import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngin
 import org.springframework.core.io.ClassPathResource;
 import org.w3c.dom.Attr;
 
-import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**

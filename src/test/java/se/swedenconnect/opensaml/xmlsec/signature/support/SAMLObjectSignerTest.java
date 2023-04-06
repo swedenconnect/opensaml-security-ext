@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
+import net.shibboleth.shared.xml.SerializeSupport;
 import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +39,6 @@ import org.opensaml.xmlsec.SecurityConfigurationSupport;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.springframework.core.io.ClassPathResource;
 
-import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**

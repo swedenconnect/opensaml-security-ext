@@ -59,8 +59,9 @@ import org.w3c.dom.Element;
 
 import com.google.common.base.Strings;
 
-import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
+import net.shibboleth.shared.resolver.CriteriaSet;
+import net.shibboleth.shared.resolver.ResolverException;
+
 
 /**
  * An extension to OpenSAML's {@link Decrypter} class implementing a workaround for the problem that when using the

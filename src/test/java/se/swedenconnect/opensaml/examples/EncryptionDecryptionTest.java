@@ -17,6 +17,7 @@ package se.swedenconnect.opensaml.examples;
 
 import java.util.Arrays;
 
+import net.shibboleth.shared.resolver.CriteriaSet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,6 @@ import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 import org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver;
 import org.springframework.core.io.ClassPathResource;
 
-import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.DecryptionUtils;

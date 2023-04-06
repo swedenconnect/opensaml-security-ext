@@ -8,10 +8,10 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>3.1.2</version>
+  <version>3.2.0-SNAPSHOT</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
-  <description>Security and crypto extension library for OpenSAML 4.X</description>
+  <description>Security and crypto extension library for OpenSAML 5.X</description>
   <url>https://github.com/swedenconnect/opensaml-security-ext</url>
 
   <licenses>
@@ -52,7 +52,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
 
-    <opensaml.min.version>4.2.0</opensaml.min.version>
+    <opensaml.min.version>5.0.0-SNAPSHOT</opensaml.min.version>
     <junit.version>4.13.2</junit.version>
     <bc.version>1.72</bc.version>
   </properties>
@@ -67,6 +67,14 @@
       <id>shibboleth</id>
       <name>Shibboleth Maven Repo</name>
       <url>https://build.shibboleth.net/nexus/content/repositories/releases</url>
+    </repository>
+    <repository>
+        <id>shibboleth snapshots</id>
+        <name>Shibboleth Snapshots</name>
+        <url>https://build.shibboleth.net/maven/snapshots</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
     </repository>
   </repositories>
 
@@ -158,7 +166,13 @@
     <!-- OpenSAML -->
     <dependency>
       <groupId>org.opensaml</groupId>
-      <artifactId>opensaml-core</artifactId>
+      <artifactId>opensaml-core-api</artifactId>
+      <version>[${opensaml.min.version}, 5.0.0)</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-core-impl</artifactId>
       <version>[${opensaml.min.version}, 5.0.0)</version>
     </dependency>
 
@@ -166,67 +180,18 @@
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
       <version>[${opensaml.min.version}, 5.0.0)</version>
-      <exclusions>
-        <!-- Older versions than other OpenSAML deps ... -->
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
-      <exclusions>
-        <!-- Older versions than other OpenSAML deps ... -->
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.velocity</groupId>
-          <artifactId>velocity-engine-core</artifactId>
-        </exclusion>
-      </exclusions>      
+      <version>[${opensaml.min.version}, 5.0.0)</version>  
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-api</artifactId>
       <version>[${opensaml.min.version}, 5.0.0)</version>
-      <exclusions>
-        <!-- Older version than other OpenSAML deps ... -->
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcpkix-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcutil-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -245,6 +210,12 @@
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
       <version>[${opensaml.min.version}, 5.0.0)</version>
+    </dependency>
+        
+    <dependency>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>shib-support</artifactId>
+        <version>9.0.0-SNAPSHOT</version>
     </dependency>
 
     <!-- For testing -->
@@ -410,14 +381,14 @@
             </executions>
             <configuration>
 
-              <doctitle>OpenSAML 4.x Security Extensions - ${project.version}</doctitle>
-              <windowtitle>OpenSAML 4.x Security Extensions - ${project.version}</windowtitle>
+              <doctitle>OpenSAML 5.x Security Extensions - ${project.version}</doctitle>
+              <windowtitle>OpenSAML 5.x Security Extensions - ${project.version}</windowtitle>
               <detectJavaApiLink>true</detectJavaApiLink>
+<!-- Links were not yet available during development.
               <links>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/4.1.1/apidocs/</link>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.2.1/apidocs/</link>
-              </links>
-              <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
+              </links> -->
               <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
               <additionalJOptions>
                 <additionalJOption>-Xdoclint:all</additionalJOption>
