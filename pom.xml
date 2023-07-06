@@ -54,7 +54,7 @@
 
     <opensaml.min.version>4.2.0</opensaml.min.version>
     <junit.version>4.13.2</junit.version>
-    <bc.version>1.72</bc.version>
+    <bc.version>1.74</bc.version>
   </properties>
 
   <repositories>
