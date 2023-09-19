@@ -52,7 +52,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
 
-    <opensaml.min.version>5.0.0-SNAPSHOT</opensaml.min.version>
+    <opensaml.version>5.0.0</opensaml.version>
     <junit.version>4.13.2</junit.version>
     <bc.version>1.72</bc.version>
   </properties>
@@ -174,7 +174,7 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -191,7 +191,7 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -220,7 +220,7 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -237,7 +237,7 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
       <exclusions>
         <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
@@ -258,7 +258,7 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
       <exclusions>
         <!-- Older version than other OpenSAML deps ... -->
         <exclusion>
@@ -283,25 +283,25 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
     </dependency>
         
     <dependency>
         <groupId>net.shibboleth</groupId>
         <artifactId>shib-support</artifactId>
-        <version>9.0.0-SNAPSHOT</version>
+        <version>9.0.0</version>
     </dependency>
 
     <!-- For testing -->
