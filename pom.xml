@@ -54,7 +54,7 @@
 
     <opensaml.version>5.0.0</opensaml.version>
     <junit.version>4.13.2</junit.version>
-    <bc.version>1.72</bc.version>
+    <bc.version>1.76</bc.version>
   </properties>
 
   <repositories>
@@ -101,6 +101,10 @@
           <exclusion>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -265,6 +269,10 @@
           <groupId>commons-codec</groupId>
           <artifactId>commons-codec</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -272,24 +280,58 @@
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-impl</artifactId>
       <version>${opensaml.version}</version>
+      <exclusions>
+        <!-- Older version than other OpenSAML deps ... -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-api</artifactId>
       <version>${opensaml.version}</version>
+      <exclusions>
+        <!-- Older version than other OpenSAML deps ... -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
       <version>${opensaml.version}</version>
+      <exclusions>
+        <!-- Older version than other OpenSAML deps ... -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
         
     <dependency>
         <groupId>net.shibboleth</groupId>
         <artifactId>shib-support</artifactId>
         <version>9.0.0</version>
+        <exclusions>
+          <!-- Older version than other OpenSAML deps ... -->
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.6</version>
     </dependency>
 
     <!-- For testing -->
@@ -305,13 +347,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>2.28.2</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>2.0.6</version>
       <scope>test</scope>
     </dependency>
 
