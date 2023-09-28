@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,17 @@ import javax.annotation.Nonnull;
 import org.apache.xml.security.signature.XMLSignature;
 import org.opensaml.security.crypto.JCAConstants;
 import org.opensaml.xmlsec.algorithm.SignatureAlgorithm;
+import org.opensaml.xmlsec.algorithm.descriptors.SignatureRSASSA_PSS_SHA3_256_MGF1;
 
 /**
  * Algorithm descriptor for signature algorithm: http://www.w3.org/2007/05/xmldsig-more#sha3-256-rsa-MGF1
- * 
+ *
+ * @deprecated Use {@link SignatureRSASSA_PSS_SHA3_256_MGF1}
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
+@Deprecated(since = "4.0.0", forRemoval = true)
 public class SignatureSHA3_256_RSA_MGF1 implements SignatureAlgorithm {
 
   /** {@inheritDoc} */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package se.swedenconnect.opensaml.xmlsec.signature.support.provider;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import net.shibboleth.shared.logic.ConstraintViolationException;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.Initializer;
 import org.opensaml.xmlsec.signature.support.SignatureException;
@@ -27,8 +28,6 @@ import org.opensaml.xmlsec.signature.support.impl.provider.ApacheSantuarioSigner
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.shibboleth.utilities.java.support.logic.ConstraintViolationException;
-
 /**
  * OpenSAML uses the Java service loader to load the {@link SignerProvider} that should be used. Any number of providers
  * may be on the classpath and if we want to have a particular one loaded (and cached) by the {@link Signer} class we
@@ -36,7 +35,7 @@ import net.shibboleth.utilities.java.support.logic.ConstraintViolationException;
  * problem since the only provider used in a default setup is {@link ApacheSantuarioSignerProviderImpl}. But since we
  * extend this class with workraounds for RSAPSS, we want to make sure that our {@link ExtendedSignerProvider} is loaded
  * before the default provider, no matter how the classpath looks.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -86,7 +85,7 @@ public class ExtendedSignerProviderInitializer implements Initializer {
       catch (ConstraintViolationException | NullPointerException | SignatureException expected) {
         // We expect ConstraintViolationException ...
       }
-      log.info("{} has now been cached as the signer provider used by the {} class", 
+      log.info("{} has now been cached as the signer provider used by the {} class",
         ExtendedSignerProvider.class.getName(), Signer.class.getName());
     }
     catch (SecurityException e) {
@@ -98,7 +97,7 @@ public class ExtendedSignerProviderInitializer implements Initializer {
         try {
           Thread.currentThread().setContextClassLoader(defaultLoader);
         }
-        catch (SecurityException e) {          
+        catch (SecurityException e) {
         }
       }
     }

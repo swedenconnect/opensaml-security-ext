@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package se.swedenconnect.opensaml;
 
+import net.shibboleth.shared.logic.Constraint;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.shibboleth.utilities.java.support.logic.Constraint;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 
 /**
  * Initializer that modifies OpenSAML's default algorithms as returned by {@link DefaultSecurityConfigurationBootstrap}
  * with the caller's own wishes for security defaults.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -39,7 +39,7 @@ public class OpenSAMLSecurityDefaultsConfig implements OpenSAMLInitializerConfig
 
   /**
    * Constructor.
-   * 
+   *
    * @param securityConfiguration
    *          the security configuration to install
    */
@@ -65,12 +65,12 @@ public class OpenSAMLSecurityDefaultsConfig implements OpenSAMLInitializerConfig
    */
   @Override
   public void postInitialize() throws Exception {
-    log.info("Updating OpenSAML security configuration defaults using profile '{}' ...", 
+    log.info("Updating OpenSAML security configuration defaults using profile '{}' ...",
       this.securityConfiguration.getProfileName());
-    
+
     this.securityConfiguration.initOpenSAML();
 
-    log.info("OpenSAML security configuration defaults updated by profile {}", 
+    log.info("OpenSAML security configuration defaults updated by profile {}",
       this.securityConfiguration.getProfileName());
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package se.swedenconnect.opensaml.xmlsec.algorithm.descriptors;
 
-import javax.annotation.Nonnull;
+import net.shibboleth.shared.annotation.constraint.NotEmpty;
 
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
+import javax.annotation.Nonnull;
 
 /**
  * A representation of a named elliptic curve.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -29,7 +29,7 @@ public interface NamedCurve {
 
   /**
    * Gets the Object Identifier (OID) for the named curve.
-   * 
+   *
    * @return the object identifier
    */
   @Nonnull
@@ -38,7 +38,7 @@ public interface NamedCurve {
 
   /**
    * Gets the name for the curve.
-   * 
+   *
    * @return the name of the curve
    */
   @Nonnull
@@ -47,7 +47,7 @@ public interface NamedCurve {
 
   /**
    * Gets the URI for the curve.
-   * 
+   *
    * @return the URI for the curve
    */
   @Nonnull
@@ -56,7 +56,7 @@ public interface NamedCurve {
 
   /**
    * Gets the key length for the curve.
-   * 
+   *
    * @return the key length
    */
   @Nonnull

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.xml.BasicParserPool;
-import net.shibboleth.utilities.java.support.xml.ParserPool;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.xml.ParserPool;
+import net.shibboleth.shared.xml.impl.BasicParserPool;
 
 /**
  * Singleton class for initialization and configuration of the OpenSAML library.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  */
 public class OpenSAMLInitializer {
@@ -60,7 +60,7 @@ public class OpenSAMLInitializer {
 
   /**
    * Returns the initializer instance.
-   * 
+   *
    * @return the initializer instance
    */
   public static OpenSAMLInitializer getInstance() {
@@ -69,7 +69,7 @@ public class OpenSAMLInitializer {
 
   /**
    * Predicate that tells if the OpenSAML library already has been initialized.
-   * 
+   *
    * @return if the library has been initialized true is returned, otherwise false
    */
   public boolean isInitialized() {
@@ -78,13 +78,13 @@ public class OpenSAMLInitializer {
 
   /**
    * Initializes the OpenSAML library.
-   * 
+   *
    * <p>
    * The {@link OpenSAMLInitializerConfig#preInitialize()} for all supplied {@code customConfigs} are called in order
    * before OpenSAML is initialized ({@link InitializationService#initialize()}. After OpenSAML has been initialized,
    * all {@link OpenSAMLInitializerConfig#postInitialize()} methods are invoked.
    * </p>
-   * 
+   *
    * @param customConfigs
    *          custom configuration of OpenSAML
    * @throws Exception
@@ -96,7 +96,7 @@ public class OpenSAMLInitializer {
       log.info("OpenSAML library has already been initialized");
       return;
     }
-    
+
     if (customConfigs != null) {
       for (OpenSAMLInitializerConfig config : customConfigs) {
         log.debug("Invoking preInitialize for configurer '{}' ...", config.getName());
@@ -128,7 +128,7 @@ public class OpenSAMLInitializer {
     }
 
     log.info("OpenSAML library successfully initialized");
-    
+
     if (customConfigs != null) {
       for (OpenSAMLInitializerConfig config : customConfigs) {
         log.debug("Invoking postInitialize for configurer '{}' ...", config.getName());
@@ -142,7 +142,7 @@ public class OpenSAMLInitializer {
 
   /**
    * Set the global ParserPool to configure.
-   * 
+   *
    * @param parserPool
    *          the parserPool to assign
    */
@@ -156,10 +156,9 @@ public class OpenSAMLInitializer {
 
   /**
    * Creates a basic parser pool with default settings.
-   * 
+   *
    * @return the default parser pool
-   * @throws ComponentInitializationException
-   *           for init errors
+   * @throws ComponentInitializationException for init errors
    */
   public static ParserPool createDefaultParserPool() throws ComponentInitializationException {
     BasicParserPool basicParserPool = new BasicParserPool();

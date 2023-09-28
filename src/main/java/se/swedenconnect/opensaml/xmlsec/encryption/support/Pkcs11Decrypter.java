@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,18 +59,18 @@ import org.w3c.dom.Element;
 
 import com.google.common.base.Strings;
 
-import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
+import net.shibboleth.shared.resolver.CriteriaSet;
+import net.shibboleth.shared.resolver.ResolverException;
 
 /**
  * An extension to OpenSAML's {@link Decrypter} class implementing a workaround for the problem that when using the
- * SunPKCS11 crypto provider OAEPPadding does not work. 
+ * SunPKCS11 crypto provider OAEPPadding does not work.
  * <p>
  * See this post on <a href=
  * "https://stackoverflow.com/questions/23844694/bad-padding-exception-rsa-ecb-oaepwithsha-256andmgf1padding-in-pkcs11">
  * Stack overflow</a>.
  * </p>
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -98,7 +98,7 @@ public class Pkcs11Decrypter extends Decrypter {
 
   /**
    * Constructor.
-   * 
+   *
    * @param newResolver
    *          resolver for data encryption keys.
    * @param newKEKResolver
@@ -224,7 +224,7 @@ public class Pkcs11Decrypter extends Decrypter {
 
   /**
    * Decrypts the key (work-around for OAEP padding).
-   * 
+   *
    * @param encryptedKey
    *          encrypted key element containing the encrypted key to be decrypted
    * @param algorithm
@@ -308,7 +308,7 @@ public class Pkcs11Decrypter extends Decrypter {
 
   /**
    * Performs the actual key decryption.
-   * 
+   *
    * @param encryptedKey
    *          the encrypted key
    * @param algorithm
@@ -345,7 +345,7 @@ public class Pkcs11Decrypter extends Decrypter {
       OAEPParameterSpec oaepParameters = constructOAEPParameters(encMethod.getAlgorithm(), encMethod.getDigestAlgorithm(),
         encMethod.getMGFAlgorithm(), encMethod.getOAEPparams());
 
-      RsaOaepMgf1Unpadding unpadder = new RsaOaepMgf1Unpadding(keysize / 8, oaepParameters);     
+      RsaOaepMgf1Unpadding unpadder = new RsaOaepMgf1Unpadding(keysize / 8, oaepParameters);
       byte[] secretKeyBytes = unpadder.unpad(paddedPlainText);
 
       String jceKeyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(algorithm);
@@ -391,7 +391,7 @@ public class Pkcs11Decrypter extends Decrypter {
 
   /**
    * Copied from {@link org.opensaml.xmlsec.encryption.support.Decrypter} ...
-   * 
+   *
    * @param encryptedType
    *          an EncryptedData or EncryptedKey for which to resolve decryption credentials
    * @param staticCriteria
@@ -415,7 +415,7 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Should we run this class in test mode? By using test mode, the customized code where we handle padding for OAEP is
    * executed even if the SunPKCS11 provider is not in use.
-   * 
+   *
    * @param testMode
    *          test mode flag
    */

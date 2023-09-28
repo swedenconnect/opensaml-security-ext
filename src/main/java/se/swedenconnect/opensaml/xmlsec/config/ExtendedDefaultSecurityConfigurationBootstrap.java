@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,11 @@ import org.opensaml.xmlsec.impl.BasicSignatureSigningConfiguration;
 
 /**
  * Extends OpenSAML's {@link DefaultSecurityConfigurationBootstrap} with support for the RSA-PSS signature algorithms.
- * 
+ * <p>
+ * Note: Even though OpenSAML 5.x has introduced support for RSA-PSS algorithms, they are not part of the
+ * {@link DefaultSecurityConfigurationBootstrap}, so this class is still needed.
+ * </p>
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -47,7 +51,7 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
    * Extends {@link DefaultSecurityConfigurationBootstrap#buildDefaultSignatureSigningConfiguration()} with
    * http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1, http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1 and
    * http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1.
-   * 
+   *
    * @return signature signing configuration
    */
   public static BasicSignatureSigningConfiguration buildDefaultSignatureSigningConfiguration() {
@@ -59,9 +63,8 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
    * http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1, http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1 and
    * http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1 are among the signature algorithms and returns a
    * {@code BasicSignatureSigningConfiguration} object.
-   * 
-   * @param config
-   *          the configuration
+   *
+   * @param config the configuration
    * @return a signing configuration with RSA-PSS algorithms included
    */
   public static BasicSignatureSigningConfiguration buildDefaultSignatureSigningConfiguration(
@@ -80,7 +83,8 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
       updatedConfig.setSigningCredentials(config.getSigningCredentials());
       updatedConfig.setSignatureAlgorithms(config.getSignatureAlgorithms());
       updatedConfig.setSignatureReferenceDigestMethods(config.getSignatureReferenceDigestMethods());
-      updatedConfig.setSignatureReferenceCanonicalizationAlgorithm(config.getSignatureReferenceCanonicalizationAlgorithm());
+      updatedConfig
+          .setSignatureReferenceCanonicalizationAlgorithm(config.getSignatureReferenceCanonicalizationAlgorithm());
       updatedConfig.setSignatureCanonicalizationAlgorithm(config.getSignatureCanonicalizationAlgorithm());
       updatedConfig.setSignatureHMACOutputLength(config.getSignatureHMACOutputLength());
       updatedConfig.setKeyInfoGeneratorManager(config.getKeyInfoGeneratorManager());
@@ -125,7 +129,7 @@ public class ExtendedDefaultSecurityConfigurationBootstrap extends DefaultSecuri
   /**
    * Build a basic instance of {@link EncryptedKeyResolver}. Extends the one from
    * {@link DefaultSecurityConfigurationBootstrap} with {@link EncryptedElementTypeEncryptedKeyResolver}.
-   * 
+   *
    * @return an EncryptedKey resolver instance
    */
   protected static EncryptedKeyResolver buildBasicEncryptedKeyResolver() {

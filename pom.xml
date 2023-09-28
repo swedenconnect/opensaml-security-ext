@@ -8,10 +8,10 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>3.1.2</version>
+  <version>4.0.0-SNAPSHOT</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
-  <description>Security and crypto extension library for OpenSAML 4.X</description>
+  <description>Security and crypto extension library for OpenSAML 5.X</description>
   <url>https://github.com/swedenconnect/opensaml-security-ext</url>
 
   <licenses>
@@ -50,11 +50,14 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
 
-    <opensaml.min.version>4.2.0</opensaml.min.version>
+    <opensaml.version>5.0.0</opensaml.version>
     <junit.version>4.13.2</junit.version>
-    <bc.version>1.72</bc.version>
+    
+    <bc.version>1.76</bc.version>    
+    <slf4j.version>2.0.7</slf4j.version>
+    <jackson.version>2.15.2</jackson.version>
   </properties>
 
   <repositories>
@@ -71,10 +74,6 @@
   </repositories>
 
   <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
     <repository>
     <id>ossrh</id>
     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
@@ -83,171 +82,130 @@
   
   <dependencyManagement>
     <dependencies>
-    
+      
+      <!-- 
+        The OpenSAML team obviously doesn't check for dependency convergence errors.
+        The below dependencies are included to avoid such errors.
+      --> 
+      
       <dependency>
-        <groupId>org.cryptacular</groupId>
-        <artifactId>cryptacular</artifactId>
-        <version>1.2.5</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk18on</artifactId>
-          </exclusion>
-        </exclusions>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
       </dependency>
       
       <dependency>
-        <groupId>org.apache.santuario</groupId>
-        <artifactId>xmlsec</artifactId>
-        <version>2.3.2</version>
-        <exclusions>
-          <!-- Version included has reported vulnerabilities -->
-          <exclusion>
-            <groupId>com.fasterxml.woodstox</groupId>
-            <artifactId>woodstox-core</artifactId>
-          </exclusion>
-        </exclusions>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.16.0</version>
       </dependency>
       
       <dependency>
-        <groupId>com.fasterxml.woodstox</groupId>
-        <artifactId>woodstox-core</artifactId>
-        <version>6.4.0</version>
-      </dependency>      
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5</artifactId>
+        <version>5.2.2</version>
+      </dependency>
     
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+          
     </dependencies>  
   </dependencyManagement>
   
   <dependencies>
-  
-    <!-- XMLsec -->
-    <dependency>
-      <groupId>org.apache.santuario</groupId>
-      <artifactId>xmlsec</artifactId>
-    </dependency>
     
+    <!-- Slf4j -->
     <dependency>
-      <groupId>com.fasterxml.woodstox</groupId>
-      <artifactId>woodstox-core</artifactId>
-    </dependency>    
-
-    <!-- Bouncy Castle -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+      
+    <!-- Bouncy Castle -->    
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
       <version>${bc.version}</version>
     </dependency>
     
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcutil-jdk18on</artifactId>
-      <version>${bc.version}</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk18on</artifactId>
-      <version>${bc.version}</version>
-    </dependency>    
-    
-    <dependency>
-      <groupId>org.cryptacular</groupId>
-      <artifactId>cryptacular</artifactId>
-    </dependency>    
-
     <!-- OpenSAML -->
     <dependency>
       <groupId>org.opensaml</groupId>
-      <artifactId>opensaml-core</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <artifactId>opensaml-core-api</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-core-impl</artifactId>
+      <version>${opensaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
-      <exclusions>
-        <!-- Older versions than other OpenSAML deps ... -->
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>${opensaml.version}</version>
     </dependency>
     
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
       <exclusions>
-        <!-- Older versions than other OpenSAML deps ... -->
         <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-        <exclusion>
+          <!-- No! We don't want Velocity anywhere near our code ... -->
           <groupId>org.apache.velocity</groupId>
           <artifactId>velocity-engine-core</artifactId>
-        </exclusion>
-      </exclusions>      
-    </dependency>
-
-    <dependency>
-      <groupId>org.opensaml</groupId>
-      <artifactId>opensaml-security-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
-      <exclusions>
-        <!-- Older version than other OpenSAML deps ... -->
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcpkix-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcutil-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-security-api</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opensaml</groupId>
       <artifactId>opensaml-security-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-api</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-xmlsec-impl</artifactId>
-      <version>[${opensaml.min.version}, 5.0.0)</version>
+      <version>${opensaml.version}</version>
+    </dependency>
+        
+    <dependency>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>shib-support</artifactId>
+        <version>9.0.0</version>
     </dependency>
 
     <!-- For testing -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -264,16 +222,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.36</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>[5.3.0, 6.0.0)</version>
+      <version>[6.0.0,)</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -286,7 +237,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.11.0</version>
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
@@ -296,25 +247,25 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.0</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.4.5</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.7.1</version>
+        <version>4.0.0-M8</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M2</version>
+        <version>3.4.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -346,7 +297,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.8</version>
+            <version>1.6.13</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
@@ -364,7 +315,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -379,7 +330,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>3.3.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -399,7 +350,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>3.6.0</version>
             <executions>
               <execution>
                 <id>attach-javadoc</id>
@@ -410,14 +361,14 @@
             </executions>
             <configuration>
 
-              <doctitle>OpenSAML 4.x Security Extensions - ${project.version}</doctitle>
-              <windowtitle>OpenSAML 4.x Security Extensions - ${project.version}</windowtitle>
+              <doctitle>OpenSAML 5.x Security Extensions - ${project.version}</doctitle>
+              <windowtitle>OpenSAML 5.x Security Extensions - ${project.version}</windowtitle>
               <detectJavaApiLink>true</detectJavaApiLink>
+<!-- Links were not yet available during development.
               <links>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/4.1.1/apidocs/</link>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.2.1/apidocs/</link>
-              </links>
-              <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
+              </links> -->
               <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
               <additionalJOptions>
                 <additionalJOption>-Xdoclint:all</additionalJOption>

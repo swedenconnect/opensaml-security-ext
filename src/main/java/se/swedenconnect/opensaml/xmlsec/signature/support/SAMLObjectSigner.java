@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,12 +41,12 @@ import org.opensaml.xmlsec.impl.BasicSignatureSigningParametersResolver;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureSupport;
 
-import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
+import net.shibboleth.shared.resolver.CriteriaSet;
+import net.shibboleth.shared.resolver.ResolverException;
 
 /**
  * Utility methods for signatures.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  */
 public class SAMLObjectSigner {
@@ -57,7 +57,7 @@ public class SAMLObjectSigner {
    * Note: If you have obtained the peer's prefered signature credentials, this configuration should be supplied first
    * ...
    * </p>
-   * 
+   *
    * @param object
    *          object to sign
    * @param signingCredentials
@@ -108,7 +108,7 @@ public class SAMLObjectSigner {
    * {@code SignatureSigningConfiguration peerConfig = getSignaturePreferences(recipientMetadata);} followed by
    * {@code sign(object, signingCredentials, config, peerConfig);}. If no peer config is found, this is not passed.
    * </p>
-   * 
+   *
    * @param object
    *          object to sign
    * @param signingCredentials
@@ -147,7 +147,7 @@ public class SAMLObjectSigner {
    * {@code <alg:SigningMethod>} element in its metadata. This method locates these elements, and if present, creates a
    * {@link SignatureSigningConfiguration} object that should be supplied to
    * {@link #sign(SignableSAMLObject, Credential, SignatureSigningConfiguration...)}.
-   * 
+   *
    * @param metadata
    *          the recipient's metadata
    * @return a {@link SignatureSigningConfiguration} element, or {@code null} if no preferred signing algorithms were
@@ -220,7 +220,7 @@ public class SAMLObjectSigner {
 
   /**
    * Returns the SSODescriptor for the supplied SP or IdP entity descriptor.
-   * 
+   *
    * @param ed
    *          the entity descriptor
    * @return the SSODescriptor
@@ -236,7 +236,7 @@ public class SAMLObjectSigner {
 
   /**
    * Finds all extensions matching the supplied type.
-   * 
+   *
    * @param extensions
    *          the {@link Extensions} to search
    * @param clazz
