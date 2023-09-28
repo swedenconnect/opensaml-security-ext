@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A registry for all supported Elliptic curves.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -49,10 +49,10 @@ public class NamedCurveRegistry {
 
   /**
    * Get the curve associated with the specified object identifier.
-   * 
+   *
    * @param oid
    *          the OID for the curve to resolve
-   * 
+   *
    * @return the resolved curve or {@code null}
    */
   @Nullable
@@ -73,7 +73,7 @@ public class NamedCurveRegistry {
 
   /**
    * Register a curve.
-   * 
+   *
    * @param curve
    *          the curve
    */
@@ -91,7 +91,7 @@ public class NamedCurveRegistry {
 
   /**
    * Deregister a curve.
-   * 
+   *
    * @param curve
    *          the curve
    */
@@ -108,7 +108,7 @@ public class NamedCurveRegistry {
 
   /**
    * Deregister a curve.
-   * 
+   *
    * @param oid
    *          the OID for the curve
    */

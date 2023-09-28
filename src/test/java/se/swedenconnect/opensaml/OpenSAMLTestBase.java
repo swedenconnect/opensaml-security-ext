@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,8 @@ import java.security.cert.X509Certificate;
 
 import javax.xml.namespace.QName;
 
-import net.shibboleth.shared.xml.SerializeSupport;
-import net.shibboleth.shared.xml.XMLParserException;
 import org.junit.BeforeClass;
 import org.opensaml.core.xml.XMLObject;
-import org.opensaml.core.xml.XMLObjectBuilder;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.core.xml.io.Unmarshaller;
@@ -41,16 +38,18 @@ import org.opensaml.security.x509.X509Credential;
 import org.opensaml.security.x509.impl.KeyStoreX509CredentialAdapter;
 import org.w3c.dom.Element;
 
+import net.shibboleth.shared.xml.SerializeSupport;
+import net.shibboleth.shared.xml.XMLParserException;
 import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
 
 /**
  * Abstract base class that initializes OpenSAML for test classes.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public abstract class OpenSAMLTestBase {
-  
+
   /** Factory for creating certificates. */
   private static CertificateFactory certFactory = null;
 
@@ -61,11 +60,11 @@ public abstract class OpenSAMLTestBase {
     catch (CertificateException e) {
       throw new SecurityException(e);
     }
-  }  
+  }
 
   /**
    * Initializes the OpenSAML library.
-   * 
+   *
    * @throws Exception
    *           for init errors
    */
@@ -88,13 +87,12 @@ public abstract class OpenSAMLTestBase {
    * @return the SAML object
    */
   public static <T extends XMLObject> XMLObject createXmlObject(Class<T> clazz, QName elementName) {
-    XMLObjectBuilder<?> builder = XMLObjectProviderRegistrySupport.getBuilderFactory().<T> getBuilder(elementName);
-    return builder.buildObject(elementName);
+    return clazz.cast(XMLObjectProviderRegistrySupport.getBuilderFactory().getBuilder(elementName).buildObject(elementName));
   }
 
   /**
    * Marshalls the supplied {@code XMLObject} into an {@code Element}.
-   * 
+   *
    * @param object
    *          the object to marshall
    * @param <T>
@@ -109,7 +107,7 @@ public abstract class OpenSAMLTestBase {
 
   /**
    * Unmarshalls the supplied element into the given type.
-   * 
+   *
    * @param xml
    *          the DOM (XML) to unmarshall
    * @param targetClass
@@ -131,7 +129,7 @@ public abstract class OpenSAMLTestBase {
 
   /**
    * Unmarshalls the supplied input stream into the given type.
-   * 
+   *
    * @param inputStream
    *          the input stream of the XML resource
    * @param targetClass
@@ -151,7 +149,7 @@ public abstract class OpenSAMLTestBase {
 
   /**
    * Returns the given SAML object in its "pretty print" XML string form.
-   * 
+   *
    * @param <T>
    *          the type of object to "print"
    * @param object
@@ -167,7 +165,7 @@ public abstract class OpenSAMLTestBase {
 
   /**
    * Loads a {@link KeyStore} based on the given arguments.
-   * 
+   *
    * @param keyStorePath
    *          the path to the key store
    * @param keyStorePassword
@@ -202,9 +200,9 @@ public abstract class OpenSAMLTestBase {
     KeyStore keyStore = loadKeyStore(keyStoreStream, keyStorePassword, "jks");
     return new KeyStoreX509CredentialAdapter(keyStore, alias, keyPassword.toCharArray());
   }
-  
+
   public static X509Certificate decodeCertificate(final InputStream stream) throws CertificateException {
     return (X509Certificate) certFactory.generateCertificate(stream);
-  }    
+  }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * problem since the only provider used in a default setup is {@link ApacheSantuarioSignerProviderImpl}. But since we
  * extend this class with workraounds for RSAPSS, we want to make sure that our {@link ExtendedSignerProvider} is loaded
  * before the default provider, no matter how the classpath looks.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -85,7 +85,7 @@ public class ExtendedSignerProviderInitializer implements Initializer {
       catch (ConstraintViolationException | NullPointerException | SignatureException expected) {
         // We expect ConstraintViolationException ...
       }
-      log.info("{} has now been cached as the signer provider used by the {} class", 
+      log.info("{} has now been cached as the signer provider used by the {} class",
         ExtendedSignerProvider.class.getName(), Signer.class.getName());
     }
     catch (SecurityException e) {
@@ -97,7 +97,7 @@ public class ExtendedSignerProviderInitializer implements Initializer {
         try {
           Thread.currentThread().setContextClassLoader(defaultLoader);
         }
-        catch (SecurityException e) {          
+        catch (SecurityException e) {
         }
       }
     }

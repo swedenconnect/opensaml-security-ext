@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.opensaml.xmlsec.encryption.EncryptedData;
 import org.opensaml.xmlsec.encryption.support.Decrypter;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 
-
 /**
  * A support bean for easy decryption.
  * <p>
@@ -38,7 +37,7 @@ import org.opensaml.xmlsec.encryption.support.DecryptionException;
  * perhaps easier to use; it supports initialization with just the encryption credentials and assigns the defaults from
  * {@link DecryptionUtils#createDecryptionParameters(Credential...)}.
  * </p>
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  */
 public class SAMLObjectDecrypter {
@@ -62,7 +61,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Constructor given the credential to use to decrypt the messages (certificate or key pair).
-   * 
+   *
    * @param decryptionCredential
    *          decryption credential
    */
@@ -73,7 +72,7 @@ public class SAMLObjectDecrypter {
   /**
    * Constructor accepting several credentials (certificates or key pairs) to be used when decrypting. This may be
    * useful after a key rollover.
-   * 
+   *
    * @param decryptionCredentials
    *          decryption credentials
    */
@@ -81,15 +80,15 @@ public class SAMLObjectDecrypter {
     Constraint.isNotEmpty(decryptionCredentials, "At least one credential must be supplied to SAMLObjectDecrypter");
     this.parameters = DecryptionUtils.createDecryptionParameters(
       decryptionCredentials.stream().toArray(Credential[]::new));
-    
+
     // Should be assigned explicitly
     this.parameters.setExcludedAlgorithms(Collections.emptyList());
-    this.parameters.setIncludedAlgorithms(Collections.emptyList());    
+    this.parameters.setIncludedAlgorithms(Collections.emptyList());
   }
 
   /**
    * Initializes the decrypter using {@link DecryptionParameters}.
-   * 
+   *
    * @param decryptionParameters
    *          parameters
    */
@@ -104,7 +103,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Initializes the decrypter using {@link DecryptionConfiguration}.
-   * 
+   *
    * @param decryptionConfiguration
    *          parameters
    */
@@ -119,7 +118,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Decrypts the supplied encrypted object into an object of the given type.
-   * 
+   *
    * @param encryptedObject
    *          the encrypted object
    * @param destinationClass
@@ -143,7 +142,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Decrypts the supplied encrypted object into an object of the given type.
-   * 
+   *
    * @param encryptedData
    *          the encrypted data
    * @param destinationClass
@@ -167,7 +166,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Returns the decrypter to use.
-   * 
+   *
    * @return the decrypter
    */
   private synchronized Decrypter getDecrypter() {
@@ -187,7 +186,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Assigns a list of black listed algorithms
-   * 
+   *
    * @param blacklistedAlgorithms
    *          non allowed algorithms
    */
@@ -200,7 +199,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * Assigns a list of white listed algorithms
-   * 
+   *
    * @param whitelistedAlgorithms
    *          white listed algorithms
    */
@@ -216,7 +215,7 @@ public class SAMLObjectDecrypter {
    * OAEP padding. This is used commonly for XML encryption since
    * {@code http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p} is the default algorithm to use for key encryption. This
    * class has a workaround for this limitation that is enabled by setting the {@code pkcs11Workaround} flag.
-   * 
+   *
    * @param pkcs11Workaround
    *          whether to run in PKCS11 workaround mode
    */
@@ -226,7 +225,7 @@ public class SAMLObjectDecrypter {
 
   /**
    * For internal testing only.
-   * 
+   *
    * @param pkcs11testMode
    *          test flag
    */
