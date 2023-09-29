@@ -53,6 +53,7 @@
     <java.version>17</java.version>
 
     <opensaml.version>5.0.0</opensaml.version>
+    <shib.support.version>9.0.0</shib.support.version>
     <junit.version>4.13.2</junit.version>
     
     <bc.version>1.76</bc.version>    
@@ -193,9 +194,9 @@
     </dependency>
         
     <dependency>
-        <groupId>net.shibboleth</groupId>
-        <artifactId>shib-support</artifactId>
-        <version>9.0.0</version>
+      <groupId>net.shibboleth</groupId>
+      <artifactId>shib-support</artifactId>
+      <version>${shib.support.version}</version>
     </dependency>
 
     <!-- For testing -->
@@ -224,7 +225,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>[6.0.0,)</version>
+      <version>6.0.12</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -360,20 +361,14 @@
               </execution>
             </executions>
             <configuration>
-
               <doctitle>OpenSAML 5.x Security Extensions - ${project.version}</doctitle>
               <windowtitle>OpenSAML 5.x Security Extensions - ${project.version}</windowtitle>
               <detectJavaApiLink>true</detectJavaApiLink>
-<!-- Links were not yet available during development.
               <links>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/4.1.1/apidocs/</link>
-                <link>https://build.shibboleth.net/nexus/content/sites/site/java-support/8.2.1/apidocs/</link>
-              </links> -->
-              <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
-              <additionalJOptions>
-                <additionalJOption>-Xdoclint:all</additionalJOption>
-                <additionalJOption>-Xdoclint:-missing</additionalJOption>
-              </additionalJOptions>
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/${opensaml.version}/apidocs/</link>
+                <link>https://build.shibboleth.net/nexus/content/sites/site/java-shib-shared/${shib.support.version}/apidocs/</link>
+              </links>
+              <doclint>all,-missing</doclint>
             </configuration>
           </plugin>
 
