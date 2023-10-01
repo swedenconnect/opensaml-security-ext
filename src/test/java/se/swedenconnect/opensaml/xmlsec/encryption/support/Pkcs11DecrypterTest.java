@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
 import java.util.Arrays;
 
-import net.shibboleth.shared.resolver.CriteriaSet;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.security.credential.UsageType;
@@ -38,11 +36,12 @@ import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 import org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver;
 import org.springframework.core.io.ClassPathResource;
 
+import net.shibboleth.shared.resolver.CriteriaSet;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**
  * Test cases for Pkcs11Decrypter.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -51,65 +50,51 @@ public class Pkcs11DecrypterTest extends OpenSAMLTestBase {
   /** The value that we encrypt. */
   private final static String VALUE = "https://www.idsec.se";
 
-  /** The encrypted object. */
-  private Issuer encryptedObject;
-
-  /** The RSA credential. */
-  private X509Credential rsaCredential;
-
-  /** The RSA certificate/peer credential. */
-  private X509Credential rsaPeerCredential;
-
-  /**
-   * Sets up objects needed for our tests.
-   * 
-   * @throws Exception
-   *           for errors
-   */
-  @Before
-  public void setUp() throws Exception {
-
-    // Create the XML object that should be encrypted.
-    this.encryptedObject = (Issuer) XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
-    this.encryptedObject.setValue(VALUE);
-
-    // Load credentials ...
-    //
-    this.rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
-      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
-    this.rsaPeerCredential = new BasicX509Credential(this.rsaCredential.getEntityCertificate());
-    ((BasicX509Credential) this.rsaPeerCredential).setUsageType(UsageType.ENCRYPTION);
-  }
-
   @Test
   public void testDecrypt() throws Exception {
 
-    final BasicEncryptionConfiguration config = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
-    config.setKeyTransportEncryptionCredentials(Arrays.asList(this.rsaPeerCredential));
-    
+    // Create the XML object that should be encrypted.
+    final Issuer encryptedObject = (Issuer) XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
+    encryptedObject.setValue(VALUE);
+
+    // Load credentials ...
+    //
+    final X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    final X509Credential rsaPeerCredential = new BasicX509Credential(rsaCredential.getEntityCertificate());
+    ((BasicX509Credential) rsaPeerCredential).setUsageType(UsageType.ENCRYPTION);
+
+    final BasicEncryptionConfiguration config =
+        DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    config.setKeyTransportEncryptionCredentials(Arrays.asList(rsaPeerCredential));
+
     final EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
 
     final EncryptionParametersResolver resolver = new BasicEncryptionParametersResolver();
-    EncryptionParameters params = resolver.resolveSingle(new CriteriaSet(criterion));
+    final EncryptionParameters params = resolver.resolveSingle(new CriteriaSet(criterion));
 
     // Verify that RSA OAEP will used
-    Assert.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP, params.getKeyTransportEncryptionAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,
+        params.getKeyTransportEncryptionAlgorithm());
 
-    org.opensaml.xmlsec.encryption.support.Encrypter encrypter = new org.opensaml.xmlsec.encryption.support.Encrypter();
+    final org.opensaml.xmlsec.encryption.support.Encrypter encrypter =
+        new org.opensaml.xmlsec.encryption.support.Encrypter();
 
-    EncryptedData encryptedData = encrypter.encryptElement(this.encryptedObject,
-      new DataEncryptionParameters(params), new KeyEncryptionParameters(params, "recipient"));
+    final EncryptedData encryptedData = encrypter.encryptElement(encryptedObject,
+        new DataEncryptionParameters(params), new KeyEncryptionParameters(params, "recipient"));
 
     // OK, let's decrypt ...
     //
-    Pkcs11Decrypter decrypter = new Pkcs11Decrypter(DecryptionUtils.createDecryptionParameters(rsaCredential));
+    final Pkcs11Decrypter decrypter =
+        new Pkcs11Decrypter(DecryptionUtils.createDecryptionParameters(rsaCredential));
     decrypter.setRootInNewDocument(true);
     decrypter.setTestMode(true);
 
-    Issuer decryptedObject = (Issuer) decrypter.decryptData(encryptedData);
+    final Issuer decryptedObject = (Issuer) decrypter.decryptData(encryptedData);
     System.out.println(OpenSAMLTestBase.toString(decryptedObject));
 
-    Assert.assertEquals(String.format("Expected '%s' as decrypted message", VALUE), VALUE, decryptedObject.getValue());
+    Assertions.assertEquals(VALUE, decryptedObject.getValue(),
+        String.format("Expected '%s' as decrypted message", VALUE));
   }
 
 }

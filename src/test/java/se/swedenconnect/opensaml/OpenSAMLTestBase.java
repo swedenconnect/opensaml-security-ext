@@ -25,21 +25,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import javax.xml.namespace.QName;
-
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 import org.opensaml.core.xml.XMLObject;
-import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.MarshallingException;
-import org.opensaml.core.xml.io.Unmarshaller;
-import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.security.x509.X509Credential;
 import org.opensaml.security.x509.impl.KeyStoreX509CredentialAdapter;
 import org.w3c.dom.Element;
 
 import net.shibboleth.shared.xml.SerializeSupport;
-import net.shibboleth.shared.xml.XMLParserException;
 import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
 
 /**
@@ -68,83 +62,11 @@ public abstract class OpenSAMLTestBase {
    * @throws Exception
    *           for init errors
    */
-  @BeforeClass
+  @BeforeAll
   public static void initializeOpenSAML() throws Exception {
     OpenSAMLInitializer.getInstance().initialize(
       new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()),
       new OpenSAMLSecurityExtensionConfig());
-  }
-
-  /**
-   * Utility method for creating an OpenSAML {@code XMLObject} given its element name.
-   *
-   * @param clazz
-   *          the class to create
-   * @param elementName
-   *          the element name to assign the object that is created.
-   * @param <T>
-   *          the type
-   * @return the SAML object
-   */
-  public static <T extends XMLObject> XMLObject createXmlObject(Class<T> clazz, QName elementName) {
-    return clazz.cast(XMLObjectProviderRegistrySupport.getBuilderFactory().getBuilder(elementName).buildObject(elementName));
-  }
-
-  /**
-   * Marshalls the supplied {@code XMLObject} into an {@code Element}.
-   *
-   * @param object
-   *          the object to marshall
-   * @param <T>
-   *          the type
-   * @return an XML element
-   * @throws MarshallingException
-   *           for marshalling errors
-   */
-  public static <T extends XMLObject> Element marshall(T object) throws MarshallingException {
-    return XMLObjectSupport.marshall(object);
-  }
-
-  /**
-   * Unmarshalls the supplied element into the given type.
-   *
-   * @param xml
-   *          the DOM (XML) to unmarshall
-   * @param targetClass
-   *          the required class
-   * @param <T>
-   *          the type
-   * @return an {@code XMLObject} of the given type
-   * @throws UnmarshallingException
-   *           for unmarshalling errors
-   */
-  public static <T extends XMLObject> T unmarshall(Element xml, Class<T> targetClass) throws UnmarshallingException {
-    Unmarshaller unmarshaller = XMLObjectSupport.getUnmarshaller(xml);
-    if (unmarshaller == null) {
-      throw new UnmarshallingException("No unmarshaller found for " + xml.getNodeName());
-    }
-    XMLObject xmlObject = unmarshaller.unmarshall(xml);
-    return targetClass.cast(xmlObject);
-  }
-
-  /**
-   * Unmarshalls the supplied input stream into the given type.
-   *
-   * @param inputStream
-   *          the input stream of the XML resource
-   * @param targetClass
-   *          the required class
-   * @param <T>
-   *          the type
-   * @return an {@code XMLObject} of the given type
-   * @throws XMLParserException
-   *           for XML parsing errors
-   * @throws UnmarshallingException
-   *           for unmarshalling errors
-   */
-  public static <T extends XMLObject> T unmarshall(InputStream inputStream, Class<T> targetClass) throws XMLParserException,
-      UnmarshallingException {
-    return unmarshall(XMLObjectProviderRegistrySupport.getParserPool().parse(inputStream).getDocumentElement(), targetClass);
   }
 
   /**
@@ -159,7 +81,7 @@ public abstract class OpenSAMLTestBase {
    *           for marshalling errors
    */
   public static <T extends XMLObject> String toString(T object) throws MarshallingException {
-    Element elm = marshall(object);
+    Element elm = XMLObjectSupport.marshall(object);
     return SerializeSupport.prettyPrintXML(elm);
   }
 

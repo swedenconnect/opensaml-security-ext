@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
-import net.shibboleth.shared.xml.SerializeSupport;
 import org.apache.xml.security.signature.XMLSignature;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.SAMLObject;
@@ -39,11 +38,12 @@ import org.opensaml.xmlsec.SecurityConfigurationSupport;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.springframework.core.io.ClassPathResource;
 
+import net.shibboleth.shared.xml.SerializeSupport;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**
  * Test cases for the utility methods of {@code SAMLObjectSigner}.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  */
 public class SAMLObjectSignerTest extends OpenSAMLTestBase {
@@ -51,89 +51,94 @@ public class SAMLObjectSignerTest extends OpenSAMLTestBase {
   @Test
   public void testRSAPSS() throws Exception {
     final X509Credential rsaCredential = loadKeyStoreCredential(
-      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
 
-    final EntityDescriptor metadata = createMetadata(
-      Arrays.asList(new DigestAlgorithm(false, SignatureConstants.ALGO_ID_DIGEST_SHA384)),
-      Arrays.asList(new SignatureAlgorithm(true, XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1)));
+    final EntityDescriptor metadata = this.createMetadata(
+        Arrays.asList(new DigestAlgorithm(false, SignatureConstants.ALGO_ID_DIGEST_SHA384)),
+        Arrays.asList(new SignatureAlgorithm(true, XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1)));
 
     final AuthnRequest authnRequest = getMockAuthnRequest();
 
     SAMLObjectSigner.sign(authnRequest, rsaCredential,
-      SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), metadata);
+        SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), metadata);
 
-    Assert.assertEquals(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1, authnRequest.getSignature().getSignatureAlgorithm());
-    Assert.assertTrue(toString(authnRequest).contains(
-      "<ds:DigestMethod Algorithm=\"" + SignatureConstants.ALGO_ID_DIGEST_SHA384 + "\""));
+    Assertions.assertEquals(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1,
+        authnRequest.getSignature().getSignatureAlgorithm());
+    Assertions.assertTrue(toString(authnRequest).contains(
+        "<ds:DigestMethod Algorithm=\"" + SignatureConstants.ALGO_ID_DIGEST_SHA384 + "\""));
   }
-  
+
   @Test
   public void testNoPreferences() throws Exception {
     final X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
-      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
 
     final AuthnRequest authnRequest = getMockAuthnRequest();
 
     SAMLObjectSigner.sign(authnRequest, rsaCredential,
-      SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), null);
-    
+        SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), null);
+
     // Verify that the default algo is used if the recipient hasn't specified anything
-    Assert.assertEquals(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256, authnRequest.getSignature().getSignatureAlgorithm());
+    Assertions.assertEquals(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256,
+        authnRequest.getSignature().getSignatureAlgorithm());
   }
-  
+
   @Test
   public void testECDSA() throws Exception {
-    
+
     final X509Credential ecCredential = OpenSAMLTestBase.loadKeyStoreCredential(
-      new ClassPathResource("eckey.jks").getInputStream(), "Test1234", "key1", "Test1234");
-    
+        new ClassPathResource("eckey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+
     final X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
-      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
-    
-    final EntityDescriptor metadata = createMetadata(
-      null,Arrays.asList(
-        new SignatureAlgorithm(true, SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512),
-        new SignatureAlgorithm(true, SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512)));
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
 
-      final AuthnRequest authnRequest = getMockAuthnRequest();
+    final EntityDescriptor metadata = this.createMetadata(
+        null, Arrays.asList(
+            new SignatureAlgorithm(true, SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512),
+            new SignatureAlgorithm(true, SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512)));
 
-      SAMLObjectSigner.sign(authnRequest, ecCredential,
+    final AuthnRequest authnRequest = getMockAuthnRequest();
+
+    SAMLObjectSigner.sign(authnRequest, ecCredential,
         SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), metadata);
 
-      Assert.assertEquals(SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512, authnRequest.getSignature().getSignatureAlgorithm());
-      
-      SAMLObjectSigner.sign(authnRequest, rsaCredential,
+    Assertions.assertEquals(SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512,
+        authnRequest.getSignature().getSignatureAlgorithm());
+
+    SAMLObjectSigner.sign(authnRequest, rsaCredential,
         SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), metadata);
 
-      Assert.assertEquals(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512, authnRequest.getSignature().getSignatureAlgorithm());
+    Assertions.assertEquals(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512,
+        authnRequest.getSignature().getSignatureAlgorithm());
   }
-  
+
   @Test
   public void testBadAlgorithms() throws Exception {
     final X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
-      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
 
-    final EntityDescriptor metadata = createMetadata(
-      Arrays.asList(
-        new DigestAlgorithm(false, SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512),
-        new DigestAlgorithm(false, SignatureConstants.ALGO_ID_DIGEST_SHA384)),
-      Arrays.asList(
-        new SignatureAlgorithm(true, SignatureConstants.ALGO_ID_DIGEST_SHA384),
-        new SignatureAlgorithm(true, XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1)));
+    final EntityDescriptor metadata = this.createMetadata(
+        Arrays.asList(
+            new DigestAlgorithm(false, SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512),
+            new DigestAlgorithm(false, SignatureConstants.ALGO_ID_DIGEST_SHA384)),
+        Arrays.asList(
+            new SignatureAlgorithm(true, SignatureConstants.ALGO_ID_DIGEST_SHA384),
+            new SignatureAlgorithm(true, XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1)));
 
     final AuthnRequest authnRequest = getMockAuthnRequest();
 
     SAMLObjectSigner.sign(authnRequest, rsaCredential,
-      SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), metadata);
+        SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration(), metadata);
 
-    Assert.assertEquals(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1, authnRequest.getSignature().getSignatureAlgorithm());
-    Assert.assertTrue(toString(authnRequest).contains(
-      "<ds:DigestMethod Algorithm=\"" + SignatureConstants.ALGO_ID_DIGEST_SHA384 + "\""));
-  }  
+    Assertions.assertEquals(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1,
+        authnRequest.getSignature().getSignatureAlgorithm());
+    Assertions.assertTrue(toString(authnRequest).contains(
+        "<ds:DigestMethod Algorithm=\"" + SignatureConstants.ALGO_ID_DIGEST_SHA384 + "\""));
+  }
 
   /**
    * Creates an {@link AuthnRequest} that we sign.
-   * 
+   *
    * @return an authentication request object
    */
   private static AuthnRequest getMockAuthnRequest() {
@@ -146,18 +151,19 @@ public class SAMLObjectSignerTest extends OpenSAMLTestBase {
     authnRequest.setIssuer(issuer);
     return authnRequest;
   }
-  
-  private EntityDescriptor createMetadata(final List<DigestAlgorithm> digestAlgos, final List<SignatureAlgorithm> signatureAlgs) throws Exception {
+
+  private EntityDescriptor createMetadata(final List<DigestAlgorithm> digestAlgos,
+      final List<SignatureAlgorithm> signatureAlgs) throws Exception {
     final EntityDescriptor ed = EntityDescriptor.class.cast(
-      XMLObjectSupport.buildXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME));
+        XMLObjectSupport.buildXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME));
     ed.setEntityID("http://www.dummy.com/idp");
     ed.setID("_id123456");
-    
+
     final IDPSSODescriptor d = IDPSSODescriptor.class.cast(
-      XMLObjectSupport.buildXMLObject(IDPSSODescriptor.DEFAULT_ELEMENT_NAME));
+        XMLObjectSupport.buildXMLObject(IDPSSODescriptor.DEFAULT_ELEMENT_NAME));
     d.addSupportedProtocol(SAMLConstants.SAML20P_NS);
     ed.getRoleDescriptors().add(d);
-    
+
     if (digestAlgos != null) {
       for (final DigestAlgorithm da : digestAlgos) {
         Extensions extensions = da.isAddToRole() ? d.getExtensions() : ed.getExtensions();
@@ -187,15 +193,15 @@ public class SAMLObjectSignerTest extends OpenSAMLTestBase {
         }
         extensions.getUnknownXMLObjects().add(sa.toSignatureMethod());
       }
-    }    
-    
+    }
+
     return ed;
   }
-  
+
   private abstract static class MetadataAlgoritm {
-    private boolean addToRole;
+    private final boolean addToRole;
     protected String algorithm;
-    
+
     public MetadataAlgoritm(final boolean addToRole, final String algorithm) {
       this.addToRole = addToRole;
       this.algorithm = algorithm;
@@ -204,39 +210,39 @@ public class SAMLObjectSignerTest extends OpenSAMLTestBase {
     public boolean isAddToRole() {
       return this.addToRole;
     }
-    
+
   }
-  
+
   private static class DigestAlgorithm extends MetadataAlgoritm {
 
-    public DigestAlgorithm(boolean addToRole, String algorithm) {
+    public DigestAlgorithm(final boolean addToRole, final String algorithm) {
       super(addToRole, algorithm);
     }
-    
+
     public DigestMethod toDigestMethod() {
       final DigestMethod dm = DigestMethod.class.cast(
-        XMLObjectSupport.buildXMLObject(DigestMethod.DEFAULT_ELEMENT_NAME));
+          XMLObjectSupport.buildXMLObject(DigestMethod.DEFAULT_ELEMENT_NAME));
       dm.setAlgorithm(this.algorithm);
       return dm;
     }
-    
+
   }
-  
+
   private static class SignatureAlgorithm extends MetadataAlgoritm {
 
-    public SignatureAlgorithm(boolean addToRole, String algorithm) {
+    public SignatureAlgorithm(final boolean addToRole, final String algorithm) {
       super(addToRole, algorithm);
     }
-    
+
     public SigningMethod toSignatureMethod() {
       final SigningMethod sm = SigningMethod.class.cast(
-        XMLObjectSupport.buildXMLObject(SigningMethod.DEFAULT_ELEMENT_NAME));
+          XMLObjectSupport.buildXMLObject(SigningMethod.DEFAULT_ELEMENT_NAME));
       sm.setAlgorithm(this.algorithm);
       return sm;
     }
-    
+
   }
-  
+
   private static <T extends SAMLObject> String toString(final T object) throws MarshallingException {
     return SerializeSupport.prettyPrintXML(XMLObjectSupport.marshall(object));
   }

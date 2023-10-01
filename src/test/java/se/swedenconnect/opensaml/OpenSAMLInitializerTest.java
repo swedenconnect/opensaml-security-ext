@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package se.swedenconnect.opensaml;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.XMLRuntimeException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Issuer;
@@ -25,31 +25,29 @@ import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
 
 /**
  * Test cases for {@code OpenSAMLInitializer}.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public class OpenSAMLInitializerTest {
 
   @Test
-  public void testInitSecurityExtensions() throws Exception {
+  public void testInitSecurityExtensions() {
 
     // Try creating OpenSAML object. Should not be possible.
-    try {
+    Assertions.assertThrows(XMLRuntimeException.class, () -> {
       XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
-      Assert.fail("Expected XMLRuntimeException");
-    }
-    catch (XMLRuntimeException e) {
-      // XMLObjectProviderRegistry was not available from the ConfigurationService.
-    }
+    });
 
-    OpenSAMLInitializer.getInstance()
-      .initialize(
-        new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()),
-        new OpenSAMLSecurityExtensionConfig());
+    Assertions.assertDoesNotThrow(() -> {
+      OpenSAMLInitializer.getInstance()
+          .initialize(
+              new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()),
+              new OpenSAMLSecurityExtensionConfig());
 
-    // Now, it should work
-    XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
+      // Now, it should work
+      XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
+    });
   }
 
 }

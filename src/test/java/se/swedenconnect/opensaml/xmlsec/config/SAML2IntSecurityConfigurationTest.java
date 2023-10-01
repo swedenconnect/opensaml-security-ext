@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package se.swedenconnect.opensaml.xmlsec.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
@@ -27,7 +27,7 @@ import se.swedenconnect.opensaml.OpenSAMLSecurityDefaultsConfig;
 
 /**
  * Test cases for {@code SAML2IntSecurityConfiguration}.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -37,15 +37,17 @@ public class SAML2IntSecurityConfigurationTest {
   public void testConfig() throws Exception {
 
     OpenSAMLInitializer.getInstance()
-      .initialize(new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()));
+        .initialize(new OpenSAMLSecurityDefaultsConfig(new SAML2IntSecurityConfiguration()));
 
-    EncryptionConfiguration config = ConfigurationService.get(EncryptionConfiguration.class);
-    
+    final EncryptionConfiguration config = ConfigurationService.get(EncryptionConfiguration.class);
+
     // Assert we have the SAML2Int defaults.
-    Assert.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM, config.getDataEncryptionAlgorithms().get(0));
-    Assert.assertEquals(SignatureConstants.ALGO_ID_DIGEST_SHA1, config.getRSAOAEPParameters().getDigestMethod());
-    Assert.assertTrue(config.getKeyTransportEncryptionAlgorithms().contains(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11));
-    
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+        config.getDataEncryptionAlgorithms().get(0));
+    Assertions.assertEquals(SignatureConstants.ALGO_ID_DIGEST_SHA1, config.getRSAOAEPParameters().getDigestMethod());
+    Assertions.assertTrue(
+        config.getKeyTransportEncryptionAlgorithms().contains(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11));
+
   }
 
 }
