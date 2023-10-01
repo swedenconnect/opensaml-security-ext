@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ package se.swedenconnect.opensaml.xmlsec;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Stream;
 
-import net.shibboleth.shared.resolver.CriteriaSet;
-import net.shibboleth.shared.resolver.ResolverException;
 import org.apache.xml.security.signature.XMLSignature;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.SignableSAMLObject;
@@ -53,82 +53,73 @@ import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngin
 import org.springframework.core.io.ClassPathResource;
 import org.w3c.dom.Attr;
 
+import net.shibboleth.shared.resolver.CriteriaSet;
+import net.shibboleth.shared.resolver.ResolverException;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**
  * Verifies that the algorithm descriptors for RSA-PSS that this library registers works in action.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
-@RunWith(Parameterized.class)
 public class RSAPSSSignatureTest extends OpenSAMLTestBase {
 
-  /** The signature algorithm to use. */
-  private String algorithm;
-
-  /**
-   * Constructor.
-   * 
-   * @param algorithm
-   *          the signature algorithm to use for the test
-   */
-  public RSAPSSSignatureTest(String algorithm) {
-    this.algorithm = algorithm;
-    
+  @BeforeAll
+  public static void init() {
     // Test our implementation (even though we are not using HSM).
-    System.setProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode", "true");
+    System.setProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode",
+        "true");
   }
-  
+
+  @AfterAll
+  public static void close() {
+    System.clearProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode");
+  }
+
   /**
    * Tests sign and verify.
-   * 
-   * @throws Exception
-   *           for test errors
+   *
+   * @throws Exception for test errors
    */
-  @Test
-  public void signAndVerify() throws Exception {
-    
-    X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
-      new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+  @ParameterizedTest
+  @MethodSource("algorithms")
+  public void signAndVerify(final String algorithm) throws Exception {
 
-    AuthnRequest authnRequest = getMockAuthnRequest();
+    final X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
 
-    sign(authnRequest, rsaCredential, this.algorithm);
+    final AuthnRequest authnRequest = getMockAuthnRequest();
 
-    Assert.assertNotNull(authnRequest.getSignature());
-    Assert.assertEquals(this.algorithm, authnRequest.getSignature().getSignatureAlgorithm());
+    sign(authnRequest, rsaCredential, algorithm);
+
+    Assertions.assertNotNull(authnRequest.getSignature());
+    Assertions.assertEquals(algorithm, authnRequest.getSignature().getSignatureAlgorithm());
 
     validate(authnRequest, rsaCredential.getEntityCertificate());
   }
 
-  /**
-   * Test data.
-   * 
-   * @return the algorithms to test
-   */
-  @Parameterized.Parameters
-  public static Collection<?> algorithms() {
-    return Arrays.asList(
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_224_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_256_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_384_MGF1,
-      XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_512_MGF1);
+  private static Stream<Arguments> algorithms() {
+    return Stream.of(
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1),
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384_MGF1),
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512_MGF1),
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_224_MGF1),
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_256_MGF1),
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_384_MGF1),
+        Arguments.of(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA3_512_MGF1));
   }
 
   /**
    * Creates an {@link AuthnRequest} that we sign.
-   * 
+   *
    * @return an authentication request object
    */
   private static AuthnRequest getMockAuthnRequest() {
-    AuthnRequest authnRequest = (AuthnRequest) XMLObjectSupport.buildXMLObject(AuthnRequest.DEFAULT_ELEMENT_NAME);
+    final AuthnRequest authnRequest = (AuthnRequest) XMLObjectSupport.buildXMLObject(AuthnRequest.DEFAULT_ELEMENT_NAME);
     authnRequest.setID("_BmPDpaRGHfHCsqRdeoTHVnsPhNvr3ulQdUoXGgnV");
     authnRequest.setIssueInstant(Instant.now());
-    Issuer issuer = (Issuer) XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
+    final Issuer issuer = (Issuer) XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
     issuer.setFormat(Issuer.ENTITY);
     issuer.setValue("http://www.fake.issuer.com");
     authnRequest.setIssuer(issuer);
@@ -137,33 +128,30 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
 
   /**
    * Signs the supplied SAML object using the credentials.
-   * 
-   * @param object
-   *          object to sign
-   * @param signingCredentials
-   *          signature credentials
-   * @param signatureAlgorithm
-   *          the signature algorithm to use
-   * @param <T>
-   *          the object type
-   * @throws SignatureException
-   *           for signature creation errors
+   *
+   * @param object object to sign
+   * @param signingCredentials signature credentials
+   * @param signatureAlgorithm the signature algorithm to use
+   * @param <T> the object type
+   * @throws SignatureException for signature creation errors
    */
-  public static <T extends SignableSAMLObject> void sign(T object, Credential signingCredentials, String signatureAlgorithm)
+  public static <T extends SignableSAMLObject> void sign(final T object, final Credential signingCredentials,
+      final String signatureAlgorithm)
       throws SignatureException {
     try {
       object.setSignature(null);
 
-      BasicSignatureSigningConfiguration signatureCreds = new BasicSignatureSigningConfiguration();
+      final BasicSignatureSigningConfiguration signatureCreds = new BasicSignatureSigningConfiguration();
       signatureCreds.setSigningCredentials(Collections.singletonList(signingCredentials));
       signatureCreds.setSignatureAlgorithms(Arrays.asList(signatureAlgorithm));
 
-      BasicSignatureSigningParametersResolver signatureParametersResolver = new BasicSignatureSigningParametersResolver();
-      CriteriaSet criteriaSet = new CriteriaSet(new SignatureSigningConfigurationCriterion(
-        signatureCreds,
-        SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration()));
-      
-      SignatureSigningParameters parameters = signatureParametersResolver.resolveSingle(criteriaSet);
+      final BasicSignatureSigningParametersResolver signatureParametersResolver =
+          new BasicSignatureSigningParametersResolver();
+      final CriteriaSet criteriaSet = new CriteriaSet(new SignatureSigningConfigurationCriterion(
+          signatureCreds,
+          SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration()));
+
+      final SignatureSigningParameters parameters = signatureParametersResolver.resolveSingle(criteriaSet);
       SignatureSupport.signObject(object, parameters);
     }
     catch (ResolverException | org.opensaml.security.SecurityException | MarshallingException e) {
@@ -171,26 +159,27 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
     }
   }
 
-  public static <T extends SignableSAMLObject> void validate(T object, X509Certificate cert) throws SignatureException, SecurityException {
+  public static <T extends SignableSAMLObject> void validate(final T object, final X509Certificate cert)
+      throws SignatureException, SecurityException {
 
     // Temporary code until we figure out how to make the OpenSAML unmarshaller to
     // mark the ID attribute as an ID.
     //
-    Attr idAttr = object.getDOM().getAttributeNode("ID");
+    final Attr idAttr = object.getDOM().getAttributeNode("ID");
     if (idAttr != null) {
       idAttr.getOwnerElement().setIdAttributeNode(idAttr, true);
     }
 
-    SignatureTrustEngine trustEngine = new ExplicitKeySignatureTrustEngine(new StaticCredentialResolver(cert),
-      DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
+    final SignatureTrustEngine trustEngine = new ExplicitKeySignatureTrustEngine(new StaticCredentialResolver(cert),
+        DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
 
-    Signature signature = object.getSignature();
+    final Signature signature = object.getSignature();
     if (signature == null) {
       throw new SignatureException("Object is not signed");
     }
-    CriteriaSet criteriaSet = new CriteriaSet();
+    final CriteriaSet criteriaSet = new CriteriaSet();
     criteriaSet.add(new SignatureValidationConfigurationCriterion(
-      SecurityConfigurationSupport.getGlobalSignatureValidationConfiguration()));
+        SecurityConfigurationSupport.getGlobalSignatureValidationConfiguration()));
 
     if (!trustEngine.validate(signature, criteriaSet)) {
       throw new SignatureException("Signature validation failed");
@@ -199,14 +188,14 @@ public class RSAPSSSignatureTest extends OpenSAMLTestBase {
 
   public static class StaticCredentialResolver extends AbstractCredentialResolver {
 
-    private X509Credential cred;
+    private final X509Credential cred;
 
-    public StaticCredentialResolver(X509Certificate cert) {
+    public StaticCredentialResolver(final X509Certificate cert) {
       this.cred = new BasicX509Credential(cert);
     }
 
     @Override
-    public Iterable<Credential> resolve(CriteriaSet criteriaSet) throws ResolverException {
+    public Iterable<Credential> resolve(final CriteriaSet criteriaSet) throws ResolverException {
       return Arrays.asList(this.cred);
     }
 

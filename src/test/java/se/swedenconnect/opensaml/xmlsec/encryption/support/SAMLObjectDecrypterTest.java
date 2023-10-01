@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.EncryptedAssertion;
 import org.opensaml.saml.saml2.core.Response;
@@ -28,7 +30,7 @@ import se.swedenconnect.opensaml.OpenSAMLTestBase;
 
 /**
  * Test cases for {@code SAMLObjectDecrypter}.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  */
 public class SAMLObjectDecrypterTest extends OpenSAMLTestBase {
@@ -36,35 +38,37 @@ public class SAMLObjectDecrypterTest extends OpenSAMLTestBase {
   @Test
   public void test() throws Exception {
     final X509Credential credential = loadKeyStoreCredential(
-      new ClassPathResource("sp-enc-cert.jks").getInputStream(), "secret", "eid", "secret");
-    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(credential); 
-    
+        new ClassPathResource("sp-enc-cert.jks").getInputStream(), "secret", "eid", "secret");
+    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(credential);
+
     final Resource r = new ClassPathResource("encrypted-20180428.xml");
-    final Response response = unmarshall(r.getInputStream(), Response.class);
-    
+    final Response response = (Response) XMLObjectSupport.unmarshallFromInputStream(
+        XMLObjectProviderRegistrySupport.getParserPool(), r.getInputStream());
+
     final EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
-    
+
     final Assertion assertion = decrypter.decrypt(encryptedAssertion, Assertion.class);
-    Assert.assertNotNull(assertion);
+    Assertions.assertNotNull(assertion);
     // System.out.println(SerializeSupport.prettyPrintXML(assertion.getDOM()));
   }
-    
+
   @Test
   public void testP11workaround() throws Exception {
     final X509Credential credential = loadKeyStoreCredential(
-      new ClassPathResource("sp-enc-cert.jks").getInputStream(), "secret", "eid", "secret");
-    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(credential); 
+        new ClassPathResource("sp-enc-cert.jks").getInputStream(), "secret", "eid", "secret");
+    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(credential);
     decrypter.setPkcs11testMode(true);
     decrypter.setPkcs11Workaround(true);
 
     final Resource r = new ClassPathResource("encrypted-basic.xml");
-    final Response response = unmarshall(r.getInputStream(), Response.class);
-    
+    final Response response = (Response) XMLObjectSupport.unmarshallFromInputStream(
+        XMLObjectProviderRegistrySupport.getParserPool(), r.getInputStream());
+
     final EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
-    
+
     final Assertion assertion = decrypter.decrypt(encryptedAssertion, Assertion.class);
-    Assert.assertNotNull(assertion);
-    //System.out.println(SerializeSupport.prettyPrintXML(assertion.getDOM()));
+    Assertions.assertNotNull(assertion);
+    // System.out.println(SerializeSupport.prettyPrintXML(assertion.getDOM()));
   }
-  
+
 }
