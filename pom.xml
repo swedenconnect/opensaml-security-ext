@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -54,7 +54,6 @@
 
     <opensaml.version>5.0.0</opensaml.version>
     <shib.support.version>9.0.0</shib.support.version>
-    <junit.version>4.13.2</junit.version>
     
     <bc.version>1.76</bc.version>    
     <slf4j.version>2.0.9</slf4j.version>
@@ -167,6 +166,10 @@
           <groupId>org.apache.velocity</groupId>
           <artifactId>velocity-engine-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>net.shibboleth</groupId>
+          <artifactId>shib-velocity</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -247,8 +250,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <release>${java.version}</release>
         </configuration>
       </plugin>
 
