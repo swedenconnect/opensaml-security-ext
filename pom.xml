@@ -56,7 +56,7 @@
     <shib.support.version>9.0.0</shib.support.version>
     
     <bc.version>1.76</bc.version>    
-    <slf4j.version>2.0.9</slf4j.version>
+    <slf4j.version>2.0.10</slf4j.version>
     <jackson.version>2.15.2</jackson.version>
     <junit.version>5.10.0</junit.version>
   </properties>
@@ -281,7 +281,7 @@
             <id>enforce</id>
             <configuration>
               <rules>
-                <dependencyConvergence />
+                <dependencyConvergence/>
               </rules>
             </configuration>
             <goals>
