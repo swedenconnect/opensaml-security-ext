@@ -200,7 +200,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
 
     return signingKey != null && "RSA".equals(signingKey.getAlgorithm())
         && ("sun.security.pkcs11.P11Key$P11PrivateKey".equals(signingKey.getClass().getName())
-            || "sun.security.pkcs11.P11Key.P11RSAPrivateKeyInternal".equals(signingKey.getClass().getName()))
+            || "sun.security.pkcs11.P11Key$P11RSAPrivateKeyInternal".equals(signingKey.getClass().getName()))
         && ExtendedAlgorithmSupport.isRSAPSS(signingAlgorithm);
   }
 
