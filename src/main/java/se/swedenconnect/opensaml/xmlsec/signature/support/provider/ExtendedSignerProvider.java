@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Optional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -81,7 +82,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
     this.disabled = Boolean.parseBoolean(
       System.getProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.disabled", "false"));
     if (this.disabled) {
-      ExtendedSignerProvider.log.info("The ExtendedSignerProvider has been disabled - {} will be active",
+      log.info("The ExtendedSignerProvider has been disabled - {} will be active",
         ApacheSantuarioSignerProviderImpl.class.getName());
     }
   }
@@ -115,7 +116,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
     final SignedInfo signedInfo = xmlSignature.getSignedInfo();
     if (signedInfo == null) {
       final String msg = "Bad XMLSignature - missing SignedInfo";
-      ExtendedSignerProvider.log.error(msg);
+      log.error(msg);
       throw new SignatureException(msg);
     }
 
@@ -132,8 +133,11 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       //
       final RSAPublicKey publicKey = (RSAPublicKey) signingCredential.getPublicKey();
       if (publicKey == null) {
-        final String msg = "No RSA public key found in signing credential";
-        ExtendedSignerProvider.log.error(msg);
+        final String msg = "No RSA public key found in signing credential - Actual type is: %s"
+            .formatted(Optional.ofNullable(signingCredential.getPublicKey())
+                .map(k -> k.getClass().getName())
+                .orElseGet(() -> "null"));
+        log.error(msg);
         throw new SignatureException(msg);
       }
       final SCPSSPadding pssPadding = new SCPSSPadding(
@@ -158,11 +162,11 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       signatureValue.item(0).setTextContent(Base64.toBase64String(signatureBytes));
     }
     catch (final XMLSecurityException e) {
-      ExtendedSignerProvider.log.error("Failure during digest calculation - {}", e.getMessage(), e);
+      log.error("Failure during digest calculation - {}", e.getMessage(), e);
       throw new SignatureException("Failure during digest calculation", e);
     }
     catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException e) {
-      ExtendedSignerProvider.log.error("RSA transform failed - {}", e.getMessage(), e);
+      log.error("RSA transform failed - {}", e.getMessage(), e);
       throw new SignatureException("RSA signature failure", e);
     }
   }
@@ -195,7 +199,8 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
         : null;
 
     return signingKey != null && "RSA".equals(signingKey.getAlgorithm())
-        && "sun.security.pkcs11.P11Key$P11PrivateKey".equals(signingKey.getClass().getName())
+        && ("sun.security.pkcs11.P11Key$P11PrivateKey".equals(signingKey.getClass().getName())
+            || "sun.security.pkcs11.P11Key$P11RSAPrivateKeyInternal".equals(signingKey.getClass().getName()))
         && ExtendedAlgorithmSupport.isRSAPSS(signingAlgorithm);
   }
 
