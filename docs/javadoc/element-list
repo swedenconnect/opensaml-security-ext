@@ -1,0 +1,7 @@
+se.swedenconnect.opensaml
+se.swedenconnect.opensaml.xmlsec.algorithm
+se.swedenconnect.opensaml.xmlsec.config
+se.swedenconnect.opensaml.xmlsec.encryption.support
+se.swedenconnect.opensaml.xmlsec.signature.support
+se.swedenconnect.opensaml.xmlsec.signature.support.provider
+se.swedenconnect.opensaml.xmlsec.signature.support.provider.padding
