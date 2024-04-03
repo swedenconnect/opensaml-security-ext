@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.0.1-SNAPSHOT</version>
+  <version>4.0.1</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -55,8 +55,8 @@
     <opensaml.version>5.0.0</opensaml.version>
     <shib.support.version>9.0.0</shib.support.version>
     
-    <bc.version>1.76</bc.version>    
-    <slf4j.version>2.0.9</slf4j.version>
+    <bc.version>1.77</bc.version>    
+    <slf4j.version>2.0.12</slf4j.version>
     <jackson.version>2.15.2</jackson.version>
     <junit.version>5.10.0</junit.version>
   </properties>
@@ -94,6 +94,13 @@
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
+      
+    <!-- Bouncy Castle -->    
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bc.version}</version>
+      </dependency>      
       
       <dependency>
         <groupId>commons-codec</groupId>
@@ -134,7 +141,6 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>${bc.version}</version>
     </dependency>
     
     <!-- OpenSAML -->
@@ -235,7 +241,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>6.0.12</version>
+      <version>6.0.15</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -373,10 +379,12 @@
               <doctitle>OpenSAML 5.x Security Extensions - ${project.version}</doctitle>
               <windowtitle>OpenSAML 5.x Security Extensions - ${project.version}</windowtitle>
               <detectJavaApiLink>true</detectJavaApiLink>
+              <!--
               <links>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-opensaml/${opensaml.version}/apidocs/</link>
                 <link>https://build.shibboleth.net/nexus/content/sites/site/java-shib-shared/${shib.support.version}/apidocs/</link>
               </links>
+              -->
               <doclint>all,-missing</doclint>
             </configuration>
           </plugin>
