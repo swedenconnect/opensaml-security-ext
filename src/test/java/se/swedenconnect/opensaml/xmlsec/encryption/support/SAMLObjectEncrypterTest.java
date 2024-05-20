@@ -17,10 +17,9 @@ package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,14 +32,17 @@ import org.opensaml.saml.saml2.metadata.EncryptionMethod;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
+import org.opensaml.saml.security.SAMLMetadataKeyAgreementEncryptionConfiguration;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.x509.impl.KeyStoreX509CredentialAdapter;
+import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.EncryptedData;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
+import org.opensaml.xmlsec.encryption.support.KeyAgreementEncryptionConfiguration;
 import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.X509Data;
@@ -48,6 +50,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
+import se.swedenconnect.opensaml.xmlsec.config.EncryptionConfigurationProfile;
+
+import javax.annotation.Nonnull;
 
 /**
  * Test cases for {@link SAMLObjectEncrypter}.
@@ -243,6 +248,59 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     }
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
+  }
+
+  @Test
+  public void testECDH() throws Exception {
+    final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
+    msg.setValue(CONTENTS);
+
+    // Setup metadata
+    //
+    final EntityDescriptor ed = this.createMetadata(
+      new MetadataCertificate("credentials/eckey.crt", UsageType.ENCRYPTION,
+        Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128, EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256)),
+      new MetadataCertificate("credentials/eckey.crt", UsageType.SIGNING));
+
+    final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
+    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.EIDAS_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
+    final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
+
+    final String decryptedMsg =
+      this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
+        "ecdh-test");
+
+    Assertions.assertEquals(CONTENTS, decryptedMsg);
+
+  }
+  @Test
+  public void testECDHeIDAS() throws Exception {
+    final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
+    msg.setValue(CONTENTS);
+
+    // Setup metadata
+    //
+    final EntityDescriptor ed = this.createMetadata(
+      new MetadataCertificate("credentials/eckey.crt", UsageType.ENCRYPTION,
+        Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM, EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM)),
+      new MetadataCertificate("credentials/eckey.crt", UsageType.SIGNING));
+
+    final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
+    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.EIDAS_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
+    final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
+
+    final String decryptedMsg =
+      this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
+        "ecdh-test");
+
+    Assertions.assertEquals(CONTENTS, decryptedMsg);
+
   }
 
   private String decrypt(final EncryptedData encrypted, final Resource jks, final String password, final String alias)
