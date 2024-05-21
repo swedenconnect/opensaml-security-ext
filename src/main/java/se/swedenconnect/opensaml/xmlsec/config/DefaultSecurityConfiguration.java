@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.opensaml.xmlsec.config;
 
+import org.opensaml.xmlsec.EncryptionConfiguration;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 
@@ -24,7 +25,7 @@ import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
  * For a listing of the security defaults see {@link ExtendedDefaultSecurityConfigurationBootstrap} and
  * {@link DefaultSecurityConfigurationBootstrap}.
  * </p>
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -42,6 +43,11 @@ public class DefaultSecurityConfiguration extends AbstractSecurityConfiguration 
   @Override
   protected SignatureSigningConfiguration createDefaultSignatureSigningConfiguration() {
     return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
+  }
+
+  @Override
+  protected EncryptionConfiguration createDefaultEncryptionConfiguration() {
+    return ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
   }
 
 }

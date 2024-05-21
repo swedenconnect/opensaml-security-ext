@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.logic.Constraint;
+import net.shibboleth.shared.resolver.CriteriaSet;
+import net.shibboleth.shared.resolver.ResolverException;
 import org.opensaml.core.criterion.EntityIdCriterion;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -41,11 +45,9 @@ import org.opensaml.xmlsec.encryption.support.EncryptionException;
 import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 
-import net.shibboleth.shared.component.ComponentInitializationException;
-import net.shibboleth.shared.resolver.CriteriaSet;
-import net.shibboleth.shared.resolver.ResolverException;
-import net.shibboleth.shared.logic.Constraint;
+import java.util.Collections;
 
 /**
  * Utility class for encrypting an element for a SAML entity.
@@ -55,13 +57,13 @@ import net.shibboleth.shared.logic.Constraint;
 public class SAMLObjectEncrypter {
 
   /** Logger instance. */
-  private Logger log = LoggerFactory.getLogger(SAMLObjectEncrypter.class);
+  private static final Logger log = LoggerFactory.getLogger(SAMLObjectEncrypter.class);
 
   /** Resolver for finding the peer credentials. */
   private MetadataResolver metadataResolver;
 
   /** Resolver for finding encryption keys and parameters from SAML metadata. */
-  private SAMLMetadataEncryptionParametersResolver encryptionParameterResolver;
+  private final SAMLMetadataEncryptionParametersResolver encryptionParameterResolver;
 
   /** The default encryption configuration. */
   private EncryptionConfiguration defaultEncryptionConfiguration;
@@ -73,8 +75,7 @@ public class SAMLObjectEncrypter {
    * Sets up the object encrypter without a metadata provider. This means that the peer metadata has to be supplied in
    * calls to {@link #encrypt(XMLObject, Peer)} and {@link #encrypt(XMLObject, Peer, EncryptionConfiguration)}.
    *
-   * @throws ComponentInitializationException
-   *           for init errors
+   * @throws ComponentInitializationException for init errors
    */
   public SAMLObjectEncrypter() throws ComponentInitializationException {
     this(null);
@@ -83,10 +84,8 @@ public class SAMLObjectEncrypter {
   /**
    * Sets up the object encrypter with a metadata resolver from where we find the peer credentials.
    *
-   * @param metadataResolver
-   *          the metadata resolver
-   * @throws ComponentInitializationException
-   *           for init errors
+   * @param metadataResolver the metadata resolver
+   * @throws ComponentInitializationException for init errors
    */
   public SAMLObjectEncrypter(final MetadataResolver metadataResolver) throws ComponentInitializationException {
     if (metadataResolver != null) {
@@ -95,12 +94,13 @@ public class SAMLObjectEncrypter {
 
     this.defaultEncryptionConfiguration = SecurityConfigurationSupport.getGlobalEncryptionConfiguration();
     if (this.defaultEncryptionConfiguration == null) {
-      this.defaultEncryptionConfiguration = DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+      this.defaultEncryptionConfiguration =
+          ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     }
 
     final MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();
     credentialResolver.setKeyInfoCredentialResolver(
-      DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
+        DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
     credentialResolver.initialize();
 
     this.encryptionParameterResolver = new SAMLMetadataEncryptionParametersResolver(credentialResolver);
@@ -110,13 +110,10 @@ public class SAMLObjectEncrypter {
    * Maps to {@link #encrypt(XMLObject, Peer, EncryptionConfiguration)} where the default encryption configuration is
    * supplied.
    *
-   * @param xmlObject
-   *          the object to encrypt
-   * @param peer
-   *          the peer to whom we encrypt for
+   * @param xmlObject the object to encrypt
+   * @param peer the peer to whom we encrypt for
    * @return an {@code EncryptedData} object
-   * @throws EncryptionException
-   *           for encryption errors
+   * @throws EncryptionException for encryption errors
    */
   public EncryptedData encrypt(final XMLObject xmlObject, final Peer peer) throws EncryptionException {
     return this.encrypt(xmlObject, peer, this.defaultEncryptionConfiguration);
@@ -125,15 +122,11 @@ public class SAMLObjectEncrypter {
   /**
    * Encrypts the supplied XML object by locating the peer encryption credentials and using the supplied configuration.
    *
-   * @param xmlObject
-   *          the object to encrypt
-   * @param peer
-   *          the peer to whom we encrypt for
-   * @param configuration
-   *          the encryption configuration
+   * @param xmlObject the object to encrypt
+   * @param peer the peer to whom we encrypt for
+   * @param configuration the encryption configuration
    * @return an {@code EncryptedData} object
-   * @throws EncryptionException
-   *           for encryption errors
+   * @throws EncryptionException for encryption errors
    */
   public EncryptedData encrypt(final XMLObject xmlObject, final Peer peer, final EncryptionConfiguration configuration)
       throws EncryptionException {
@@ -148,7 +141,7 @@ public class SAMLObjectEncrypter {
     // Get hold of the peer credentials ...
     //
     final EncryptionParameters parameters = this.getEncryptionParameters(peerMetadata,
-      configuration != null ? configuration : this.defaultEncryptionConfiguration);
+        configuration != null ? configuration : this.defaultEncryptionConfiguration);
     if (parameters == null) {
       throw new EncryptionException(String.format("No encryption credentials found for '%s'", peer.getEntityID()));
     }
@@ -157,18 +150,20 @@ public class SAMLObjectEncrypter {
     //
     final DataEncryptionParameters dataEncryptionParameters = new DataEncryptionParameters(parameters);
     final KeyEncryptionParameters kekParams = new KeyEncryptionParameters(parameters, peer.getEntityID());
-
-    return this.encrypter.encryptElement(xmlObject, dataEncryptionParameters, kekParams);
+    if (kekParams.getAlgorithm() != null) {
+      return this.encrypter.encryptElement(xmlObject, dataEncryptionParameters, kekParams);
+    }
+    else {
+      return this.encrypter.encryptElement(xmlObject, dataEncryptionParameters, Collections.emptyList());
+    }
   }
 
   /**
    * Retrives the peer metadata entry.
    *
-   * @param peer
-   *          the peer metadata
+   * @param peer the peer metadata
    * @return the entity descriptor
-   * @throws EncryptionException
-   *           if no metadata is found
+   * @throws EncryptionException if no metadata is found
    */
   private EntityDescriptor getPeerMetadata(final Peer peer) throws EncryptionException {
     EntityDescriptor peerMetadata = peer.getMetadata();
@@ -182,7 +177,7 @@ public class SAMLObjectEncrypter {
         criteria.add(new EntityIdCriterion(peer.getEntityID()));
         peerMetadata = this.metadataResolver.resolveSingle(criteria);
       }
-      catch (ResolverException e) {
+      catch (final ResolverException e) {
         throw new EncryptionException("Failed to locate peer metadata", e);
       }
     }
@@ -193,19 +188,16 @@ public class SAMLObjectEncrypter {
   }
 
   /**
-   * Given the peer metadata and the encryption configuration, the method method returns the encryption parameters to
+   * Given the peer metadata and the encryption configuration, the method returns the encryption parameters to
    * use for encryption.
    *
-   * @param metadata
-   *          the peer metadata
-   * @param configuration
-   *          the encryption configuration
+   * @param metadata the peer metadata
+   * @param configuration the encryption configuration
    * @return the encryption parameters to use for encrypt, or {@code null} if no match is found
-   * @throws EncryptionException
-   *           for errors
+   * @throws EncryptionException for errors
    */
-  private EncryptionParameters getEncryptionParameters(final EntityDescriptor metadata, final EncryptionConfiguration configuration)
-      throws EncryptionException {
+  private EncryptionParameters getEncryptionParameters(final EntityDescriptor metadata,
+      final EncryptionConfiguration configuration) throws EncryptionException {
 
     final SSODescriptor descriptor = getSSODescriptor(metadata);
     if (descriptor == null) {
@@ -220,7 +212,7 @@ public class SAMLObjectEncrypter {
     try {
       return this.encryptionParameterResolver.resolveSingle(criteriaSet);
     }
-    catch (ResolverException e) {
+    catch (final ResolverException e) {
       log.error("Error during resolve of encryption parameters", e);
       throw new EncryptionException("Error during resolve of encryption parameters", e);
     }
@@ -229,11 +221,10 @@ public class SAMLObjectEncrypter {
   /**
    * Returns the SSODescriptor for the supplied SP or IdP entity descriptor.
    *
-   * @param ed
-   *          the entity descriptor
+   * @param ed the entity descriptor
    * @return the SSODescriptor
    */
-  private static SSODescriptor getSSODescriptor(EntityDescriptor ed) {
+  private static SSODescriptor getSSODescriptor(final EntityDescriptor ed) {
     if (ed.getIDPSSODescriptor(SAMLConstants.SAML20P_NS) != null) {
       return ed.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
     }
@@ -248,8 +239,7 @@ public class SAMLObjectEncrypter {
    * If not assigned, an instance of {@link org.opensaml.xmlsec.encryption.support.Encrypter} is used.
    * </p>
    *
-   * @param encrypter
-   *          the encrypter
+   * @param encrypter the encrypter
    */
   public void setEncrypter(final Encrypter encrypter) {
     if (encrypter != null) {
@@ -263,8 +253,7 @@ public class SAMLObjectEncrypter {
    * If not assigned, the system defaults will be used.
    * </p>
    *
-   * @param encryptionConfiguration
-   *          default encryption configuration
+   * @param encryptionConfiguration default encryption configuration
    */
   public void setDefaultEncryptionConfiguration(final EncryptionConfiguration encryptionConfiguration) {
     if (encryptionConfiguration != null) {
@@ -276,8 +265,7 @@ public class SAMLObjectEncrypter {
    * Sets the {@link AlgorithmRegistry} instance used when resolving algorithm URIs. Defaults to the registry resolved
    * via {@link AlgorithmSupport#getGlobalAlgorithmRegistry()}.
    *
-   * @param algorithmRegistry
-   *          the new algorithm registry instance
+   * @param algorithmRegistry the new algorithm registry instance
    */
   public void setAlgorithmRegistry(final AlgorithmRegistry algorithmRegistry) {
     if (algorithmRegistry != null) {
@@ -291,7 +279,7 @@ public class SAMLObjectEncrypter {
   public static class Peer {
 
     /** Peer SAML entityID. */
-    private String entityID;
+    private final String entityID;
 
     /** Peer SAML metadata entry. */
     private EntityDescriptor metadata;
@@ -299,8 +287,7 @@ public class SAMLObjectEncrypter {
     /**
      * Constructor setting the entityID of the peer.
      *
-     * @param entityID
-     *          peer entityID
+     * @param entityID peer entityID
      */
     public Peer(final String entityID) {
       Constraint.isNotEmpty(entityID, "entityID must be set");
@@ -310,8 +297,7 @@ public class SAMLObjectEncrypter {
     /**
      * Constructor setting the peer metadata.
      *
-     * @param metadata
-     *          peer metadata
+     * @param metadata peer metadata
      */
     public Peer(final EntityDescriptor metadata) {
       Constraint.isNotNull(metadata, "metadata must not be null");
