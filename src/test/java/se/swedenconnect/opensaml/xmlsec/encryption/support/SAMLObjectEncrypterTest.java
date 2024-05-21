@@ -266,7 +266,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
       new MetadataCertificate("credentials/eckey.crt", UsageType.SIGNING));
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
-    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.EIDAS_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
+    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.DEFAULT_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
 
     //    Element e = ObjectUtils.marshall(encryptedData);
@@ -281,7 +281,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
   }
 
   @Test
-  public void testECDHeIDAS() throws Exception {
+  public void testEcdhConstrainedAlgorithms() throws Exception {
     final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
     msg.setValue(CONTENTS);
 
@@ -289,15 +289,44 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     //
     final EntityDescriptor ed = this.createMetadata(
       new MetadataCertificate("credentials/eckey.crt", UsageType.ENCRYPTION,
-        Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM, EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM)),
+        Arrays.asList(
+          EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+          EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM
+        )),
       new MetadataCertificate("credentials/eckey.crt", UsageType.SIGNING));
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
-    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.EIDAS_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
+    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.builder()
+      .encryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192_GCM
+      ))
+      .keyWrapEncryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES128,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES192
+      ))
+      .keyWrapPolicy(SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap.Always)
+      .excludedAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP
+      ))
+      .build());
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM, encryptedData.getEncryptionMethod().getAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES,
+      encryptedData.getKeyInfo().getEncryptedKeys().get(0).getKeyInfo().getAgreementMethods().get(0).getAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+      encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
 
-    //    Element e = ObjectUtils.marshall(encryptedData);
-    //    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //Element e = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(encryptedData).marshall(encryptedData);
+    //System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
       this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
@@ -308,7 +337,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
   }
 
   @Test
-  public void testECDHeIDASRSA() throws Exception {
+  public void testSRSAConstrainedAlgorithms() throws Exception {
     final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
     msg.setValue(CONTENTS);
 
@@ -325,7 +354,28 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
       new MetadataCertificate("credentials/litsec_auth.crt", UsageType.SIGNING));
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
-    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.STRICT_EIDAS_1_4_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
+    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.builder()
+      .encryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192_GCM
+      ))
+      .keyWrapEncryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES128,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES192
+      ))
+      .keyWrapPolicy(SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap.Always)
+      .excludedAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP
+      ))
+      .build());
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
 
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM, encryptedData.getEncryptionMethod().getAlgorithm());

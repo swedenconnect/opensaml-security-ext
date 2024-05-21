@@ -2,8 +2,8 @@ package se.swedenconnect.opensaml.xmlsec.config;
 
 import org.opensaml.saml.security.SAMLMetadataKeyAgreementEncryptionConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
-import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.KeyAgreementEncryptionConfiguration;
+import org.opensaml.xmlsec.encryption.support.RSAOAEPParameters;
 import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * <p>
  *   This class is motivated primarily because key wrapping with ECDH will not be executed unless peer metadata indicates that
  *   the recipient supports this feature.
- *   This is fixed by setting a common key wrap policy to "Allways".
+ *   This is fixed by setting a common key wrap policy to "Always".
  *   This class provides two default encryption configurations that support key wrap with ECDH.
  * </p>
  */
@@ -33,86 +33,12 @@ public class EncryptionConfigurationProfile {
    */
   public static final BasicEncryptionConfiguration DEFAULT_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP;
 
-  /**
-   * Default eIDAS SAML encryption configuration with default Key Wrap settings
-   */
-  public static final BasicEncryptionConfiguration EIDAS_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP;
-
-  /**
-   * Strict eIDAS version 1.3 SAML encryption configuration with default Key Wrap settings
-   */
-  public static final BasicEncryptionConfiguration STRICT_EIDAS_1_3_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP;
-
-  /**
-   * Strict eIDAS version 1.4 SAML encryption configuration with default Key Wrap settings
-   */
-  public static final BasicEncryptionConfiguration STRICT_EIDAS_1_4_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP;
 
   static {
     DEFAULT_ENCRYPTION_CONFIG = EncryptionConfigurationProfile.builder().build();
 
     DEFAULT_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP = EncryptionConfigurationProfile.builder()
       .keyWrapPolicy(SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap.Always)
-      .build();
-
-    EIDAS_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP = EncryptionConfigurationProfile.builder()
-      .encryptionAlgorithms(List.of(
-        "http://www.w3.org/2009/xmlenc11#aes256-gcm",
-        "http://www.w3.org/2009/xmlenc11#aes128-gcm",
-        "http://www.w3.org/2009/xmlenc11#aes192-gcm"
-      ))
-      .keyWrapEncryptionAlgorithms(List.of(
-        "http://www.w3.org/2009/xmlenc11#rsa-oaep",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes256",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes128",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes192"
-      ))
-      .keyWrapPolicy(SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap.Always)
-      .build();
-
-    STRICT_EIDAS_1_3_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP = EncryptionConfigurationProfile.builder()
-      .encryptionAlgorithms(List.of(
-        "http://www.w3.org/2009/xmlenc11#aes256-gcm",
-        "http://www.w3.org/2009/xmlenc11#aes128-gcm",
-        "http://www.w3.org/2009/xmlenc11#aes192-gcm"
-      ))
-      .keyWrapEncryptionAlgorithms(List.of(
-        "http://www.w3.org/2009/xmlenc11#rsa-oaep",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes256",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes128",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes192"
-      ))
-      .keyWrapPolicy(SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap.Always)
-      .excludedAlgorithms(List.of(
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES,
-        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256
-      ))
-      .build();
-
-    STRICT_EIDAS_1_4_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP = EncryptionConfigurationProfile.builder()
-      .encryptionAlgorithms(List.of(
-        "http://www.w3.org/2009/xmlenc11#aes256-gcm",
-        "http://www.w3.org/2009/xmlenc11#aes128-gcm",
-        "http://www.w3.org/2009/xmlenc11#aes192-gcm"
-      ))
-      .keyWrapEncryptionAlgorithms(List.of(
-        "http://www.w3.org/2009/xmlenc11#rsa-oaep",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes256",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes128",
-        "http://www.w3.org/2001/04/xmlenc#kw-aes192"
-      ))
-      .keyWrapPolicy(SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap.Always)
-      .excludedAlgorithms(List.of(
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES,
-        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
-        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,
-        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP
-      ))
       .build();
   }
 
@@ -163,6 +89,8 @@ public class EncryptionConfigurationProfile {
     private List<String> excludedAlgs;
     /** Key wrap policies mapped under key exchange type */
     private Map<String, SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap> keyWrapPolicyMap;
+    /** RSA OAEP parameters */
+    private RSAOAEPParameters rsaoaepParameters;
 
     /**
      * Constructor starting from the default Open SAML configuration
@@ -183,7 +111,7 @@ public class EncryptionConfigurationProfile {
      * @param encryptionAlgorithms a list of strings representing the encryption algorithms
      * @return the builder instance
      */
-    Builder encryptionAlgorithms(List<String> encryptionAlgorithms) {
+    public Builder encryptionAlgorithms(List<String> encryptionAlgorithms) {
       this.supportedEncAlgs = encryptionAlgorithms;
       return this;
     }
@@ -194,7 +122,7 @@ public class EncryptionConfigurationProfile {
      * @param keyWrapEncryptionAlgorithms a list of key wrap encryption algorithms
      * @return the builder instance
      */
-    Builder keyWrapEncryptionAlgorithms(List<String> keyWrapEncryptionAlgorithms) {
+    public Builder keyWrapEncryptionAlgorithms(List<String> keyWrapEncryptionAlgorithms) {
       this.supportedKeyWrapAlgs = keyWrapEncryptionAlgorithms;
       return this;
     }
@@ -205,7 +133,7 @@ public class EncryptionConfigurationProfile {
      * @param excludedAlgorithms a list of excluded algorithms
      * @return the builder instance
      */
-    Builder excludedAlgorithms(List<String> excludedAlgorithms) {
+    public Builder excludedAlgorithms(List<String> excludedAlgorithms) {
       this.excludedAlgs = excludedAlgorithms;
       return this;
     }
@@ -216,7 +144,7 @@ public class EncryptionConfigurationProfile {
      * @param keyWrapPolicyMap a map specifying the key wrap policy per key type
      * @return the builder instance
      */
-    Builder keyWrapPolicy (Map<String, SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap> keyWrapPolicyMap) {
+    public Builder keyWrapPolicy (Map<String, SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap> keyWrapPolicyMap) {
       this.keyWrapPolicyMap = keyWrapPolicyMap;
       return this;
     }
@@ -227,10 +155,21 @@ public class EncryptionConfigurationProfile {
      * @param keyWrapPolicy the key wrap policy to be set
      * @return the builder instance
      */
-    Builder keyWrapPolicy (SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap keyWrapPolicy) {
+    public Builder keyWrapPolicy (SAMLMetadataKeyAgreementEncryptionConfiguration.KeyWrap keyWrapPolicy) {
       this.keyWrapPolicyMap = baseEncryptConfiguration.getKeyAgreementConfigurations().keySet().stream()
         .collect(Collectors.toMap(Function.identity(),
           kw -> keyWrapPolicy));
+      return this;
+    }
+
+    /**
+     * Sets the RSA OAEP parameters for key agreement encryption.
+     *
+     * @param rsaoaepParameters the RSA OAEP parameters to be set
+     * @return the builder instance
+     */
+    public Builder rsaoaepParameters (RSAOAEPParameters rsaoaepParameters) {
+      this.rsaoaepParameters = rsaoaepParameters;
       return this;
     }
 
@@ -257,6 +196,10 @@ public class EncryptionConfigurationProfile {
         baseEncryptConfiguration.setKeyAgreementConfigurations(updateDefaultKeyWrapPolicy(
           baseEncryptConfiguration.getKeyAgreementConfigurations(), keyWrapPolicyMap));
       }
+      if (rsaoaepParameters != null) {
+        baseEncryptConfiguration.setRSAOAEPParameters(this.rsaoaepParameters);
+      }
+
       return baseEncryptConfiguration;
     }
   }
