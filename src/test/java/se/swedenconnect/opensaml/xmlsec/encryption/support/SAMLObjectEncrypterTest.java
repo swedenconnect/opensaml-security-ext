@@ -21,8 +21,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import net.shibboleth.shared.xml.SerializeSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -49,6 +51,7 @@ import org.opensaml.xmlsec.signature.X509Data;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import org.w3c.dom.Element;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
 import se.swedenconnect.opensaml.xmlsec.config.EncryptionConfigurationProfile;
 
@@ -76,20 +79,20 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     // Setup metadata
     //
     final EntityDescriptor ed = this.createMetadata(
-        new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION),
-        new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
+      new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION),
+      new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
 
     final MetadataResolver resolver = this.createMetadataResolver(ed);
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
-        this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
-            "litsec_ab");
+      this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
+        "litsec_ab");
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
   }
@@ -107,18 +110,18 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     // Setup metadata
     //
     final EntityDescriptor ed = this.createMetadata(
-        new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION),
-        new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
+      new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION),
+      new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
-        this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
-            "litsec_ab");
+      this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
+        "litsec_ab");
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
   }
@@ -141,12 +144,12 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
-        this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
-            "litsec_ab");
+      this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
+        "litsec_ab");
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
   }
@@ -161,7 +164,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     msg.setValue(CONTENTS);
 
     final EntityDescriptor ed = this.createMetadata(
-        new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
+      new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
 
     final MetadataResolver resolver = this.createMetadataResolver(ed);
 
@@ -183,32 +186,32 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     // Setup metadata
     //
     final EntityDescriptor ed = this.createMetadata(
-        new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION,
-            Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
-                EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15)),
-        new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
+      new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION,
+        Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+          EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15)),
+      new MetadataCertificate("credentials/litsec_sign.crt", UsageType.SIGNING));
 
     final MetadataResolver resolver = this.createMetadataResolver(ed);
 
     // RSA 1.5 is black-listed in the default OpenSAML config, so we make our own config.
     final BasicEncryptionConfiguration customConfig =
-        DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+      DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     customConfig.setExcludedAlgorithms(Collections.emptyList());
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID), customConfig);
 
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
-        encryptedData.getEncryptionMethod().getAlgorithm());
+      encryptedData.getEncryptionMethod().getAlgorithm());
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
-        encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
+      encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
-        this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
-            "litsec_ab");
+      this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
+        "litsec_ab");
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
   }
@@ -225,26 +228,26 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     // Setup metadata
     //
     final EntityDescriptor ed = this.createMetadata(
-        new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION),
-        new MetadataCertificate("credentials/other.crt", UsageType.ENCRYPTION));
+      new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION),
+      new MetadataCertificate("credentials/other.crt", UsageType.ENCRYPTION));
 
     final MetadataResolver resolver = this.createMetadataResolver(ed);
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-//    Element e = XMLObjectSupport.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = XMLObjectSupport.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     // One should work
     String decryptedMsg = null;
     try {
       decryptedMsg = this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
-          "litsec_ab");
+        "litsec_ab");
     }
     catch (final DecryptionException ex) {
       decryptedMsg = this.decrypt(encryptedData, new ClassPathResource("credentials/other.jks"), "secret",
-          "Test");
+        "Test");
     }
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
@@ -276,6 +279,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     Assertions.assertEquals(CONTENTS, decryptedMsg);
 
   }
+
   @Test
   public void testECDHeIDAS() throws Exception {
     final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
@@ -303,8 +307,45 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
 
   }
 
+  @Test
+  public void testECDHeIDASRSA() throws Exception {
+    final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
+    msg.setValue(CONTENTS);
+
+    // Setup metadata
+    //
+    final EntityDescriptor ed = this.createMetadata(
+      new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION,
+        Arrays.asList(
+          EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+          EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+          EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,
+          EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11
+        )),
+      new MetadataCertificate("credentials/litsec_auth.crt", UsageType.SIGNING));
+
+    final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
+    encrypter.setDefaultEncryptionConfiguration(EncryptionConfigurationProfile.STRICT_EIDAS_1_4_ENCRYPTION_CONFIG_WITH_DEFAULT_KEY_WRAP);
+    final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM, encryptedData.getEncryptionMethod().getAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
+      encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
+
+    //Element e = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(encryptedData).marshall(encryptedData);
+    //System.out.println(SerializeSupport.prettyPrintXML(e));
+
+    final String decryptedMsg =
+      this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
+        "litsec_ab");
+
+    Assertions.assertEquals(CONTENTS, decryptedMsg);
+
+  }
+
+
   private String decrypt(final EncryptedData encrypted, final Resource jks, final String password, final String alias)
-      throws Exception {
+    throws Exception {
     final KeyStore keyStore = loadKeyStore(jks.getInputStream(), password, "JKS");
     final Credential cred = new KeyStoreX509CredentialAdapter(keyStore, alias, password.toCharArray());
 
@@ -315,12 +356,12 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
 
   private EntityDescriptor createMetadata(final MetadataCertificate... descriptors) throws Exception {
     final EntityDescriptor ed = EntityDescriptor.class.cast(
-        XMLObjectSupport.buildXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME));
+      XMLObjectSupport.buildXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME));
     ed.setEntityID(ENTITY_ID);
     ed.setID("_id123456");
 
     final IDPSSODescriptor d = IDPSSODescriptor.class.cast(
-        XMLObjectSupport.buildXMLObject(IDPSSODescriptor.DEFAULT_ELEMENT_NAME));
+      XMLObjectSupport.buildXMLObject(IDPSSODescriptor.DEFAULT_ELEMENT_NAME));
     d.addSupportedProtocol(SAMLConstants.SAML20P_NS);
     ed.getRoleDescriptors().add(d);
 
@@ -346,7 +387,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     }
 
     public MetadataCertificate(final String certificate, final UsageType usageType,
-        final List<String> encryptionMethods) throws Exception {
+      final List<String> encryptionMethods) throws Exception {
       this.usageType = usageType;
       this.certificate = OpenSAMLTestBase.decodeCertificate(new ClassPathResource(certificate).getInputStream());
       this.encryptionMethods = encryptionMethods;
@@ -354,7 +395,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
 
     public KeyDescriptor toKeyDescriptor() throws Exception {
       final KeyDescriptor kd = KeyDescriptor.class.cast(
-          XMLObjectSupport.buildXMLObject(KeyDescriptor.DEFAULT_ELEMENT_NAME));
+        XMLObjectSupport.buildXMLObject(KeyDescriptor.DEFAULT_ELEMENT_NAME));
       if (UsageType.UNSPECIFIED.equals(this.usageType)) {
         kd.setUse(null);
       }
@@ -365,8 +406,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
       kd.setKeyInfo((KeyInfo) XMLObjectSupport.buildXMLObject(KeyInfo.DEFAULT_ELEMENT_NAME));
       final X509Data x509Data = (X509Data) XMLObjectSupport.buildXMLObject(X509Data.DEFAULT_ELEMENT_NAME);
       final org.opensaml.xmlsec.signature.X509Certificate cert =
-          (org.opensaml.xmlsec.signature.X509Certificate) XMLObjectSupport
-              .buildXMLObject(org.opensaml.xmlsec.signature.X509Certificate.DEFAULT_ELEMENT_NAME);
+        (org.opensaml.xmlsec.signature.X509Certificate) XMLObjectSupport
+          .buildXMLObject(org.opensaml.xmlsec.signature.X509Certificate.DEFAULT_ELEMENT_NAME);
       cert.setValue(encoding);
       x509Data.getX509Certificates().add(cert);
       kd.getKeyInfo().getX509Datas().add(x509Data);
@@ -374,7 +415,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
       if (this.encryptionMethods != null) {
         for (final String algo : this.encryptionMethods) {
           final EncryptionMethod method = EncryptionMethod.class.cast(
-              XMLObjectSupport.buildXMLObject(EncryptionMethod.DEFAULT_ELEMENT_NAME));
+            XMLObjectSupport.buildXMLObject(EncryptionMethod.DEFAULT_ELEMENT_NAME));
           method.setAlgorithm(algo);
           kd.getEncryptionMethods().add(method);
         }
