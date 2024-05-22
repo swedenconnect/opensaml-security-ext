@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,37 +23,36 @@ import com.google.common.primitives.Bytes;
 
 /**
  * Implementation of the MGF1 mask generation function.
- * 
+ *
  * @author Stefan Santesson (stefan@idsec.se)
  * @author Martin Lindström (martin@idsec.se)
  */
 public class MGF1 implements MGF {
 
   /** The digest. */
-  private MessageDigest digest;
+  private final MessageDigest digest;
 
   /** The digest size (in bytes). */
-  private int digestSize;
+  private final int digestSize;
 
   /**
    * Constructor.
-   * 
-   * @param digest
-   *          the digest function for the MGF
+   *
+   * @param digest the digest function for the MGF
    */
-  public MGF1(MessageDigest digest) {
+  public MGF1(final MessageDigest digest) {
     this.digest = digest;
     this.digestSize = this.digest.getDigestLength();
   }
 
   /** {@inheritDoc} */
   @Override
-  public byte[] getMask(byte[] seed, int length) {
+  public byte[] getMask(final byte[] seed, final int length) {
     byte[] maskBytes = new byte[] {};
-    int n = (int) Math.ceil((double) length / (double) this.digestSize);
+    final int n = (int) Math.ceil((double) length / (double) this.digestSize);
     for (int i = 0; i < n; i++) {
-      byte[] counterBytes = getCounterBytes(i);
-      byte[] maskFragment = concatenateAndHash(seed, counterBytes);
+      final byte[] counterBytes = getCounterBytes(i);
+      final byte[] maskFragment = this.concatenateAndHash(seed, counterBytes);
       maskBytes = Bytes.concat(maskBytes, maskFragment);
     }
     return Arrays.copyOf(maskBytes, length);
@@ -61,34 +60,31 @@ public class MGF1 implements MGF {
 
   /**
    * Concatenates and hashes the seed and counter bytes.
-   * 
-   * @param seed
-   *          the seed bytes
-   * @param counter
-   *          the counter bytes
+   *
+   * @param seed the seed bytes
+   * @param counter the counter bytes
    * @return the digest of the concatenation
    */
-  private byte[] concatenateAndHash(byte[] seed, byte[] counter) {
+  private byte[] concatenateAndHash(final byte[] seed, final byte[] counter) {
     this.digest.reset();
     this.digest.update(seed, 0, seed.length);
     this.digest.update(counter, 0, counter.length);
-    return this.digest.digest(); 
+    return this.digest.digest();
   }
 
   /**
    * Returns a 4 octet representation of the supplied counter.
-   * 
-   * @param counter
-   *          the counter
+   *
+   * @param counter the counter
    * @return octet representation
    */
-  private static byte[] getCounterBytes(int counter) {
-    BigInteger c = BigInteger.valueOf((long) counter);
-    int requiredBytes = (int) Math.ceil((double) c.bitLength() / (double) 8);
+  private static byte[] getCounterBytes(final int counter) {
+    final BigInteger c = BigInteger.valueOf(counter);
+    final int requiredBytes = (int) Math.ceil((double) c.bitLength() / (double) 8);
     byte[] counterBytes = c.toByteArray();
 
     // Pad
-    int byteLen = counterBytes.length;
+    final int byteLen = counterBytes.length;
     if (byteLen > requiredBytes) {
       // Sign bit is in extra byte
       counterBytes = Arrays.copyOfRange(counterBytes, 1, byteLen);

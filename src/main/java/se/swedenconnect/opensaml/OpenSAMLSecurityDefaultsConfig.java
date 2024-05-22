@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,15 @@ import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 public class OpenSAMLSecurityDefaultsConfig implements OpenSAMLInitializerConfig {
 
   /** Logger instance. */
-  private Logger log = LoggerFactory.getLogger(OpenSAMLSecurityDefaultsConfig.class);
+  private static final Logger log = LoggerFactory.getLogger(OpenSAMLSecurityDefaultsConfig.class);
 
   /** The security configuration to install. */
-  private SecurityConfiguration securityConfiguration;
+  private final SecurityConfiguration securityConfiguration;
 
   /**
    * Constructor.
    *
-   * @param securityConfiguration
-   *          the security configuration to install
+   * @param securityConfiguration the security configuration to install
    */
   public OpenSAMLSecurityDefaultsConfig(final SecurityConfiguration securityConfiguration) {
     this.securityConfiguration = Constraint.isNotNull(securityConfiguration, "securityConfiguration must not be null");
@@ -66,12 +65,12 @@ public class OpenSAMLSecurityDefaultsConfig implements OpenSAMLInitializerConfig
   @Override
   public void postInitialize() throws Exception {
     log.info("Updating OpenSAML security configuration defaults using profile '{}' ...",
-      this.securityConfiguration.getProfileName());
+        this.securityConfiguration.getProfileName());
 
     this.securityConfiguration.initOpenSAML();
 
     log.info("OpenSAML security configuration defaults updated by profile {}",
-      this.securityConfiguration.getProfileName());
+        this.securityConfiguration.getProfileName());
   }
 
 }

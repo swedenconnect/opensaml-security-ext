@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import net.shibboleth.shared.xml.impl.BasicParserPool;
 public class OpenSAMLInitializer {
 
   /** Logger instance. */
-  private Logger log = LoggerFactory.getLogger(OpenSAMLInitializer.class);
+  private static final Logger log = LoggerFactory.getLogger(OpenSAMLInitializer.class);
 
   /** Whether OpenSAML already has been initialized. */
   private boolean initialized;
@@ -56,7 +56,7 @@ public class OpenSAMLInitializer {
   }
 
   /** The singleton instance. */
-  private static OpenSAMLInitializer INSTANCE = new OpenSAMLInitializer();
+  private static final OpenSAMLInitializer INSTANCE = new OpenSAMLInitializer();
 
   /**
    * Returns the initializer instance.
@@ -98,7 +98,7 @@ public class OpenSAMLInitializer {
     }
 
     if (customConfigs != null) {
-      for (OpenSAMLInitializerConfig config : customConfigs) {
+      for (final OpenSAMLInitializerConfig config : customConfigs) {
         log.debug("Invoking preInitialize for configurer '{}' ...", config.getName());
         config.preInitialize();
         log.debug("preInitialize for configurer '{}' was successfully executed", config.getName());
@@ -130,7 +130,7 @@ public class OpenSAMLInitializer {
     log.info("OpenSAML library successfully initialized");
 
     if (customConfigs != null) {
-      for (OpenSAMLInitializerConfig config : customConfigs) {
+      for (final OpenSAMLInitializerConfig config : customConfigs) {
         log.debug("Invoking postInitialize for configurer '{}' ...", config.getName());
         config.postInitialize();
         log.debug("postInitialize for configurer '{}' was successfully executed", config.getName());
@@ -161,7 +161,7 @@ public class OpenSAMLInitializer {
    * @throws ComponentInitializationException for init errors
    */
   public static ParserPool createDefaultParserPool() throws ComponentInitializationException {
-    BasicParserPool basicParserPool = new BasicParserPool();
+    final BasicParserPool basicParserPool = new BasicParserPool();
     basicParserPool.setMaxPoolSize(100);
     basicParserPool.setCoalescing(true);
     basicParserPool.setIgnoreComments(true);

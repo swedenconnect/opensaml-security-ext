@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import org.opensaml.xmlsec.encryption.support.DecryptionException;
 /**
  * A support bean for easy decryption.
  * <p>
- * OpenSAML offers two ways to represent decryption parameters, the {@link DecryptionParameters} and
- * the {@link DecryptionConfiguration}. This bean supports being initialized by either of these two, but also, and
- * perhaps easier to use; it supports initialization with just the encryption credentials and assigns the defaults from
+ * OpenSAML offers two ways to represent decryption parameters, the {@link DecryptionParameters} and the
+ * {@link DecryptionConfiguration}. This bean supports being initialized by either of these two, but also, and perhaps
+ * easier to use; it supports initialization with just the encryption credentials and assigns the defaults from
  * {@link DecryptionUtils#createDecryptionParameters(Credential...)}.
  * </p>
  *
@@ -46,24 +46,23 @@ public class SAMLObjectDecrypter {
   private Decrypter decrypter;
 
   /** Decryption parameters. */
-  private DecryptionParameters parameters;
+  private final DecryptionParameters parameters;
 
   /**
-   * If using a HSM it is likely that the SunPKCS11 crypto provider is used. This provider does not have support for
+   * If using an HSM it is likely that the SunPKCS11 crypto provider is used. This provider does not have support for
    * OAEP padding. This is used commonly for XML encryption since
    * {@code http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p} is the default algorithm to use for key encryption. This
    * class has a workaround for this limitation that is enabled by setting the {@code pkcs11Workaround} flag.
    */
   private boolean pkcs11Workaround = false;
 
-  /** For testing the workaround without the use of a HSM. */
+  /** For testing the workaround without the use of an HSM. */
   private boolean pkcs11testMode = false;
 
   /**
    * Constructor given the credential to use to decrypt the messages (certificate or key pair).
    *
-   * @param decryptionCredential
-   *          decryption credential
+   * @param decryptionCredential decryption credential
    */
   public SAMLObjectDecrypter(final Credential decryptionCredential) {
     this(Collections.singletonList(decryptionCredential));
@@ -73,13 +72,12 @@ public class SAMLObjectDecrypter {
    * Constructor accepting several credentials (certificates or key pairs) to be used when decrypting. This may be
    * useful after a key rollover.
    *
-   * @param decryptionCredentials
-   *          decryption credentials
+   * @param decryptionCredentials decryption credentials
    */
   public SAMLObjectDecrypter(final List<Credential> decryptionCredentials) {
     Constraint.isNotEmpty(decryptionCredentials, "At least one credential must be supplied to SAMLObjectDecrypter");
     this.parameters = DecryptionUtils.createDecryptionParameters(
-      decryptionCredentials.stream().toArray(Credential[]::new));
+        decryptionCredentials.toArray(Credential[]::new));
 
     // Should be assigned explicitly
     this.parameters.setExcludedAlgorithms(Collections.emptyList());
@@ -89,8 +87,7 @@ public class SAMLObjectDecrypter {
   /**
    * Initializes the decrypter using {@link DecryptionParameters}.
    *
-   * @param decryptionParameters
-   *          parameters
+   * @param decryptionParameters parameters
    */
   public SAMLObjectDecrypter(final DecryptionParameters decryptionParameters) {
     this.parameters = new DecryptionParameters();
@@ -104,8 +101,7 @@ public class SAMLObjectDecrypter {
   /**
    * Initializes the decrypter using {@link DecryptionConfiguration}.
    *
-   * @param decryptionConfiguration
-   *          parameters
+   * @param decryptionConfiguration parameters
    */
   public SAMLObjectDecrypter(final DecryptionConfiguration decryptionConfiguration) {
     this.parameters = new DecryptionParameters();
@@ -119,19 +115,15 @@ public class SAMLObjectDecrypter {
   /**
    * Decrypts the supplied encrypted object into an object of the given type.
    *
-   * @param encryptedObject
-   *          the encrypted object
-   * @param destinationClass
-   *          the class of the destination object
-   * @param <T>
-   *          the type of the destination object
-   * @param <E>
-   *          the type of the encrypted object
+   * @param encryptedObject the encrypted object
+   * @param destinationClass the class of the destination object
+   * @param <T> the type of the destination object
+   * @param <E> the type of the encrypted object
    * @return the decrypted element of object T
-   * @throws DecryptionException
-   *           for decryption errors
+   * @throws DecryptionException for decryption errors
    */
-  public <T extends XMLObject, E extends EncryptedElementType> T decrypt(final E encryptedObject, final Class<T> destinationClass)
+  public <T extends XMLObject, E extends EncryptedElementType> T decrypt(final E encryptedObject,
+      final Class<T> destinationClass)
       throws DecryptionException {
 
     if (encryptedObject.getEncryptedData() == null) {
@@ -143,15 +135,11 @@ public class SAMLObjectDecrypter {
   /**
    * Decrypts the supplied encrypted object into an object of the given type.
    *
-   * @param encryptedData
-   *          the encrypted data
-   * @param destinationClass
-   *          the class of the destination object
-   * @param <T>
-   *          the type of the destination object
+   * @param encryptedData the encrypted data
+   * @param destinationClass the class of the destination object
+   * @param <T> the type of the destination object
    * @return the decrypted element of object T
-   * @throws DecryptionException
-   *           for decryption errors
+   * @throws DecryptionException for decryption errors
    */
   public <T extends XMLObject> T decrypt(final EncryptedData encryptedData, final Class<T> destinationClass)
       throws DecryptionException {
@@ -159,7 +147,7 @@ public class SAMLObjectDecrypter {
     final XMLObject object = this.getDecrypter().decryptData(encryptedData);
     if (!destinationClass.isInstance(object)) {
       throw new DecryptionException(String.format("Decrypted object can not be cast to %s - is %s",
-        destinationClass.getSimpleName(), object.getClass().getSimpleName()));
+          destinationClass.getSimpleName(), object.getClass().getSimpleName()));
     }
     return destinationClass.cast(object);
   }
@@ -187,8 +175,7 @@ public class SAMLObjectDecrypter {
   /**
    * Assigns a list of black listed algorithms
    *
-   * @param blacklistedAlgorithms
-   *          non allowed algorithms
+   * @param blacklistedAlgorithms non allowed algorithms
    */
   public void setBlacklistedAlgorithms(final Collection<String> blacklistedAlgorithms) {
     if (this.decrypter != null) {
@@ -200,8 +187,7 @@ public class SAMLObjectDecrypter {
   /**
    * Assigns a list of white listed algorithms
    *
-   * @param whitelistedAlgorithms
-   *          white listed algorithms
+   * @param whitelistedAlgorithms white listed algorithms
    */
   public void setWhitelistedAlgorithms(final Collection<String> whitelistedAlgorithms) {
     if (this.decrypter != null) {
@@ -211,13 +197,12 @@ public class SAMLObjectDecrypter {
   }
 
   /**
-   * If using a HSM it is likely that the SunPKCS11 crypto provider is used. This provider does not have support for
+   * If using an HSM it is likely that the SunPKCS11 crypto provider is used. This provider does not have support for
    * OAEP padding. This is used commonly for XML encryption since
    * {@code http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p} is the default algorithm to use for key encryption. This
    * class has a workaround for this limitation that is enabled by setting the {@code pkcs11Workaround} flag.
    *
-   * @param pkcs11Workaround
-   *          whether to run in PKCS11 workaround mode
+   * @param pkcs11Workaround whether to run in PKCS11 workaround mode
    */
   public void setPkcs11Workaround(final boolean pkcs11Workaround) {
     this.pkcs11Workaround = pkcs11Workaround;
@@ -226,8 +211,7 @@ public class SAMLObjectDecrypter {
   /**
    * For internal testing only.
    *
-   * @param pkcs11testMode
-   *          test flag
+   * @param pkcs11testMode test flag
    */
   public void setPkcs11testMode(final boolean pkcs11testMode) {
     this.pkcs11testMode = pkcs11testMode;

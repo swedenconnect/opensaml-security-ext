@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import java.security.NoSuchProviderException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -34,6 +34,8 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 import javax.crypto.spec.SecretKeySpec;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.encryption.EncryptionMethod;
 import org.apache.xml.security.encryption.XMLCipher;
@@ -83,15 +85,21 @@ public class Pkcs11Decrypter extends Decrypter {
   private boolean testMode = false;
 
   /** Resolver for key encryption keys. */
-  private KeyInfoCredentialResolver _kekResolver;
+  private final KeyInfoCredentialResolver _kekResolver;
+
+  /** Predicate for checking for RSAOAEP. */
+  private final static Predicate<EncryptedKey> isRSAOAEP = ek ->
+      Optional.ofNullable(ek.getEncryptionMethod())
+          .map(org.opensaml.xmlsec.encryption.EncryptionMethod::getAlgorithm)
+          .map(AlgorithmSupport::isRSAOAEP)
+          .orElse(false);
 
   /**
    * Constructor.
    *
-   * @param params
-   *          decryption parameters to use
+   * @param params decryption parameters to use
    */
-  public Pkcs11Decrypter(DecryptionParameters params) {
+  public Pkcs11Decrypter(final DecryptionParameters params) {
     super(params);
     this._kekResolver = params.getKEKKeyInfoCredentialResolver();
   }
@@ -99,15 +107,12 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Constructor.
    *
-   * @param newResolver
-   *          resolver for data encryption keys.
-   * @param newKEKResolver
-   *          resolver for key encryption keys.
-   * @param newEncKeyResolver
-   *          resolver for EncryptedKey elements
+   * @param newResolver resolver for data encryption keys.
+   * @param newKEKResolver resolver for key encryption keys.
+   * @param newEncKeyResolver resolver for EncryptedKey elements
    */
-  public Pkcs11Decrypter(KeyInfoCredentialResolver newResolver, KeyInfoCredentialResolver newKEKResolver,
-      EncryptedKeyResolver newEncKeyResolver) {
+  public Pkcs11Decrypter(final KeyInfoCredentialResolver newResolver, final KeyInfoCredentialResolver newKEKResolver,
+      final EncryptedKeyResolver newEncKeyResolver) {
     super(newResolver, newKEKResolver, newEncKeyResolver);
     this._kekResolver = newKEKResolver;
   }
@@ -115,19 +120,15 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Constructor.
    *
-   * @param newResolver
-   *          resolver for data encryption keys.
-   * @param newKEKResolver
-   *          resolver for key encryption keys.
-   * @param newEncKeyResolver
-   *          resolver for EncryptedKey elements
-   * @param whitelistAlgos
-   *          collection of whitelisted algorithm URIs
-   * @param blacklistAlgos
-   *          collection of blacklisted algorithm URIs
+   * @param newResolver resolver for data encryption keys.
+   * @param newKEKResolver resolver for key encryption keys.
+   * @param newEncKeyResolver resolver for EncryptedKey elements
+   * @param whitelistAlgos collection of whitelisted algorithm URIs
+   * @param blacklistAlgos collection of blacklisted algorithm URIs
    */
-  public Pkcs11Decrypter(KeyInfoCredentialResolver newResolver, KeyInfoCredentialResolver newKEKResolver,
-      EncryptedKeyResolver newEncKeyResolver, Collection<String> whitelistAlgos, Collection<String> blacklistAlgos) {
+  public Pkcs11Decrypter(final KeyInfoCredentialResolver newResolver, final KeyInfoCredentialResolver newKEKResolver,
+      final EncryptedKeyResolver newEncKeyResolver, final Collection<String> whitelistAlgos,
+      final Collection<String> blacklistAlgos) {
     super(newResolver, newKEKResolver, newEncKeyResolver, whitelistAlgos, blacklistAlgos);
     this._kekResolver = newKEKResolver;
   }
@@ -139,27 +140,25 @@ public class Pkcs11Decrypter extends Decrypter {
   @Override
   @Nonnull
   public Key decryptKey(@Nonnull final EncryptedKey encryptedKey, @Nonnull final String algorithm,
-      @Nonnull Key kek) throws DecryptionException {
+      @Nonnull final Key kek) throws DecryptionException {
 
     if (kek != null) {
-      if (AlgorithmSupport.isRSAOAEP(encryptedKey.getEncryptionMethod().getAlgorithm())
-          && this.testMode || "sun.security.pkcs11.P11Key$P11PrivateKey".equals(kek.getClass().getName())) {
+      if (isRSAOAEP.test(encryptedKey) && this.testMode || isP11PrivateKey(kek)) {
         // Work-around for OAEP padding - we don't know the keysize since we only have
         // a private key object from the HSM ... So, we'll have to list all possible credentials ...
         //
-        final CriteriaSet criteriaSet = buildCredentialCriteria(encryptedKey, this.getKEKResolverCriteria());
+        final CriteriaSet criteriaSet = this.buildCredentialCriteria(encryptedKey, this.getKEKResolverCriteria());
         try {
-          for (Credential cred : this._kekResolver.resolve(criteriaSet)) {
+          for (final Credential cred : this._kekResolver.resolve(criteriaSet)) {
             try {
-              if (RSAPublicKey.class.isInstance(cred.getPublicKey())) {
+              if (cred.getPublicKey() instanceof RSAPublicKey) {
                 return this.decryptKey(encryptedKey, algorithm, CredentialSupport.extractDecryptionKey(cred),
-                  ((RSAPublicKey) cred.getPublicKey()).getModulus().bitLength());
+                    ((RSAPublicKey) cred.getPublicKey()).getModulus().bitLength());
               }
             }
             catch (final DecryptionException e) {
               final String msg = "Attempt to decrypt EncryptedKey using credential from KEK KeyInfo resolver failed: ";
               log.debug(msg, e);
-              continue;
             }
           }
         }
@@ -180,9 +179,10 @@ public class Pkcs11Decrypter extends Decrypter {
    */
   @Override
   @Nonnull
-  public Key decryptKey(@Nonnull final EncryptedKey encryptedKey, @Nonnull final String algorithm) throws DecryptionException {
+  public Key decryptKey(@Nonnull final EncryptedKey encryptedKey, @Nonnull final String algorithm)
+      throws DecryptionException {
 
-    if (AlgorithmSupport.isRSAOAEP(encryptedKey.getEncryptionMethod().getAlgorithm())) {
+    if (isRSAOAEP.test(encryptedKey)) {
       if (this._kekResolver == null) {
         log.warn("No KEK KeyInfo credential resolver is available, cannot attempt EncryptedKey decryption");
         throw new DecryptionException("No KEK KeyInfo resolver is available for EncryptedKey decryption");
@@ -191,13 +191,13 @@ public class Pkcs11Decrypter extends Decrypter {
         log.error("Algorithm of encrypted key not supplied, key decryption cannot proceed.");
         throw new DecryptionException("Algorithm of encrypted key not supplied, key decryption cannot proceed.");
       }
-      final CriteriaSet criteriaSet = buildCredentialCriteria(encryptedKey, this.getKEKResolverCriteria());
+      final CriteriaSet criteriaSet = this.buildCredentialCriteria(encryptedKey, this.getKEKResolverCriteria());
       try {
-        for (Credential cred : this._kekResolver.resolve(criteriaSet)) {
+        for (final Credential cred : this._kekResolver.resolve(criteriaSet)) {
           try {
-            if (RSAPublicKey.class.isInstance(cred.getPublicKey())) {
+            if (cred.getPublicKey() instanceof RSAPublicKey) {
               return this.decryptKey(encryptedKey, algorithm, CredentialSupport.extractDecryptionKey(cred),
-                ((RSAPublicKey) cred.getPublicKey()).getModulus().bitLength());
+                  ((RSAPublicKey) cred.getPublicKey()).getModulus().bitLength());
             }
             else {
               return super.decryptKey(encryptedKey, algorithm, CredentialSupport.extractDecryptionKey(cred));
@@ -206,7 +206,6 @@ public class Pkcs11Decrypter extends Decrypter {
           catch (final DecryptionException e) {
             final String msg = "Attempt to decrypt EncryptedKey using credential from KEK KeyInfo resolver failed: ";
             log.debug(msg, e);
-            continue;
           }
         }
       }
@@ -225,23 +224,18 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Decrypts the key (work-around for OAEP padding).
    *
-   * @param encryptedKey
-   *          encrypted key element containing the encrypted key to be decrypted
-   * @param algorithm
-   *          the algorithm associated with the decrypted key
-   * @param kek
-   *          the key encryption key with which to attempt decryption of the encrypted key
-   * @param keysize
-   *          the key length
+   * @param encryptedKey encrypted key element containing the encrypted key to be decrypted
+   * @param algorithm the algorithm associated with the decrypted key
+   * @param kek the key encryption key with which to attempt decryption of the encrypted key
+   * @param keysize the key length
    * @return the decrypted key
-   * @throws DecryptionException
-   *           for decryption errors
+   * @throws DecryptionException for decryption errors
    */
   @Nonnull
   protected Key decryptKey(@Nonnull final EncryptedKey encryptedKey, @Nonnull final String algorithm,
-      @Nonnull Key kek, int keysize) throws DecryptionException {
+      @Nonnull final Key kek, final int keysize) throws DecryptionException {
 
-    if (!(this.testMode || "sun.security.pkcs11.P11Key$P11PrivateKey".equals(kek.getClass().getName()))) {
+    if (!(this.testMode || isP11PrivateKey(kek))) {
       return super.decryptKey(encryptedKey, algorithm, kek);
     }
 
@@ -254,33 +248,33 @@ public class Pkcs11Decrypter extends Decrypter {
     try {
       this.checkAndMarshall(encryptedKey);
     }
-    catch (DecryptionException e) {
+    catch (final DecryptionException e) {
       log.error("Error marshalling EncryptedKey for decryption", e);
       throw e;
     }
     this.preProcessEncryptedKey(encryptedKey, algorithm, kek);
 
-    XMLCipher xmlCipher;
+    final XMLCipher xmlCipher;
     try {
-      if (getJCAProviderName() != null) {
-        xmlCipher = XMLCipher.getProviderInstance(getJCAProviderName());
+      if (this.getJCAProviderName() != null) {
+        xmlCipher = XMLCipher.getProviderInstance(this.getJCAProviderName());
       }
       else {
         xmlCipher = XMLCipher.getInstance();
       }
       xmlCipher.init(XMLCipher.UNWRAP_MODE, kek);
     }
-    catch (XMLEncryptionException e) {
+    catch (final XMLEncryptionException e) {
       log.error("Error initialzing cipher instance on key decryption", e);
       throw new DecryptionException("Error initialzing cipher instance on key decryption", e);
     }
 
-    org.apache.xml.security.encryption.EncryptedKey encKey;
+    final org.apache.xml.security.encryption.EncryptedKey encKey;
     try {
-      Element targetElement = encryptedKey.getDOM();
+      final Element targetElement = encryptedKey.getDOM();
       encKey = xmlCipher.loadEncryptedKey(targetElement.getOwnerDocument(), targetElement);
     }
-    catch (XMLEncryptionException e) {
+    catch (final XMLEncryptionException e) {
       log.error("Error when loading library native encrypted key representation", e);
       throw new DecryptionException("Error when loading library native encrypted key representation", e);
     }
@@ -291,17 +285,17 @@ public class Pkcs11Decrypter extends Decrypter {
     }
 
     try {
-      Key key = this.customizedDecryptKey(encKey, algorithm, kek, keysize);
+      final Key key = this.customizedDecryptKey(encKey, algorithm, kek, keysize);
       if (key == null) {
         throw new DecryptionException("Key could not be decrypted");
       }
       return key;
     }
-    catch (XMLEncryptionException e) {
+    catch (final XMLEncryptionException e) {
       log.error("Error decrypting encrypted key", e);
       throw new DecryptionException("Error decrypting encrypted key", e);
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new DecryptionException("Probable runtime exception on decryption:" + e.getMessage(), e);
     }
   }
@@ -309,51 +303,49 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Performs the actual key decryption.
    *
-   * @param encryptedKey
-   *          the encrypted key
-   * @param algorithm
-   *          the algorithm
-   * @param kek
-   *          the private key
-   * @param keysize
-   *          the keysize
+   * @param encryptedKey the encrypted key
+   * @param algorithm the algorithm
+   * @param kek the private key
+   * @param keysize the keysize
    * @return a secret key
-   * @throws XMLEncryptionException
-   *           for errors
+   * @throws XMLEncryptionException for errors
    */
-  private Key customizedDecryptKey(org.apache.xml.security.encryption.EncryptedKey encryptedKey, String algorithm, Key kek, int keysize)
-      throws XMLEncryptionException {
+  private Key customizedDecryptKey(final org.apache.xml.security.encryption.EncryptedKey encryptedKey,
+      final String algorithm, final Key kek, final int keysize) throws XMLEncryptionException {
 
     // Obtain the encrypted octets
-    byte[] encryptedBytes = (new XMLCipherInput(encryptedKey)).getBytes();
+    final byte[] encryptedBytes = (new XMLCipherInput(encryptedKey)).getBytes();
 
     try {
-      String provider = this.getJCAProviderName();
-      Cipher c = provider != null ? Cipher.getInstance("RSA/ECB/NoPadding", provider) : Cipher.getInstance("RSA/ECB/NoPadding");
+      final String provider = this.getJCAProviderName();
+      final Cipher c = provider != null
+          ? Cipher.getInstance("RSA/ECB/NoPadding", provider)
+          : Cipher.getInstance("RSA/ECB/NoPadding");
 
       c.init(Cipher.DECRYPT_MODE, kek);
       byte[] paddedPlainText = c.doFinal(encryptedBytes);
 
       /* Ensure leading zeros not stripped */
       if (paddedPlainText.length < keysize / 8) {
-        byte[] tmp = new byte[keysize / 8];
+        final byte[] tmp = new byte[keysize / 8];
         System.arraycopy(paddedPlainText, 0, tmp, tmp.length - paddedPlainText.length, paddedPlainText.length);
         paddedPlainText = tmp;
       }
 
-      EncryptionMethod encMethod = encryptedKey.getEncryptionMethod();
-      OAEPParameterSpec oaepParameters = constructOAEPParameters(encMethod.getAlgorithm(), encMethod.getDigestAlgorithm(),
-        encMethod.getMGFAlgorithm(), encMethod.getOAEPparams());
+      final EncryptionMethod encMethod = encryptedKey.getEncryptionMethod();
+      final OAEPParameterSpec oaepParameters =
+          this.constructOAEPParameters(encMethod.getAlgorithm(), encMethod.getDigestAlgorithm(),
+              encMethod.getMGFAlgorithm(), encMethod.getOAEPparams());
 
-      RsaOaepMgf1Unpadding unpadder = new RsaOaepMgf1Unpadding(keysize / 8, oaepParameters);
-      byte[] secretKeyBytes = unpadder.unpad(paddedPlainText);
+      final RsaOaepMgf1Unpadding unpadder = new RsaOaepMgf1Unpadding(keysize / 8, oaepParameters);
+      final byte[] secretKeyBytes = unpadder.unpad(paddedPlainText);
 
-      String jceKeyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(algorithm);
+      final String jceKeyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(algorithm);
 
       return new SecretKeySpec(secretKeyBytes, jceKeyAlgorithm);
     }
-    catch (NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException | InvalidKeyException | IllegalBlockSizeException
-        | BadPaddingException | InvalidAlgorithmParameterException e) {
+    catch (final NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException | InvalidKeyException |
+        IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
       throw new XMLEncryptionException(e);
     }
   }
@@ -361,8 +353,8 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Construct an OAEPParameterSpec object from the given parameters
    */
-  private OAEPParameterSpec constructOAEPParameters(
-      String encryptionAlgorithm, String digestAlgorithm, String mgfAlgorithm, byte[] oaepParams) {
+  private OAEPParameterSpec constructOAEPParameters(final String encryptionAlgorithm, final String digestAlgorithm,
+      final String mgfAlgorithm, final byte[] oaepParams) {
 
     String jceDigestAlgorithm = "SHA-1";
     if (digestAlgorithm != null) {
@@ -392,10 +384,8 @@ public class Pkcs11Decrypter extends Decrypter {
   /**
    * Copied from {@link org.opensaml.xmlsec.encryption.support.Decrypter} ...
    *
-   * @param encryptedType
-   *          an EncryptedData or EncryptedKey for which to resolve decryption credentials
-   * @param staticCriteria
-   *          static set of credential criteria to add to the new criteria set
+   * @param encryptedType an EncryptedData or EncryptedKey for which to resolve decryption credentials
+   * @param staticCriteria static set of credential criteria to add to the new criteria set
    * @return the new credential criteria set
    */
   private CriteriaSet buildCredentialCriteria(@Nonnull final EncryptedType encryptedType,
@@ -416,11 +406,21 @@ public class Pkcs11Decrypter extends Decrypter {
    * Should we run this class in test mode? By using test mode, the customized code where we handle padding for OAEP is
    * executed even if the SunPKCS11 provider is not in use.
    *
-   * @param testMode
-   *          test mode flag
+   * @param testMode test mode flag
    */
-  public void setTestMode(boolean testMode) {
+  public void setTestMode(final boolean testMode) {
     this.testMode = testMode;
+  }
+
+  /**
+   * Predicate that tells whether the supplied {@link Key} is a PKCS#11 private key.
+   *
+   * @param key the key to test
+   * @return {@code true} if the supplied key is a PKCS#11 private key, and {@code false} otherwise
+   */
+  private static boolean isP11PrivateKey(final Key key) {
+    return "sun.security.pkcs11.P11Key$P11PrivateKey".equals(key.getClass().getName())
+        || "sun.security.pkcs11.P11Key$P11RSAPrivateKeyInternal".equals(key.getClass().getName());
   }
 
 }

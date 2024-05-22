@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Sweden Connect
+ * Copyright 2020-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import javax.crypto.spec.PSource;
 
 /**
  * Support class for the {@link Pkcs11Decrypter}.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -44,25 +44,21 @@ class RsaOaepMgf1Unpadding {
   private final int maxDataSize;
 
   // Main message digest
-  private MessageDigest md;
+  private final MessageDigest md;
 
   // MGF1 message digest
-  private MessageDigest mgfMessageDigest;
+  private final MessageDigest mgfMessageDigest;
 
   // Value of digest of data (user-supplied or zero-length) using md
   private final byte[] lHash;
 
   /**
    * Constructor.
-   * 
-   * @param paddedSize
-   *          the padded size
-   * @param spec
-   *          the OAEP parameter specification
-   * @throws InvalidKeyException
-   *           for invalid keys
-   * @throws InvalidAlgorithmParameterException
-   *           for invalid parameters
+   *
+   * @param paddedSize the padded size
+   * @param spec the OAEP parameter specification
+   * @throws InvalidKeyException for invalid keys
+   * @throws InvalidAlgorithmParameterException for invalid parameters
    */
   public RsaOaepMgf1Unpadding(final int paddedSize, final OAEPParameterSpec spec)
       throws InvalidKeyException, InvalidAlgorithmParameterException {
@@ -96,18 +92,16 @@ class RsaOaepMgf1Unpadding {
 
   /**
    * Unpads the supplied data.
-   * 
-   * @param padded
-   *          the padded data
+   *
+   * @param padded the padded data
    * @return the unpadded data
-   * @throws BadPaddingException
-   *           for bad padding
+   * @throws BadPaddingException for bad padding
    */
   public byte[] unpad(final byte[] padded) throws BadPaddingException {
     if (padded.length != this.paddedSize) {
       throw new BadPaddingException(
-        String.format("Decryption error. The padded array length (%d) is not the specified padded size (%d)",
-          padded.length, this.paddedSize));
+          String.format("Decryption error. The padded array length (%d) is not the specified padded size (%d)",
+              padded.length, this.paddedSize));
     }
 
     final byte[] EM = padded;
@@ -127,7 +121,7 @@ class RsaOaepMgf1Unpadding {
     this.generateAndXor(EM, dbStart, dbLen, seedLen, EM, seedStart);
     this.generateAndXor(EM, seedStart, seedLen, dbLen, EM, dbStart);
 
-    // verify lHash == lHash'
+    // verify lHash == lHash
     for (int i = 0; i < hLen; i++) {
       if (this.lHash[i] != EM[dbStart + i]) {
         bp = true;
@@ -177,8 +171,7 @@ class RsaOaepMgf1Unpadding {
 
   private void generateAndXor(
       final byte[] seed, final int seedOfs, final int seedLen, int maskLen, final byte[] out, int outOfs)
-      throws RuntimeException 
-  {
+      throws RuntimeException {
     final byte[] C = new byte[4]; // 32 bit counter
     final byte[] digest = new byte[this.md.getDigestLength()];
     while (maskLen > 0) {

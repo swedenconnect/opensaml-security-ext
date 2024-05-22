@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurat
 
 /**
  * Configuration that extends OpenSAML's signature support with RSA-PSS algorithms.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public class OpenSAMLSecurityExtensionConfig implements OpenSAMLInitializerConfig {
 
   /** Logger instance. */
-  private Logger log = LoggerFactory.getLogger(OpenSAMLSecurityExtensionConfig.class);
+  private static final Logger log = LoggerFactory.getLogger(OpenSAMLSecurityExtensionConfig.class);
 
   /** {@inheritDoc} */
   @Override
@@ -50,12 +50,12 @@ public class OpenSAMLSecurityExtensionConfig implements OpenSAMLInitializerConfi
   public void preInitialize() throws Exception {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       log.info("{}: Crypto provider '{}' is not installed, installing it ...",
-        this.getName(), BouncyCastleProvider.PROVIDER_NAME);
+          this.getName(), BouncyCastleProvider.PROVIDER_NAME);
 
       Security.addProvider(new BouncyCastleProvider());
 
       log.info("{}: Crypto provider '{}' was installed",
-        this.getName(), BouncyCastleProvider.PROVIDER_NAME);
+          this.getName(), BouncyCastleProvider.PROVIDER_NAME);
     }
   }
 
@@ -68,7 +68,7 @@ public class OpenSAMLSecurityExtensionConfig implements OpenSAMLInitializerConfi
 
     final SignatureSigningConfiguration signingConfiguration =
         ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration(
-          SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration());
+            SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration());
     ConfigurationService.register(SignatureSigningConfiguration.class, signingConfiguration);
   }
 

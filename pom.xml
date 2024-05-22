@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.0.2-SNAPSHOT</version>
+  <version>4.1.0-SNAPSHOT</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -52,8 +52,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <opensaml.version>5.0.0</opensaml.version>
-    <shib.support.version>9.0.0</shib.support.version>
+    <opensaml.version>5.1.2</opensaml.version>
+    <shib.support.version>9.1.2</shib.support.version>
 
     <bc.version>1.78</bc.version>
     <slf4j.version>2.0.13</slf4j.version>
@@ -84,18 +84,12 @@
   <dependencyManagement>
     <dependencies>
 
-      <!-- 
-        The OpenSAML team obviously doesn't check for dependency convergence errors.
-        The below dependencies are included to avoid such errors.
-      -->
-
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
 
-      <!-- Bouncy Castle -->
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
@@ -103,15 +97,15 @@
       </dependency>
 
       <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.17.0</version>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>${bc.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.apache.httpcomponents.core5</groupId>
-        <artifactId>httpcore5</artifactId>
-        <version>5.2.4</version>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.17.0</version>
       </dependency>
 
       <dependency>
@@ -149,7 +143,6 @@
       <version>3.0.0</version>
     </dependency>
 
-    <!-- Slf4j -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -160,7 +153,6 @@
       <artifactId>xmlsec</artifactId>
     </dependency>
 
-    <!-- Bouncy Castle -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
@@ -170,12 +162,6 @@
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core-api</artifactId>
-      <version>${opensaml.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.opensaml</groupId>
-      <artifactId>opensaml-core-impl</artifactId>
       <version>${opensaml.version}</version>
     </dependency>
 
@@ -237,6 +223,13 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
 

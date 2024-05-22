@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
 
 /**
  * OpenSAML's {@link AlgorithmSupport} class does not offer utility methods needed for RSA-PSS. This class adds this.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
 public final class ExtendedAlgorithmSupport {
 
   /**
-   * Predicate that tells whether the supplied algorithm is a RSA-PSS algorithm.
-   * 
-   * @param signatureAlgorithm
-   *          the algorithm to test
+   * Predicate that tells whether the supplied algorithm is an RSA-PSS algorithm.
+   *
+   * @param signatureAlgorithm the algorithm to test
    * @return true if the algorithm is a RSA-PSS algorithm, and false otherwise
    */
   public static boolean isRSAPSS(final String signatureAlgorithm) {
