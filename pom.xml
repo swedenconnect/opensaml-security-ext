@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.1.0</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -55,7 +55,7 @@
     <opensaml.version>5.1.2</opensaml.version>
     <shib.support.version>9.1.2</shib.support.version>
 
-    <bc.version>1.78</bc.version>
+    <bc.version>1.78.1</bc.version>
     <slf4j.version>2.0.13</slf4j.version>
     <jackson.version>2.17.1</jackson.version>
     <junit.version>5.10.2</junit.version>
