@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package se.swedenconnect.opensaml.xmlsec.signature.support.provider.padding;
 
 /**
  * Interface for Mask Generation Function.
- * 
+ *
  * @author Stefan Santesson (stefan@idsec.se)
  * @author Martin Lindström (martin@idsec.se)
  */
@@ -25,11 +25,9 @@ public interface MGF {
 
   /**
    * Generates mask data.
-   * 
-   * @param seed
-   *          the input seed
-   * @param length
-   *          the mask data length (in bytes)
+   *
+   * @param seed the input seed
+   * @param length the mask data length (in bytes)
    * @return the generated mask data
    */
   byte[] getMask(byte[] seed, int length);

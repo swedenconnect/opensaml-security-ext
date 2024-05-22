@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 public class ExtendedSignerProviderInitializer implements Initializer {
 
   /** Logger. */
-  private Logger log = LoggerFactory.getLogger(ExtendedSignerProviderInitializer.class);
+  private static final Logger log = LoggerFactory.getLogger(ExtendedSignerProviderInitializer.class);
 
   /**
    * The {@link Signer} class has a static signer provider cached. This provider is set the first time the
@@ -57,12 +57,12 @@ public class ExtendedSignerProviderInitializer implements Initializer {
 
     // First get the URL to the resource that holds our extended signer provider.
     //
-    URL jarPath;
+    final URL jarPath;
     try {
       jarPath = ExtendedSignerProvider.class.getProtectionDomain().getCodeSource().getLocation();
       log.debug("Will load extended signer provider from {}", jarPath.toExternalForm());
     }
-    catch (SecurityException | NullPointerException e) {
+    catch (final SecurityException | NullPointerException e) {
       log.error("Failed to get path to extended signer provider", e);
       log.warn("Can not guarantee that {} will be used", ExtendedSignerProvider.class.getSimpleName());
       return;
@@ -74,21 +74,21 @@ public class ExtendedSignerProviderInitializer implements Initializer {
     try {
       defaultLoader = Thread.currentThread().getContextClassLoader();
 
-      URLClassLoader customLoader = new URLClassLoader(new URL[] { jarPath },
-        defaultLoader != null ? defaultLoader : ClassLoader.getSystemClassLoader());
+      final URLClassLoader customLoader = new URLClassLoader(new URL[] { jarPath },
+          defaultLoader != null ? defaultLoader : ClassLoader.getSystemClassLoader());
 
       Thread.currentThread().setContextClassLoader(customLoader);
 
       try {
         Signer.signObject(null);
       }
-      catch (ConstraintViolationException | NullPointerException | SignatureException expected) {
+      catch (final ConstraintViolationException | NullPointerException | SignatureException expected) {
         // We expect ConstraintViolationException ...
       }
       log.info("{} has now been cached as the signer provider used by the {} class",
-        ExtendedSignerProvider.class.getName(), Signer.class.getName());
+          ExtendedSignerProvider.class.getName(), Signer.class.getName());
     }
-    catch (SecurityException e) {
+    catch (final SecurityException e) {
       log.error("Failed to modify classpath for installation of extended signer provider", e);
       log.warn("Can not guarantee that {} will be used", ExtendedSignerProvider.class.getSimpleName());
     }
@@ -97,7 +97,7 @@ public class ExtendedSignerProviderInitializer implements Initializer {
         try {
           Thread.currentThread().setContextClassLoader(defaultLoader);
         }
-        catch (SecurityException e) {
+        catch (final SecurityException ignored) {
         }
       }
     }

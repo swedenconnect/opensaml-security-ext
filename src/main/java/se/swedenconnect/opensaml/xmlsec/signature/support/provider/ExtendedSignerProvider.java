@@ -28,6 +28,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import jakarta.annotation.Nonnull;
 import net.shibboleth.shared.logic.Constraint;
 import org.apache.xml.security.Init;
 import org.apache.xml.security.exceptions.XMLSecurityException;
@@ -73,17 +74,17 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
    * {@code se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.disabled} to
    * {@code true}.
    */
-  private boolean disabled = false;
+  private final boolean disabled;
 
   /**
    * Default constructor.
    */
   public ExtendedSignerProvider() {
-    this.disabled = Boolean.parseBoolean(
-      System.getProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.disabled", "false"));
+    this.disabled = Boolean.parseBoolean(System.getProperty(
+        "se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.disabled", "false"));
     if (this.disabled) {
       log.info("The ExtendedSignerProvider has been disabled - {} will be active",
-        ApacheSantuarioSignerProviderImpl.class.getName());
+          ApacheSantuarioSignerProviderImpl.class.getName());
     }
   }
 
@@ -93,7 +94,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
    * signing with RSA keys in HSM even when RSA-PSS is not supported by the PKCS#11 API.
    */
   @Override
-  public void signObject(final Signature signature) throws SignatureException {
+  public void signObject(@Nonnull final Signature signature) throws SignatureException {
     if (this.disabled) {
       super.signObject(signature);
       return;
@@ -120,7 +121,8 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       throw new SignatureException(msg);
     }
 
-    log.debug("{} executing during signature with {}", ExtendedSignerProvider.class.getSimpleName(), signedInfo.getSignatureMethodURI());
+    log.debug("{} executing during signature with {}", ExtendedSignerProvider.class.getSimpleName(),
+        signedInfo.getSignatureMethodURI());
 
     try {
       // Calculate digest values ...
@@ -136,13 +138,13 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
         final String msg = "No RSA public key found in signing credential - Actual type is: %s"
             .formatted(Optional.ofNullable(signingCredential.getPublicKey())
                 .map(k -> k.getClass().getName())
-                .orElseGet(() -> "null"));
+                .orElse("null"));
         log.error(msg);
         throw new SignatureException(msg);
       }
       final SCPSSPadding pssPadding = new SCPSSPadding(
-        this.getDigest(signedInfo.getSignatureMethodURI()),
-        publicKey.getModulus().bitLength());
+          this.getDigest(signedInfo.getSignatureMethodURI()),
+          publicKey.getModulus().bitLength());
 
       final byte[] emBytes = pssPadding.getPaddingFromMessage(signedInfoBytes);
 
@@ -155,7 +157,7 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       // Finally, place the signature in its correct place in the XML signature object ...
       //
       final NodeList signatureValue = xmlSignature.getElement()
-        .getElementsByTagNameNS(SignatureConstants.XMLSIG_NS, "SignatureValue");
+          .getElementsByTagNameNS(SignatureConstants.XMLSIG_NS, "SignatureValue");
       if (signatureValue.getLength() == 0) {
         throw new SignatureException("Invalid XMLSignature - missing SignatureValue element");
       }
@@ -165,7 +167,8 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
       log.error("Failure during digest calculation - {}", e.getMessage(), e);
       throw new SignatureException("Failure during digest calculation", e);
     }
-    catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IOException e) {
+    catch (final NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException |
+        IllegalBlockSizeException | IOException e) {
       log.error("RSA transform failed - {}", e.getMessage(), e);
       throw new SignatureException("RSA signature failure", e);
     }
@@ -181,10 +184,8 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
    * {@code true}.
    * </p>
    *
-   * @param signingKey
-   *          the signing key
-   * @param xmlSignature
-   *          the XML signature object
+   * @param signingKey the signing key
+   * @param xmlSignature the XML signature object
    * @return whether we should override or not
    */
   private boolean shouldOverride(final Key signingKey, final XMLSignature xmlSignature) {
@@ -199,16 +200,24 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
         : null;
 
     return signingKey != null && "RSA".equals(signingKey.getAlgorithm())
-        && ("sun.security.pkcs11.P11Key$P11PrivateKey".equals(signingKey.getClass().getName())
-            || "sun.security.pkcs11.P11Key$P11RSAPrivateKeyInternal".equals(signingKey.getClass().getName()))
-        && ExtendedAlgorithmSupport.isRSAPSS(signingAlgorithm);
+        && isP11PrivateKey(signingKey) && ExtendedAlgorithmSupport.isRSAPSS(signingAlgorithm);
+  }
+
+  /**
+   * Predicate that tells whether the supplied {@link Key} is a PKCS#11 private key.
+   *
+   * @param key the key to test
+   * @return {@code true} if the supplied key is a PKCS#11 private key, and {@code false} otherwise
+   */
+  private static boolean isP11PrivateKey(final Key key) {
+    return "sun.security.pkcs11.P11Key$P11PrivateKey".equals(key.getClass().getName())
+        || "sun.security.pkcs11.P11Key$P11RSAPrivateKeyInternal".equals(key.getClass().getName());
   }
 
   /**
    * Return the digest function specified by a signature algorithm.
    *
-   * @param signatureAlgorithm
-   *          signature algorithm
+   * @param signatureAlgorithm signature algorithm
    * @return the digest algorithm
    * @throws NoSuchAlgorithmException if no support for the algorithm is available
    */
@@ -216,11 +225,12 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
 
     final AlgorithmRegistry algorithmRegistry = AlgorithmSupport.getGlobalAlgorithmRegistry();
     final AlgorithmDescriptor algorithmDescriptor = algorithmRegistry.get(signatureAlgorithm);
-    if (algorithmDescriptor == null || !AlgorithmDescriptor.AlgorithmType.Signature.equals(algorithmDescriptor.getType())) {
+    if (algorithmDescriptor == null || !AlgorithmDescriptor.AlgorithmType.Signature.equals(
+        algorithmDescriptor.getType())) {
       log.error("Unsupported signature algorithm - {}", signatureAlgorithm);
       throw new NoSuchAlgorithmException("Unsupported signature algorithm - " + signatureAlgorithm);
     }
-    final String jcaDigest = SignatureAlgorithm.class.cast(algorithmDescriptor).getDigest();
+    final String jcaDigest = ((SignatureAlgorithm) algorithmDescriptor).getDigest();
     log.debug("Getting digest algorithm for '{}'", jcaDigest);
     return MessageDigest.getInstance(jcaDigest);
   }
@@ -233,7 +243,8 @@ public class ExtendedSignerProvider extends ApacheSantuarioSignerProviderImpl {
    */
   private boolean isTestMode() {
     return Boolean.parseBoolean(
-      System.getProperty("se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode", "false"));
+        System.getProperty(
+            "se.swedenconnect.opensaml.xmlsec.signature.support.provider.ExtendedSignerProvider.testmode", "false"));
   }
 
 }

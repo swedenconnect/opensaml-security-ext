@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,16 +58,11 @@ public class SAMLObjectSigner {
    * ...
    * </p>
    *
-   * @param object
-   *          object to sign
-   * @param signingCredentials
-   *          signature credentials
-   * @param configs
-   *          signature configuration
-   * @param <T>
-   *          the object type
-   * @throws SignatureException
-   *           for signature creation errors
+   * @param object object to sign
+   * @param signingCredentials signature credentials
+   * @param configs signature configuration
+   * @param <T> the object type
+   * @throws SignatureException for signature creation errors
    */
   public static <T extends SignableSAMLObject> void sign(
       final T object, final Credential signingCredentials, final SignatureSigningConfiguration... configs)
@@ -76,7 +71,7 @@ public class SAMLObjectSigner {
     try {
       object.setSignature(null);
 
-      SignatureSigningConfiguration[] criteriaConfig;
+      final SignatureSigningConfiguration[] criteriaConfig;
       if (configs == null || configs.length == 0) {
         criteriaConfig = new SignatureSigningConfiguration[2];
         criteriaConfig[0] = SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration();
@@ -89,13 +84,14 @@ public class SAMLObjectSigner {
       signatureCreds.setSigningCredentials(Collections.singletonList(signingCredentials));
       criteriaConfig[criteriaConfig.length - 1] = signatureCreds;
 
-      final BasicSignatureSigningParametersResolver signatureParametersResolver = new BasicSignatureSigningParametersResolver();
+      final BasicSignatureSigningParametersResolver signatureParametersResolver =
+          new BasicSignatureSigningParametersResolver();
       final CriteriaSet criteriaSet = new CriteriaSet(new SignatureSigningConfigurationCriterion(criteriaConfig));
       final SignatureSigningParameters parameters = signatureParametersResolver.resolveSingle(criteriaSet);
 
       SignatureSupport.signObject(object, parameters);
     }
-    catch (ResolverException | org.opensaml.security.SecurityException | MarshallingException e) {
+    catch (final ResolverException | org.opensaml.security.SecurityException | MarshallingException e) {
       throw new SignatureException(e);
     }
   }
@@ -109,18 +105,12 @@ public class SAMLObjectSigner {
    * {@code sign(object, signingCredentials, config, peerConfig);}. If no peer config is found, this is not passed.
    * </p>
    *
-   * @param object
-   *          object to sign
-   * @param signingCredentials
-   *          signature credentials
-   * @param config
-   *          signature configuration
-   * @param recipientMetadata
-   *          recipient's metadata
-   * @param <T>
-   *          the object type
-   * @throws SignatureException
-   *           for signature errors
+   * @param object object to sign
+   * @param signingCredentials signature credentials
+   * @param config signature configuration
+   * @param recipientMetadata recipient's metadata
+   * @param <T> the object type
+   * @throws SignatureException for signature errors
    */
   public static <T extends SignableSAMLObject> void sign(final T object, final Credential signingCredentials,
       final SignatureSigningConfiguration config, final EntityDescriptor recipientMetadata) throws SignatureException {
@@ -148,10 +138,9 @@ public class SAMLObjectSigner {
    * {@link SignatureSigningConfiguration} object that should be supplied to
    * {@link #sign(SignableSAMLObject, Credential, SignatureSigningConfiguration...)}.
    *
-   * @param metadata
-   *          the recipient's metadata
+   * @param metadata the recipient's metadata
    * @return a {@link SignatureSigningConfiguration} element, or {@code null} if no preferred signing algorithms were
-   *         specified
+   *     specified
    */
   public static SignatureSigningConfiguration getSignaturePreferences(final EntityDescriptor metadata) {
 
@@ -183,7 +172,7 @@ public class SAMLObjectSigner {
     final AlgorithmRegistry registry = AlgorithmSupport.getGlobalAlgorithmRegistry();
     if (!signingMethods.isEmpty()) {
       signingMethods = signingMethods.stream().filter(s -> {
-        AlgorithmDescriptor ad = registry.get(s.getAlgorithm());
+        final AlgorithmDescriptor ad = registry.get(s.getAlgorithm());
         if (ad != null) {
           return AlgorithmType.Signature.equals(ad.getType());
         }
@@ -192,7 +181,7 @@ public class SAMLObjectSigner {
     }
     if (!digestMethods.isEmpty()) {
       digestMethods = digestMethods.stream().filter(s -> {
-        AlgorithmDescriptor ad = registry.get(s.getAlgorithm());
+        final AlgorithmDescriptor ad = registry.get(s.getAlgorithm());
         if (ad != null) {
           return AlgorithmType.MessageDigest.equals(ad.getType());
         }
@@ -204,15 +193,15 @@ public class SAMLObjectSigner {
       return null;
     }
 
-    BasicSignatureSigningConfiguration config = new BasicSignatureSigningConfiguration();
+    final BasicSignatureSigningConfiguration config = new BasicSignatureSigningConfiguration();
     if (!signingMethods.isEmpty()) {
       // We can't handle key lengths here!
       config.setSignatureAlgorithms(
-        signingMethods.stream().map(SigningMethod::getAlgorithm).collect(Collectors.toList()));
+          signingMethods.stream().map(SigningMethod::getAlgorithm).collect(Collectors.toList()));
     }
     if (!digestMethods.isEmpty()) {
       config.setSignatureReferenceDigestMethods(
-        digestMethods.stream().map(DigestMethod::getAlgorithm).collect(Collectors.toList()));
+          digestMethods.stream().map(DigestMethod::getAlgorithm).collect(Collectors.toList()));
     }
 
     return config;
@@ -221,8 +210,7 @@ public class SAMLObjectSigner {
   /**
    * Returns the SSODescriptor for the supplied SP or IdP entity descriptor.
    *
-   * @param ed
-   *          the entity descriptor
+   * @param ed the entity descriptor
    * @return the SSODescriptor
    */
   private static SSODescriptor getSSODescriptor(final EntityDescriptor ed) {
@@ -237,12 +225,9 @@ public class SAMLObjectSigner {
   /**
    * Finds all extensions matching the supplied type.
    *
-   * @param extensions
-   *          the {@link Extensions} to search
-   * @param clazz
-   *          the extension type
-   * @param <T>
-   *          the type of the extension
+   * @param extensions the {@link Extensions} to search
+   * @param clazz the extension type
+   * @param <T> the type of the extension
    * @return a (possibly empty) list of extensions elements of the given type
    */
   private static <T> List<T> getMetadataExtensions(final Extensions extensions, final Class<T> clazz) {
@@ -250,10 +235,10 @@ public class SAMLObjectSigner {
       return Collections.emptyList();
     }
     return extensions.getUnknownXMLObjects()
-      .stream()
-      .filter(e -> clazz.isAssignableFrom(e.getClass()))
-      .map(clazz::cast)
-      .collect(Collectors.toList());
+        .stream()
+        .filter(e -> clazz.isAssignableFrom(e.getClass()))
+        .map(clazz::cast)
+        .collect(Collectors.toList());
   }
 
   // Hidden constructor.

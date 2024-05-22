@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,10 +60,8 @@ public class SCPSSPadding {
    * where message digest equals MGF hash function and where salt length equals hash length and finally where the final
    * byte is set to 0xBC.
    *
-   * @param messageDigest
-   *          Message digest function
-   * @param modulusBits
-   *          number of modulus bits of the RSA key
+   * @param messageDigest Message digest function
+   * @param modulusBits number of modulus bits of the RSA key
    */
   public SCPSSPadding(final MessageDigest messageDigest, final int modulusBits) {
     if (messageDigest == null) {
@@ -82,8 +80,7 @@ public class SCPSSPadding {
   /**
    * Inject a predefined salt value
    *
-   * @param salt
-   *          predefined salt value;
+   * @param salt predefined salt value;
    */
   public void setSalt(final byte[] salt) {
     this.salt = salt;
@@ -93,22 +90,19 @@ public class SCPSSPadding {
   /**
    * Generates RSA-PSS encoded message (EM) for a given message.
    *
-   * @param message
-   *          message
+   * @param message message
    * @return encoded message (EM) for RSA PSS
    */
-  public byte[] getPaddingFromMessage(final byte[] message) {    
+  public byte[] getPaddingFromMessage(final byte[] message) {
     return this.getPadding(this.messageDigest.digest(message));
   }
 
   /**
    * Calculates the padding for a message hash.
    *
-   * @param messageHash
-   *          message hash
+   * @param messageHash message hash
    * @return encoded message (EM) for RSA PSS
-   * @throws IllegalArgumentException
-   *           if specified modulus is to short
+   * @throws IllegalArgumentException if specified modulus is too short
    */
   public byte[] getPadding(final byte[] messageHash) throws IllegalArgumentException {
     if (this.emLength < this.messageDigestSize + this.saltLength + 2) {
@@ -121,7 +115,7 @@ public class SCPSSPadding {
     System.arraycopy(this.salt, 0, mBlock, 8 + this.messageDigestSize, this.saltLength);
 
     // Creating hash of M'
-    final byte[] mBlockHash = this.messageDigest.digest(mBlock);    
+    final byte[] mBlockHash = this.messageDigest.digest(mBlock);
 
     // Creating the DB block (padding + 0x01 + salt)
     final byte[] dbBlock = new byte[this.emLength - this.messageDigestSize - 1];
@@ -139,7 +133,7 @@ public class SCPSSPadding {
     }
 
     // Set leading bits exceeding emBit length to 0
-    em[0] &= 0xff >> this.emLength * 8 - this.emBits;
+    em[0] &= (byte) (0xff >> this.emLength * 8 - this.emBits);
 
     // Copy M' block hash to EM
     System.arraycopy(mBlockHash, 0, em, dbBlock.length, this.messageDigestSize);
