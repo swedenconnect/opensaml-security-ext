@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2023 Sweden Connect
+ * Copyright 2016-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
-
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,8 +39,15 @@ import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.X509Data;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
+import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
+
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Test cases for {@link SAMLObjectEncrypter}.
@@ -79,8 +79,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
@@ -108,8 +108,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
@@ -136,8 +136,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
@@ -198,8 +198,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
         encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
 
-//    Element e = ObjectUtils.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
@@ -228,8 +228,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-//    Element e = XMLObjectSupport.marshall(encryptedData);
-//    System.out.println(SerializeSupport.prettyPrintXML(e));
+    //    Element e = XMLObjectSupport.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     // One should work
     String decryptedMsg = null;
@@ -243,6 +243,151 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     }
 
     Assertions.assertEquals(CONTENTS, decryptedMsg);
+  }
+
+  @Test
+  public void testECDH() throws Exception {
+    final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
+    msg.setValue(CONTENTS);
+
+    // Setup metadata
+    //
+    final EntityDescriptor ed = this.createMetadata(
+        new MetadataCertificate("credentials/eckey.crt", UsageType.ENCRYPTION,
+            Arrays.asList(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+                EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256)),
+        new MetadataCertificate("credentials/eckey.crt", UsageType.SIGNING));
+
+    final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
+    encrypter.setDefaultEncryptionConfiguration(
+        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration());
+    final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+
+    //    Element e = ObjectUtils.marshall(encryptedData);
+    //    System.out.println(SerializeSupport.prettyPrintXML(e));
+
+    final String decryptedMsg =
+        this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
+            "ecdh-test");
+
+    Assertions.assertEquals(CONTENTS, decryptedMsg);
+
+  }
+
+  @Test
+  public void testEcdhConstrainedAlgorithms() throws Exception {
+    final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
+    msg.setValue(CONTENTS);
+
+    // Setup metadata
+    //
+    final EntityDescriptor ed = this.createMetadata(
+        new MetadataCertificate("credentials/eckey.crt", UsageType.ENCRYPTION,
+            Arrays.asList(
+                EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+                EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM
+            )),
+        new MetadataCertificate("credentials/eckey.crt", UsageType.SIGNING));
+
+    final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
+    final BasicEncryptionConfiguration encConf =
+        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    encConf.setDataEncryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192_GCM
+    ));
+    encConf.setKeyTransportEncryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES128,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES192
+    ));
+    encConf.setExcludedAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP
+    ));
+
+    encrypter.setDefaultEncryptionConfiguration(encConf);
+    final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+        encryptedData.getEncryptionMethod().getAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYAGREEMENT_ECDH_ES,
+        encryptedData.getKeyInfo().getEncryptedKeys().get(0).getKeyInfo().getAgreementMethods().get(0).getAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+        encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
+
+    //Element e = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(encryptedData).marshall(encryptedData);
+    //System.out.println(SerializeSupport.prettyPrintXML(e));
+
+    final String decryptedMsg =
+        this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
+            "ecdh-test");
+
+    Assertions.assertEquals(CONTENTS, decryptedMsg);
+
+  }
+
+  @Test
+  public void testSRSAConstrainedAlgorithms() throws Exception {
+    final XSString msg = (XSString) XMLObjectSupport.buildXMLObject(XSString.TYPE_NAME);
+    msg.setValue(CONTENTS);
+
+    // Setup metadata
+    //
+    final EntityDescriptor ed = this.createMetadata(
+        new MetadataCertificate("credentials/litsec_auth.crt", UsageType.ENCRYPTION,
+            Arrays.asList(
+                EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+                EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+                EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,
+                EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11
+            )),
+        new MetadataCertificate("credentials/litsec_auth.crt", UsageType.SIGNING));
+
+    final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
+    final BasicEncryptionConfiguration encConf =
+        ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    encConf.setDataEncryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192_GCM
+    ));
+    encConf.setKeyTransportEncryptionAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES128,
+        EncryptionConstants.ALGO_ID_KEYWRAP_AES192
+    ));
+    encConf.setExcludedAlgorithms(List.of(
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,
+        EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,
+        EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP
+    ));
+    encrypter.setDefaultEncryptionConfiguration(encConf);
+    final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
+
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128_GCM,
+        encryptedData.getEncryptionMethod().getAlgorithm());
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
+        encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
+
+    //Element e = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(encryptedData).marshall(encryptedData);
+    //System.out.println(SerializeSupport.prettyPrintXML(e));
+
+    final String decryptedMsg =
+        this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
+            "litsec_ab");
+
+    Assertions.assertEquals(CONTENTS, decryptedMsg);
+
   }
 
   private String decrypt(final EncryptedData encrypted, final Resource jks, final String password, final String alias)

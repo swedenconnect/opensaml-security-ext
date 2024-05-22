@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.0.1</version>
+  <version>4.0.2-SNAPSHOT</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -17,7 +17,7 @@
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -54,11 +54,11 @@
 
     <opensaml.version>5.0.0</opensaml.version>
     <shib.support.version>9.0.0</shib.support.version>
-    
-    <bc.version>1.77</bc.version>    
-    <slf4j.version>2.0.12</slf4j.version>
-    <jackson.version>2.15.2</jackson.version>
-    <junit.version>5.10.0</junit.version>
+
+    <bc.version>1.78</bc.version>
+    <slf4j.version>2.0.13</slf4j.version>
+    <jackson.version>2.17.1</jackson.version>
+    <junit.version>5.10.2</junit.version>
   </properties>
 
   <repositories>
@@ -76,73 +76,96 @@
 
   <distributionManagement>
     <repository>
-    <id>ossrh</id>
-    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-  
+
   <dependencyManagement>
     <dependencies>
-      
+
       <!-- 
         The OpenSAML team obviously doesn't check for dependency convergence errors.
         The below dependencies are included to avoid such errors.
-      --> 
-      
+      -->
+
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
-      
-    <!-- Bouncy Castle -->    
+
+      <!-- Bouncy Castle -->
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
         <version>${bc.version}</version>
-      </dependency>      
-      
+      </dependency>
+
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.16.0</version>
+        <version>1.17.0</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.apache.httpcomponents.core5</groupId>
         <artifactId>httpcore5</artifactId>
-        <version>5.2.2</version>
+        <version>5.2.4</version>
       </dependency>
-    
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
         <version>${jackson.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
       </dependency>
-          
-    </dependencies>  
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.santuario</groupId>
+        <artifactId>xmlsec</artifactId>
+        <version>3.0.4</version>
+      </dependency>
+
+    </dependencies>
   </dependencyManagement>
-  
+
   <dependencies>
-    
+
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
     <!-- Slf4j -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-      
-    <!-- Bouncy Castle -->    
+
+    <dependency>
+      <groupId>org.apache.santuario</groupId>
+      <artifactId>xmlsec</artifactId>
+    </dependency>
+
+    <!-- Bouncy Castle -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
     </dependency>
-    
+
     <!-- OpenSAML -->
     <dependency>
       <groupId>org.opensaml</groupId>
@@ -161,7 +184,7 @@
       <artifactId>opensaml-saml-api</artifactId>
       <version>${opensaml.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
@@ -202,7 +225,7 @@
       <artifactId>opensaml-xmlsec-impl</artifactId>
       <version>${opensaml.version}</version>
     </dependency>
-        
+
     <dependency>
       <groupId>net.shibboleth</groupId>
       <artifactId>shib-support</artifactId>
@@ -216,14 +239,14 @@
       <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
@@ -234,18 +257,18 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.5.0</version>
+      <version>5.12.0</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>6.0.15</version>
+      <version>6.1.7</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
-     
+
   </dependencies>
 
   <build>
@@ -287,7 +310,7 @@
             <id>enforce</id>
             <configuration>
               <rules>
-                <dependencyConvergence />
+                <dependencyConvergence/>
               </rules>
             </configuration>
             <goals>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Sweden Connect
+ * Copyright 2019-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,13 @@ import org.opensaml.xmlsec.SignatureValidationConfiguration;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import se.swedenconnect.opensaml.OpenSAMLInitializer;
 import se.swedenconnect.opensaml.OpenSAMLSecurityDefaultsConfig;
 
 /**
- * Abstract base class for {@link SecurityConfiguration}. Sub-classes should implement the create-methods for the
+ * Abstract base class for {@link SecurityConfiguration}. Subclasses should implement the create-methods for the
  * different operations they wish to override.
- * 
+ *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
@@ -50,7 +49,7 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
   private SignatureValidationConfiguration defaultSignatureValidationConfiguration;
 
   /** Logger instance. */
-  private Logger log = LoggerFactory.getLogger(AbstractSecurityConfiguration.class);
+  private static final Logger log = LoggerFactory.getLogger(AbstractSecurityConfiguration.class);
 
   /**
    * Constructor.
@@ -69,10 +68,10 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
     EncryptionConfiguration config = this.getDefaultEncryptionConfiguration();
     if (config != null) {
       log.debug("Returning encryption configuration for profile '{}'", this.getProfileName());
-      return config;
+      return ExtendedDefaultSecurityConfigurationBootstrap.patchEncryptionConfiguration(config, false);
     }
     log.debug("No default encryption configuration configured for security configuration '{}', using OpenSAML defaults",
-      this.getProfileName());
+        this.getProfileName());
 
     config = ConfigurationService.get(EncryptionConfiguration.class);
 
@@ -82,14 +81,15 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
 
       config = ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     }
+
     return config;
   }
 
   /**
    * Returns the default encryption configuration for this instance.
-   * 
+   *
    * @return default encryption configuration, or {@code null} if this security configuration object has not overridden
-   *         the system defaults
+   *     the system defaults
    */
   protected final EncryptionConfiguration getDefaultEncryptionConfiguration() {
     if (this.defaultEncryptionConfiguration == null) {
@@ -105,9 +105,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
    * {@link ConfigurationService} will be returned when {@link SecurityConfiguration#getEncryptionConfiguration()} is
    * called.
    * </p>
-   * 
+   *
    * @return default encryption configuration, or {@code null} if the security configuration object does not need to
-   *         modify the system defaults
+   *     modify the system defaults
    */
   protected EncryptionConfiguration createDefaultEncryptionConfiguration() {
     return null;
@@ -122,7 +122,7 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
       return config;
     }
     log.debug("No default decryption configuration configured for security configuration '{}', using OpenSAML defaults",
-      this.getProfileName());
+        this.getProfileName());
 
     config = ConfigurationService.get(DecryptionConfiguration.class);
 
@@ -137,9 +137,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
 
   /**
    * Returns the default decryption configuration for this instance.
-   * 
+   *
    * @return default decryption configuration, or {@code null} if this security configuration object has not overridden
-   *         the system defaults
+   *     the system defaults
    */
   protected final DecryptionConfiguration getDefaultDecryptionConfiguration() {
     if (this.defaultDecryptionConfiguration == null) {
@@ -155,9 +155,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
    * {@link ConfigurationService} will be returned when {@link SecurityConfiguration#getDecryptionConfiguration()} is
    * called.
    * </p>
-   * 
+   *
    * @return default decryption configuration, or {@code null} if the security configuration object does not need to
-   *         modify the system defaults
+   *     modify the system defaults
    */
   protected DecryptionConfiguration createDefaultDecryptionConfiguration() {
     return null;
@@ -172,12 +172,13 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
       return config;
     }
     log.debug("No default signature configuration configured for security configuration '{}', using OpenSAML defaults",
-      this.getProfileName());
+        this.getProfileName());
 
     config = ConfigurationService.get(SignatureSigningConfiguration.class);
 
     if (config == null) {
-      log.warn("No SignatureSigningConfiguration object exists in OpenSAML configuration. Has OpenSAML been initialized?");
+      log.warn(
+          "No SignatureSigningConfiguration object exists in OpenSAML configuration. Has OpenSAML been initialized?");
       log.debug("Using DefaultSecurityConfigurationBootstrap to create signature configuration");
 
       config = DefaultSecurityConfigurationBootstrap.buildDefaultSignatureSigningConfiguration();
@@ -187,9 +188,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
 
   /**
    * Returns the default signature configuration for this instance.
-   * 
+   *
    * @return default signature configuration, or {@code null} if this security configuration object has not overridden
-   *         the system defaults
+   *     the system defaults
    */
   protected final SignatureSigningConfiguration getDefaultSignatureSigningConfiguration() {
     if (this.defaultSignatureSigningConfiguration == null) {
@@ -205,9 +206,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
    * {@link ConfigurationService} will be returned when {@link SecurityConfiguration#getSignatureSigningConfiguration()}
    * is called.
    * </p>
-   * 
+   *
    * @return default signature configuration, or {@code null} if the security configuration object does not need to
-   *         modify the system defaults
+   *     modify the system defaults
    */
   protected SignatureSigningConfiguration createDefaultSignatureSigningConfiguration() {
     return null;
@@ -221,13 +222,15 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
       log.debug("Returning signature validation configuration for profile '{}'", this.getProfileName());
       return config;
     }
-    log.debug("No default signature validation configuration configured for security configuration '{}', using OpenSAML defaults",
-      this.getProfileName());
+    log.debug(
+        "No default signature validation configuration configured for security configuration '{}', using OpenSAML defaults",
+        this.getProfileName());
 
     config = ConfigurationService.get(SignatureValidationConfiguration.class);
 
     if (config == null) {
-      log.warn("No SignatureValidationConfiguration object exists in OpenSAML configuration. Has OpenSAML been initialized?");
+      log.warn(
+          "No SignatureValidationConfiguration object exists in OpenSAML configuration. Has OpenSAML been initialized?");
       log.debug("Using DefaultSecurityConfigurationBootstrap to create signature configuration");
 
       config = DefaultSecurityConfigurationBootstrap.buildDefaultSignatureValidationConfiguration();
@@ -237,9 +240,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
 
   /**
    * Returns the default signature validation configuration for this instance.
-   * 
+   *
    * @return default signature validation configuration, or {@code null} if this security configuration object has not
-   *         overridden the system defaults
+   *     overridden the system defaults
    */
   protected final SignatureValidationConfiguration getDefaultSignatureValidationConfiguration() {
     if (this.defaultSignatureValidationConfiguration == null) {
@@ -255,9 +258,9 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
    * by {@link ConfigurationService} will be returned when
    * {@link SecurityConfiguration#getSignatureValidationConfiguration()} is called.
    * </p>
-   * 
+   *
    * @return default signature validation configuration, or {@code null} if the security configuration object does not
-   *         need to modify the system defaults
+   *     need to modify the system defaults
    */
   protected SignatureValidationConfiguration createDefaultSignatureValidationConfiguration() {
     return null;
@@ -276,12 +279,16 @@ public abstract class AbstractSecurityConfiguration implements SecurityConfigura
         ConfigurationService.register(DecryptionConfiguration.class, this.getDefaultDecryptionConfiguration());
       }
       if (this.getDefaultSignatureSigningConfiguration() != null) {
-        log.info("Security configuration for '{}' profile registers SignatureSigningConfiguration", this.getProfileName());
-        ConfigurationService.register(SignatureSigningConfiguration.class, this.getDefaultSignatureSigningConfiguration());
+        log.info("Security configuration for '{}' profile registers SignatureSigningConfiguration",
+            this.getProfileName());
+        ConfigurationService.register(SignatureSigningConfiguration.class,
+            this.getDefaultSignatureSigningConfiguration());
       }
       if (this.getDefaultSignatureValidationConfiguration() != null) {
-        log.info("Security configuration for '{}' profile registers SignatureValidationConfiguration", this.getProfileName());
-        ConfigurationService.register(SignatureValidationConfiguration.class, this.getDefaultSignatureValidationConfiguration());
+        log.info("Security configuration for '{}' profile registers SignatureValidationConfiguration",
+            this.getProfileName());
+        ConfigurationService.register(SignatureValidationConfiguration.class,
+            this.getDefaultSignatureValidationConfiguration());
       }
     }
   }
