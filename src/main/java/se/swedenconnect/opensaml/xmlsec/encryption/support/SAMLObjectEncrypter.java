@@ -19,6 +19,7 @@ import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.logic.Constraint;
 import net.shibboleth.shared.resolver.CriteriaSet;
 import net.shibboleth.shared.resolver.ResolverException;
+import org.apache.xml.security.encryption.EncryptedKey;
 import org.opensaml.core.criterion.EntityIdCriterion;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -41,13 +42,18 @@ import org.opensaml.xmlsec.criterion.EncryptionOptionalCriterion;
 import org.opensaml.xmlsec.encryption.EncryptedData;
 import org.opensaml.xmlsec.encryption.support.DataEncryptionParameters;
 import org.opensaml.xmlsec.encryption.support.Encrypter;
+import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
 import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 
+import javax.annotation.Nonnull;
+import java.security.Key;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Utility class for encrypting an element for a SAML entity.
@@ -69,7 +75,7 @@ public class SAMLObjectEncrypter {
   private EncryptionConfiguration defaultEncryptionConfiguration;
 
   /** The encrypter to use. */
-  private Encrypter encrypter = new Encrypter();
+  private Encrypter encrypter = new CustomEncrypter();
 
   /**
    * Sets up the object encrypter without a metadata provider. This means that the peer metadata has to be supplied in
@@ -188,8 +194,8 @@ public class SAMLObjectEncrypter {
   }
 
   /**
-   * Given the peer metadata and the encryption configuration, the method returns the encryption parameters to
-   * use for encryption.
+   * Given the peer metadata and the encryption configuration, the method returns the encryption parameters to use for
+   * encryption.
    *
    * @param metadata the peer metadata
    * @param configuration the encryption configuration
@@ -235,9 +241,6 @@ public class SAMLObjectEncrypter {
 
   /**
    * The encrypter to use.
-   * <p>
-   * If not assigned, an instance of {@link org.opensaml.xmlsec.encryption.support.Encrypter} is used.
-   * </p>
    *
    * @param encrypter the encrypter
    */
@@ -323,5 +326,34 @@ public class SAMLObjectEncrypter {
       return this.metadata;
     }
 
+  }
+
+  /**
+   * Some implementations have problems handling the {@code xenc11:MGF} element under {@code xenc:EncryptionMethod} when
+   * the {@code http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p} algorithm is used. If it appears and its value is
+   * {@code http://www.w3.org/2009/xmlenc11#mgf1sha1}, the element will be excluded.
+   */
+  private static class CustomEncrypter extends Encrypter {
+
+    @Override
+    protected void postProcessApacheEncryptedKey(@Nonnull final EncryptedKey apacheEncryptedKey,
+        @Nonnull final Key targetKey, @Nonnull final Key encryptionKey, @Nonnull final String encryptionAlgorithmURI,
+        @Nonnull final Document containingDocument) throws EncryptionException {
+
+      super.postProcessApacheEncryptedKey(apacheEncryptedKey, targetKey, encryptionKey, encryptionAlgorithmURI,
+          containingDocument);
+
+      if (AlgorithmSupport.isRSAOAEP(encryptionAlgorithmURI)) {
+        if (EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP.equals(encryptionAlgorithmURI)) {
+          final org.apache.xml.security.encryption.EncryptionMethod apacheEncryptionMethod =
+              apacheEncryptedKey.getEncryptionMethod();
+
+          if (Objects.equals(apacheEncryptionMethod.getMGFAlgorithm(), EncryptionConstants.ALGO_ID_MGF1_SHA1)) {
+            apacheEncryptionMethod.setMGFAlgorithm(null);
+          }
+        }
+      }
+
+    }
   }
 }
