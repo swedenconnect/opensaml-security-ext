@@ -31,6 +31,7 @@ import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.x509.impl.KeyStoreX509CredentialAdapter;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.EncryptedData;
+import org.opensaml.xmlsec.encryption.MGF;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
@@ -79,8 +80,12 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
 
-    //    Element e = ObjectUtils.marshall(encryptedData);
-    //    System.out.println(SerializeSupport.prettyPrintXML(e));
+    final org.opensaml.xmlsec.encryption.EncryptionMethod encryptionMethod =
+        encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod();
+    Assertions.assertFalse(encryptionMethod.getUnknownXMLObjects().stream().anyMatch(MGF.class::isInstance));
+
+    // final Element e = XMLObjectSupport.marshall(encryptedData);
+    // System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
@@ -90,7 +95,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
   }
 
   //
-  // The same as above, but we don't have a metadata resolver. Instead we supply the peer metadata
+  // The same as above, but we don't have a metadata resolver. Instead, we supply the peer metadata
   // in the call to encrypt.
   //
   @Test
@@ -108,9 +113,6 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter();
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
 
-    //    Element e = ObjectUtils.marshall(encryptedData);
-    //    System.out.println(SerializeSupport.prettyPrintXML(e));
-
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
             "litsec_ab");
@@ -119,7 +121,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
   }
 
   //
-  // Tests that we find a encryption credential even if the metadata doesn't state encryption use.
+  // Tests that we find an encryption credential even if the metadata doesn't state encryption use.
   //
   @Test
   public void testUnspecifiedUse() throws Exception {
@@ -135,9 +137,6 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
-
-    //    Element e = ObjectUtils.marshall(encryptedData);
-    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
@@ -161,9 +160,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     final MetadataResolver resolver = this.createMetadataResolver(ed);
 
     final SAMLObjectEncrypter encrypter = new SAMLObjectEncrypter(resolver);
-    Assertions.assertThrows(EncryptionException.class, () -> {
-      encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID));
-    });
+    Assertions.assertThrows(EncryptionException.class,
+        () -> encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ENTITY_ID)));
   }
 
   //
@@ -198,9 +196,6 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,
         encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
 
-    //    Element e = ObjectUtils.marshall(encryptedData);
-    //    System.out.println(SerializeSupport.prettyPrintXML(e));
-
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
             "litsec_ab");
@@ -232,7 +227,7 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     // One should work
-    String decryptedMsg = null;
+    String decryptedMsg;
     try {
       decryptedMsg = this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
           "litsec_ab");
@@ -262,9 +257,6 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     encrypter.setDefaultEncryptionConfiguration(
         ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration());
     final EncryptedData encryptedData = encrypter.encrypt(msg, new SAMLObjectEncrypter.Peer(ed));
-
-    //    Element e = ObjectUtils.marshall(encryptedData);
-    //    System.out.println(SerializeSupport.prettyPrintXML(e));
 
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
@@ -321,9 +313,6 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,
         encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
 
-    //Element e = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(encryptedData).marshall(encryptedData);
-    //System.out.println(SerializeSupport.prettyPrintXML(e));
-
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/eckey.jks"), "secret",
             "ecdh-test");
@@ -379,9 +368,6 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
         encryptedData.getKeyInfo().getEncryptedKeys().get(0).getEncryptionMethod().getAlgorithm());
 
-    //Element e = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(encryptedData).marshall(encryptedData);
-    //System.out.println(SerializeSupport.prettyPrintXML(e));
-
     final String decryptedMsg =
         this.decrypt(encryptedData, new ClassPathResource("credentials/litsec_auth.jks"), "secret",
             "litsec_ab");
@@ -401,13 +387,13 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
   }
 
   private EntityDescriptor createMetadata(final MetadataCertificate... descriptors) throws Exception {
-    final EntityDescriptor ed = EntityDescriptor.class.cast(
-        XMLObjectSupport.buildXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME));
+    final EntityDescriptor ed =
+        (EntityDescriptor) XMLObjectSupport.buildXMLObject(EntityDescriptor.DEFAULT_ELEMENT_NAME);
     ed.setEntityID(ENTITY_ID);
     ed.setID("_id123456");
 
-    final IDPSSODescriptor d = IDPSSODescriptor.class.cast(
-        XMLObjectSupport.buildXMLObject(IDPSSODescriptor.DEFAULT_ELEMENT_NAME));
+    final IDPSSODescriptor d =
+        (IDPSSODescriptor) XMLObjectSupport.buildXMLObject(IDPSSODescriptor.DEFAULT_ELEMENT_NAME);
     d.addSupportedProtocol(SAMLConstants.SAML20P_NS);
     ed.getRoleDescriptors().add(d);
 
@@ -440,9 +426,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
     }
 
     public KeyDescriptor toKeyDescriptor() throws Exception {
-      final KeyDescriptor kd = KeyDescriptor.class.cast(
-          XMLObjectSupport.buildXMLObject(KeyDescriptor.DEFAULT_ELEMENT_NAME));
-      if (UsageType.UNSPECIFIED.equals(this.usageType)) {
+      final KeyDescriptor kd = (KeyDescriptor) XMLObjectSupport.buildXMLObject(KeyDescriptor.DEFAULT_ELEMENT_NAME);
+      if (UsageType.UNSPECIFIED == this.usageType) {
         kd.setUse(null);
       }
       else {
@@ -460,8 +445,8 @@ public class SAMLObjectEncrypterTest extends OpenSAMLTestBase {
 
       if (this.encryptionMethods != null) {
         for (final String algo : this.encryptionMethods) {
-          final EncryptionMethod method = EncryptionMethod.class.cast(
-              XMLObjectSupport.buildXMLObject(EncryptionMethod.DEFAULT_ELEMENT_NAME));
+          final EncryptionMethod method =
+              (EncryptionMethod) XMLObjectSupport.buildXMLObject(EncryptionMethod.DEFAULT_ELEMENT_NAME);
           method.setAlgorithm(algo);
           kd.getEncryptionMethods().add(method);
         }
