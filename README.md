@@ -15,7 +15,7 @@ reduced to implement a workaround for using RSA-OAEP and RSA-PSS with HSM protec
 > Well, not only. The library also offers some utility methods for encryption/decryption and signing
 as well as initializing and security configuration helpers.
 
-Java API documentation of the opensaml-security-ext library is found [here](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/latest).
+Java API documentation of the opensaml-security-ext library is found [here](https://docs.swedenconnect.se/opensaml-security-ext/javadoc/).
 
 ### Maven and opensaml-security-ext
 
