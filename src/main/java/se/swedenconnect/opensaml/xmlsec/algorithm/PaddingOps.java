@@ -21,7 +21,7 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * Static data operations for PSS padding
+ * Static data operations for PSS padding.
  */
 public class PaddingOps {
 
@@ -33,9 +33,9 @@ public class PaddingOps {
    * @return the byte array representation of the BigInteger value
    * @throws IllegalArgumentException if the value requires more bytes than the assigned length size
    */
-  public static byte[] i2osp(BigInteger val, int len) {
+  public static byte[] i2osp(final BigInteger val, final int len) {
     // Get the byte array representation of the BigInteger
-    byte[] lengthVal = val.toByteArray();
+    final byte[] lengthVal = val.toByteArray();
 
     // Clone and handle leading zero if present
     byte[] paddedLengthVal = lengthVal.clone();
@@ -52,7 +52,7 @@ public class PaddingOps {
     // Padding to match the required length
     if (paddedLengthVal.length < len) {
       for (int i = paddedLengthVal.length; i < len; i++) {
-        paddedLengthVal = Arrays.concatenate(new byte[]{0x00}, paddedLengthVal);
+        paddedLengthVal = Arrays.concatenate(new byte[] { 0x00 }, paddedLengthVal);
       }
     }
 
@@ -65,9 +65,9 @@ public class PaddingOps {
    * @param val the byte array to convert
    * @return the BigInteger representation of the byte array
    */
-  public static BigInteger os2ip(byte[] val) {
+  public static BigInteger os2ip(final byte[] val) {
     // Make sure we get a positive value by adding 0x00 as leading byte in the value byte array
-    return new BigInteger(Arrays.concatenate(new byte[]{0x00}, val));
+    return new BigInteger(Arrays.concatenate(new byte[] { 0x00 }, val));
   }
 
   /**
@@ -76,42 +76,47 @@ public class PaddingOps {
    * @param arg1 the first byte array
    * @param arg2 the second byte array
    * @return the result of the XOR operation as a new byte array
-   * @throws NullPointerException     if either arg1 or arg2 is null
+   * @throws NullPointerException if either arg1 or arg2 is null
    * @throws IllegalArgumentException if arg1 and arg2 have different lengths
    */
-  public static byte[] xor(byte[] arg1, byte[] arg2) {
+  public static byte[] xor(final byte[] arg1, final byte[] arg2) {
     Objects.requireNonNull(arg1, "XOR argument must not be null");
     Objects.requireNonNull(arg2, "XOR argument must not be null");
 
     if (arg1.length != arg2.length) {
       throw new IllegalArgumentException("XOR operation on parameters of different lengths");
     }
-    byte[] xorArray = new byte[arg1.length];
+    final byte[] xorArray = new byte[arg1.length];
     for (int i = 0; i < arg1.length; i++) {
       xorArray[i] = (byte) (arg1[i] ^ arg2[i]);
     }
     return xorArray;
   }
 
-  public static byte[] concatenate(byte[]... arrays) {
+  /**
+   * Concatenates the supplied arrays into one.
+   *
+   * @param arrays the arrays to concatenate
+   * @return a concatenated array
+   */
+  public static byte[] concatenate(final byte[]... arrays) {
     int totalLength = 0;
 
     // Calculate the total length of the resulting byte array
-    for (byte[] array : arrays) {
+    for (final byte[] array : arrays) {
       totalLength += array.length;
     }
 
-    byte[] result = new byte[totalLength];
+    final byte[] result = new byte[totalLength];
     int currentIndex = 0;
 
     // Copy each array into the result array
-    for (byte[] array : arrays) {
+    for (final byte[] array : arrays) {
       System.arraycopy(array, 0, result, currentIndex, array.length);
       currentIndex += array.length;
     }
 
     return result;
   }
-
 
 }
