@@ -337,8 +337,8 @@ public class Pkcs11Decrypter extends Decrypter {
           this.constructOAEPParameters(encMethod.getAlgorithm(), encMethod.getDigestAlgorithm(),
               encMethod.getMGFAlgorithm(), encMethod.getOAEPparams());
 
-      final RsaOaepMgf1Padding unpadder = new RsaOaepMgf1Padding(oaepParameters, keysize);
-      final byte[] secretKeyBytes = unpadder.unpad(paddedPlainText);
+      final RsaOaepMgf1Padding oaepMgf1Padding = new RsaOaepMgf1Padding(oaepParameters, keysize);
+      final byte[] secretKeyBytes = oaepMgf1Padding.unpad(paddedPlainText);
 
       final String jceKeyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(algorithm);
 
