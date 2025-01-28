@@ -76,7 +76,7 @@ public class PaddingOps {
    * @param arg1 the first byte array
    * @param arg2 the second byte array
    * @return the result of the XOR operation as a new byte array
-   * @throws NullPointerException if either arg1 or arg2 is null
+   * @throws NullPointerException     if either arg1 or arg2 is null
    * @throws IllegalArgumentException if arg1 and arg2 have different lengths
    */
   public static byte[] xor(byte[] arg1, byte[] arg2) {
