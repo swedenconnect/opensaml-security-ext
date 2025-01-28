@@ -337,15 +337,15 @@ public class Pkcs11Decrypter extends Decrypter {
           this.constructOAEPParameters(encMethod.getAlgorithm(), encMethod.getDigestAlgorithm(),
               encMethod.getMGFAlgorithm(), encMethod.getOAEPparams());
 
-      final RsaOaepMgf1Unpadding unpadder = new RsaOaepMgf1Unpadding(keysize / 8, oaepParameters);
-      final byte[] secretKeyBytes = unpadder.unpad(paddedPlainText);
+      final RsaOaepMgf1Padding oaepMgf1Padding = new RsaOaepMgf1Padding(oaepParameters, keysize);
+      final byte[] secretKeyBytes = oaepMgf1Padding.unpad(paddedPlainText);
 
       final String jceKeyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(algorithm);
 
       return new SecretKeySpec(secretKeyBytes, jceKeyAlgorithm);
     }
     catch (final NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException | InvalidKeyException |
-        IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
+        IllegalBlockSizeException | BadPaddingException e) {
       throw new XMLEncryptionException(e);
     }
   }

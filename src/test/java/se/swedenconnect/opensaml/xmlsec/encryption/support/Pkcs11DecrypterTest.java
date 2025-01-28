@@ -15,8 +15,7 @@
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
-import java.util.Arrays;
-
+import net.shibboleth.shared.resolver.CriteriaSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.util.XMLObjectSupport;
@@ -32,12 +31,16 @@ import org.opensaml.xmlsec.encryption.EncryptedData;
 import org.opensaml.xmlsec.encryption.support.DataEncryptionParameters;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
+import org.opensaml.xmlsec.encryption.support.RSAOAEPParameters;
 import org.opensaml.xmlsec.impl.BasicEncryptionConfiguration;
 import org.opensaml.xmlsec.impl.BasicEncryptionParametersResolver;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.springframework.core.io.ClassPathResource;
-
-import net.shibboleth.shared.resolver.CriteriaSet;
 import se.swedenconnect.opensaml.OpenSAMLTestBase;
+import se.swedenconnect.opensaml.xmlsec.config.SAML2IntSecurityConfiguration;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Test cases for Pkcs11Decrypter.
@@ -75,6 +78,60 @@ public class Pkcs11DecrypterTest extends OpenSAMLTestBase {
 
     // Verify that RSA OAEP will used
     Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,
+        params.getKeyTransportEncryptionAlgorithm());
+
+    final org.opensaml.xmlsec.encryption.support.Encrypter encrypter =
+        new org.opensaml.xmlsec.encryption.support.Encrypter();
+
+    final EncryptedData encryptedData = encrypter.encryptElement(encryptedObject,
+        new DataEncryptionParameters(params), new KeyEncryptionParameters(params, "recipient"));
+
+    // OK, let's decrypt ...
+    //
+    final Pkcs11Decrypter decrypter =
+        new Pkcs11Decrypter(DecryptionUtils.createDecryptionParameters(rsaCredential));
+    decrypter.setRootInNewDocument(true);
+    decrypter.setTestMode(true);
+
+    final Issuer decryptedObject = (Issuer) decrypter.decryptData(encryptedData);
+    System.out.println(OpenSAMLTestBase.toString(decryptedObject));
+
+    Assertions.assertEquals(VALUE, decryptedObject.getValue(),
+        String.format("Expected '%s' as decrypted message", VALUE));
+  }
+
+  @Test
+  public void testDecryptWithNewOaepAndSha256() throws Exception {
+
+    // Create the XML object that should be encrypted.
+    final Issuer encryptedObject = (Issuer) XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
+    encryptedObject.setValue(VALUE);
+
+    // Load credentials ...
+    //
+    final X509Credential rsaCredential = OpenSAMLTestBase.loadKeyStoreCredential(
+        new ClassPathResource("rsakey.jks").getInputStream(), "Test1234", "key1", "Test1234");
+    final BasicX509Credential rsaPeerCredential = new BasicX509Credential(rsaCredential.getEntityCertificate());
+    rsaPeerCredential.setUsageType(UsageType.ENCRYPTION);
+
+    final SAML2IntSecurityConfiguration securityConfiguration = new SAML2IntSecurityConfiguration();
+    final BasicEncryptionConfiguration config = (BasicEncryptionConfiguration) securityConfiguration.getEncryptionConfiguration();
+//        DefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
+    config.setKeyTransportEncryptionCredentials(List.of(rsaPeerCredential));
+
+    final EncryptionConfigurationCriterion criterion = new EncryptionConfigurationCriterion(config);
+
+    final EncryptionParametersResolver resolver = new BasicEncryptionParametersResolver();
+    final EncryptionParameters params = resolver.resolveSingle(new CriteriaSet(criterion));
+
+    params.setKeyTransportEncryptionAlgorithm(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11);
+    final RSAOAEPParameters rsaoaepParameters = new RSAOAEPParameters(
+        SignatureConstants.ALGO_ID_DIGEST_SHA256,
+        EncryptionConstants.ALGO_ID_MGF1_SHA1,
+        null);
+    params.setRSAOAEPParameters(rsaoaepParameters);
+
+    Assertions.assertEquals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11,
         params.getKeyTransportEncryptionAlgorithm());
 
     final org.opensaml.xmlsec.encryption.support.Encrypter encrypter =
