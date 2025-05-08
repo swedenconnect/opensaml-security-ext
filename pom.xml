@@ -386,7 +386,6 @@
               <detectJavaApiLink>true</detectJavaApiLink>
               <links>
                 <link>https://shibboleth.net/api/java-opensaml/${opensaml.version}/</link>
-                <link>https://shibboleth.net/api/java-support/8.4.2/</link>
                 <link>https://shibboleth.net/api/java-shib-shared/${shib.support.version}/</link>
               </links>
               <doclint>all,-missing</doclint>
