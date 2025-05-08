@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.1.5</version>
+  <version>4.1.6</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -53,13 +53,13 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <opensaml.version>5.1.3</opensaml.version>
-    <shib.support.version>9.1.3</shib.support.version>
+    <opensaml.version>5.1.4</opensaml.version>
+    <shib.support.version>9.1.4</shib.support.version>
 
     <bc.version>1.80</bc.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <jackson.version>2.18.3</jackson.version>
-    <junit.version>5.12.1</junit.version>
+    <jackson.version>2.19.0</jackson.version>
+    <junit.version>5.12.2</junit.version>
   </properties>
 
   <repositories>
@@ -123,7 +123,7 @@
       <dependency>
         <groupId>org.apache.santuario</groupId>
         <artifactId>xmlsec</artifactId>
-        <version>3.0.5</version>
+        <version>3.0.6</version>
       </dependency>
 
       <dependency>
@@ -245,14 +245,14 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.16.1</version>
+      <version>5.17.0</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>6.2.5</version>
+      <version>6.2.6</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -315,8 +315,6 @@
 
     <profile>
       <id>release</id>
-
-      <!-- See http://central.sonatype.org/pages/apache-maven.html for setup -->
 
       <build>
         <plugins>
@@ -388,7 +386,7 @@
               <detectJavaApiLink>true</detectJavaApiLink>
               <links>
                 <link>https://shibboleth.net/api/java-opensaml/${opensaml.version}/</link>
-                <link>https://shibboleth.net/api/java-support/8.4.0/</link>
+                <link>https://shibboleth.net/api/java-support/8.4.2/</link>
                 <link>https://shibboleth.net/api/java-shib-shared/${shib.support.version}/</link>
               </links>
               <doclint>all,-missing</doclint>
