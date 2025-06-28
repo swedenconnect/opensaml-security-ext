@@ -56,7 +56,7 @@
     <opensaml.version>5.1.4</opensaml.version>
     <shib.support.version>9.1.4</shib.support.version>
 
-    <bc.version>1.80</bc.version>
+    <bc.version>1.81</bc.version>
     <slf4j.version>2.0.17</slf4j.version>
     <jackson.version>2.19.0</jackson.version>
     <junit.version>5.12.2</junit.version>
