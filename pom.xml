@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.1.6</version>
+  <version>4.1.7</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -53,13 +53,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <opensaml.version>5.1.4</opensaml.version>
-    <shib.support.version>9.1.4</shib.support.version>
+    <opensaml.version>5.1.6</opensaml.version>
+    <shib.support.version>9.1.6</shib.support.version>
 
-    <bc.version>1.80</bc.version>
+    <bc.version>1.81</bc.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <jackson.version>2.19.0</jackson.version>
-    <junit.version>5.12.2</junit.version>
+    <junit.version>5.13.4</junit.version>
   </properties>
 
   <repositories>
@@ -99,25 +98,25 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.18.0</version>
+        <version>1.19.0</version>
       </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>${jackson.version}</version>
+        <version>2.20.0</version>
       </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
+        <version>2.20.0</version>
       </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>${jackson.version}</version>
+        <version>2.20</version>
       </dependency>
 
       <dependency>
@@ -252,7 +251,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>6.2.6</version>
+      <version>6.2.10</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -292,7 +291,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -325,7 +324,7 @@
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.7.0</version>
+            <version>0.8.0</version>
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
@@ -336,7 +335,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.2.7</version>
+            <version>3.2.8</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -371,7 +370,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.11.2</version>
+            <version>3.11.3</version>
             <executions>
               <execution>
                 <id>attach-javadoc</id>
