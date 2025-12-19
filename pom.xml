@@ -8,7 +8,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.1.8</version>
+  <version>4.1.9-SNAPSHOT</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -56,9 +56,9 @@
     <opensaml.version>5.1.6</opensaml.version>
     <shib.support.version>9.1.6</shib.support.version>
 
-    <bc.version>1.82</bc.version>
+    <bc.version>1.83</bc.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <junit.version>5.14.0</junit.version>
+    <junit.version>5.14.1</junit.version>
   </properties>
 
   <repositories>
@@ -98,7 +98,7 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.19.0</version>
+        <version>1.20.0</version>
       </dependency>
 
       <dependency>
@@ -244,14 +244,14 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.20.0</version>
+      <version>5.21.0</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>6.2.11</version>
+      <version>6.2.15</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -264,7 +264,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.0</version>
+        <version>3.14.1</version>
         <configuration>
           <release>${java.version}</release>
         </configuration>
@@ -273,7 +273,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>3.5.0</version>
       </plugin>
 
       <plugin>
@@ -291,7 +291,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>3.6.2</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -324,7 +324,7 @@
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.8.0</version>
+            <version>0.9.0</version>
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
@@ -350,7 +350,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.4.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -370,7 +370,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.11.3</version>
+            <version>3.12.0</version>
             <executions>
               <execution>
                 <id>attach-javadoc</id>
