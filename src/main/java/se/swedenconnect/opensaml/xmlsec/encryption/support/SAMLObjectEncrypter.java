@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.opensaml.xmlsec.encryption.support;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.logic.Constraint;
 import net.shibboleth.shared.resolver.CriteriaSet;
@@ -26,9 +28,14 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.criterion.RoleDescriptorCriterion;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.saml.saml2.metadata.SSODescriptor;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
+import org.opensaml.saml.security.impl.SAMLMDCredentialContext;
 import org.opensaml.saml.security.impl.SAMLMetadataEncryptionParametersResolver;
+import org.opensaml.security.credential.Credential;
+import org.opensaml.security.credential.CredentialContextSet;
+import org.opensaml.security.credential.MutableCredential;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.criteria.UsageCriterion;
 import org.opensaml.xmlsec.EncryptionConfiguration;
@@ -45,14 +52,17 @@ import org.opensaml.xmlsec.encryption.support.Encrypter;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
 import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
+import org.opensaml.xmlsec.keyinfo.KeyInfoCriterion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 
-import javax.annotation.Nonnull;
 import java.security.Key;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -104,7 +114,7 @@ public class SAMLObjectEncrypter {
           ExtendedDefaultSecurityConfigurationBootstrap.buildDefaultEncryptionConfiguration();
     }
 
-    final MetadataCredentialResolver credentialResolver = new MetadataCredentialResolver();
+    final MetadataCredentialResolver credentialResolver = new MetadataCredentialResolverNoCaching();
     credentialResolver.setKeyInfoCredentialResolver(
         DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
     credentialResolver.initialize();
@@ -353,6 +363,52 @@ public class SAMLObjectEncrypter {
           }
         }
       }
+
+    }
+  }
+
+  /**
+   * The {@link MetadataCredentialResolver} implementation uses a nasty side effect where it stores resolved credentials
+   * in role descriptors. This will break badly when we serialize metadata. So, this class removed this side effect.
+   */
+  private static class MetadataCredentialResolverNoCaching extends MetadataCredentialResolver {
+
+    @Nonnull
+    private final Logger log = LoggerFactory.getLogger(MetadataCredentialResolverNoCaching.class);
+
+    /**
+     * Extract the credentials from the specified KeyDescriptor, but unlike the super class implementation, no caching
+     * is used. The credentials will be resolved from the KeyDescriptor's KeyInfo.
+     *
+     * @param accumulator the collection of credentials being accumulated for return to the caller
+     * @param keyDescriptor the KeyDescriptor being processed
+     * @param entityID the entity ID of the KeyDescriptor being processed
+     * @param mdUsage the effective credential usage type in effect for the resolved credentials
+     * @throws ResolverException if there is a problem resolving credentials from the KeyDescriptor's KeyInfo
+     *     element
+     */
+    @Override
+    protected void extractCredentials(@Nonnull final Collection<Credential> accumulator,
+        @Nonnull final KeyDescriptor keyDescriptor, @Nullable final String entityID,
+        @Nonnull final UsageType mdUsage) throws ResolverException {
+
+      final List<Credential> newCreds = new ArrayList<>();
+      final CriteriaSet critSet = new CriteriaSet();
+      critSet.add(new KeyInfoCriterion(keyDescriptor.getKeyInfo()));
+
+      final Iterable<Credential> resolvedCreds = this.getKeyInfoCredentialResolver().resolve(critSet);
+      for (final Credential cred : resolvedCreds) {
+        if (cred instanceof final MutableCredential mutableCred) {
+          mutableCred.setEntityId(entityID);
+          mutableCred.setUsageType(mdUsage);
+        }
+        final CredentialContextSet contextSet = cred.getCredentialContextSet();
+        if (contextSet != null) {
+          contextSet.add(new SAMLMDCredentialContext(keyDescriptor));
+        }
+        newCreds.add(cred);
+      }
+      accumulator.addAll(newCreds);
 
     }
   }
