@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2016-2026 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -8,7 +23,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.1.9</version>
+  <version>4.2.0</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -51,14 +66,14 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>17</java.version>
+    <java.version>21</java.version>
 
-    <opensaml.version>5.1.6</opensaml.version>
-    <shib.support.version>9.1.6</shib.support.version>
+    <opensaml.version>5.2.1</opensaml.version>
+    <shib.support.version>9.2.1</shib.support.version>
 
     <bc.version>1.83</bc.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <junit.version>5.14.1</junit.version>
+    <junit.version>6.0.3</junit.version>
   </properties>
 
   <repositories>
@@ -98,25 +113,19 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.20.0</version>
+        <version>1.21.0</version>
       </dependency>
 
       <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
+        <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.20.0</version>
+        <version>3.1.0</version>
       </dependency>
 
       <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
+        <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.20.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
-        <version>2.20</version>
+        <version>3.1.0</version>
       </dependency>
 
       <dependency>
@@ -244,14 +253,14 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.21.0</version>
+      <version>5.22.0</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>6.2.15</version>
+      <version>7.0.5</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
