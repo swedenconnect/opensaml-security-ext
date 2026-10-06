@@ -1,0 +1,34 @@
+# Creates a GitHub release when a version tag is pushed.
+#
+# Nothing is built and no assets are attached. Publishing to Maven Central is left to
+# maven-central-deploy.yml, which is triggered by the same tags. The release notes are generated
+# by GitHub from the pull requests merged since the previous release.
+name: Create GitHub release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Narrowed to what creating a release requires.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+
+    steps:
+      # No checkout is needed, the release is created from the tag that triggered the workflow.
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --title "${TAG#v}" \
+            --generate-notes \
+            --latest
