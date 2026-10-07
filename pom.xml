@@ -23,7 +23,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.2.2-SNAPSHOT</version>
+  <version>4.2.2</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
