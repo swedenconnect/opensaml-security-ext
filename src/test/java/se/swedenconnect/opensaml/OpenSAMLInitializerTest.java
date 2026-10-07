@@ -34,10 +34,13 @@ public class OpenSAMLInitializerTest {
   @Test
   public void testInitSecurityExtensions() {
 
-    // Try creating OpenSAML object. Should not be possible.
-    Assertions.assertThrows(XMLRuntimeException.class, () -> {
-      XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
-    });
+    // Try creating OpenSAML object. Should not be possible. Another test class running before this one
+    // in the same JVM may already have initialized OpenSAML, and then this check can not be made.
+    if (!OpenSAMLInitializer.getInstance().isInitialized()) {
+      Assertions.assertThrows(XMLRuntimeException.class, () -> {
+        XMLObjectSupport.buildXMLObject(Issuer.DEFAULT_ELEMENT_NAME);
+      });
+    }
 
     Assertions.assertDoesNotThrow(() -> {
       OpenSAMLInitializer.getInstance()
