@@ -20,6 +20,9 @@ updates:
       prefix: "build"
     ignore:
       - dependency-name: "org.apache.santuario:xmlsec"
+      # The strict Base64 decoding in 1.23.0 breaks OpenSAML's Base64Support.
+      - dependency-name: "commons-codec:commons-codec"
+        versions: ["1.23.0"]
     groups:
       # OpenSAML and the Shibboleth support library are released together and must be at matching
       # versions, so they are always updated in one pull request, major updates included.

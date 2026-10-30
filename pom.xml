@@ -23,7 +23,7 @@
   <groupId>se.swedenconnect.opensaml</groupId>
   <artifactId>opensaml-security-ext</artifactId>
   <packaging>jar</packaging>
-  <version>4.2.3-SNAPSHOT</version>
+  <version>4.2.4-SNAPSHOT</version>
 
   <name>Sweden Connect :: OpenSAML Security Extensions</name>
   <description>Security and crypto extension library for OpenSAML 5.X</description>
@@ -110,6 +110,7 @@
         <version>${bc.version}</version>
       </dependency>
 
+      <!-- Stay on 1.22.x. The strict Base64 decoding in 1.23.0 breaks OpenSAML's Base64Support. -->
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
@@ -119,13 +120,13 @@
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>3.2.3</version>
+        <version>3.2.4</version>
       </dependency>
 
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>3.2.3</version>
+        <version>3.2.4</version>
       </dependency>
 
       <dependency>
@@ -221,6 +222,12 @@
       <version>${shib.support.version}</version>
     </dependency>
 
+    <!-- Declared directly so that consumers get 1.22.x instead of 1.23.0, see dependencyManagement. -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+    </dependency>
+
     <!-- For testing -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -260,7 +267,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>7.0.9</version>
+      <version>7.0.10</version>
       <scope>test</scope>
       <type>jar</type>
     </dependency>
@@ -333,7 +340,7 @@
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.11.0</version>
+            <version>0.12.0</version>
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
