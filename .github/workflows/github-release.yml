@@ -2,7 +2,8 @@
 #
 # Nothing is built and no assets are attached. Publishing to Maven Central is left to
 # maven-central-deploy.yml, which is triggered by the same tags. The release notes are generated
-# by GitHub from the pull requests merged since the previous version tag.
+# by GitHub from the pull requests merged since the previous version tag, after a link to the
+# release notes on the documentation site.
 name: Create GitHub release
 
 on:
@@ -53,6 +54,7 @@ jobs:
           gh release create "${TAG}" \
             --repo "${REPO}" \
             --title "${CURRENT}" \
+            --notes "See the [release notes](https://docs.swedenconnect.se/opensaml-security-ext/release-notes.html) for a summary of the changes." \
             --generate-notes \
             "${START_TAG_ARGS[@]}" \
             --latest
