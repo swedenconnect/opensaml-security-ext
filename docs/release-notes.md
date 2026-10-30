@@ -8,6 +8,12 @@
 
 ## Release Notes
 
+### 4.2.4
+
+**Date:** _not yet released_
+
+- 
+
 ### 4.2.3
 
 **Date:** 2026-10-30
