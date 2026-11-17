@@ -71,7 +71,7 @@
     <opensaml.version>5.2.3</opensaml.version>
     <shib.support.version>9.2.3</shib.support.version>
 
-    <bc.version>1.86</bc.version>
+    <bc.version>1.87</bc.version>
     <slf4j.version>2.0.20</slf4j.version>
     <junit.version>6.1.3</junit.version>
   </properties>
@@ -120,13 +120,13 @@
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>3.2.4</version>
+        <version>3.3.0</version>
       </dependency>
 
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>3.2.4</version>
+        <version>3.3.0</version>
       </dependency>
 
       <dependency>
